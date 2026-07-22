@@ -520,6 +520,10 @@ body.v26-focus .container{max-width:820px;}
 body.v26-focus .v26-toolbar{justify-content:flex-end;}
 body.v26-focus .v26-focus-btn{background:#ededff;color:var(--brand);border-color:#c9c9f5;}
 body.v26-comfortable .section,body.v26-comfortable .journaling-section{padding-top:24px;padding-bottom:24px;}
+body.v26-compact .section,body.v26-compact .journaling-section{padding-top:10px;padding-bottom:10px;}
+body.v26-compact .task-row,body.v26-compact .priority-item{margin-bottom:2px;min-height:28px;}
+body.v26-compact .journal-col textarea{height:70px;}
+.v26-quiet-btn[aria-pressed="true"]{background:#ededff;color:var(--brand);border-color:#b8b8ef;box-shadow:inset 0 0 0 1px rgba(91,91,214,.08);}
 @media(max-width:700px){body{padding:0;background:#fff}.container{border:0;border-radius:0;box-shadow:none}.header{padding:12px}.v26-toolbar{padding:8px 10px}.v26-toolbar .v26-label{display:none}.v26-quiet-btn{padding:7px 9px}.tabs-wrapper{top:0}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
 </style>
@@ -584,7 +588,7 @@ body.v26-comfortable .section,body.v26-comfortable .journaling-section{padding-t
   <span class="v26-spacer"></span>
   <span class="v26-label">A calmer workspace</span>
   <button class="v26-quiet-btn" type="button" onclick="v26GoToday()" title="Return to today (T)">Today</button>
-  <button class="v26-quiet-btn" type="button" onclick="v26ToggleDensity()" id="v26DensityBtn" title="Change spacing">Roomier</button>
+  <button class="v26-quiet-btn" type="button" onclick="v26ToggleDensity()" id="v26DensityBtn" title="Switch between compact and roomy spacing" aria-pressed="true">View: Compact</button>
   <button class="v26-quiet-btn v26-focus-btn" type="button" onclick="v26ToggleFocus()" id="v26FocusBtn" title="Hide distractions (F)">Focus</button>
 </div>
 <div class="tabs-wrapper">
@@ -9615,9 +9619,12 @@ function v26Toast(message){
 }
 function v26GoToday(){
   today=new Date();
-  if(typeof load==='function')load();
+  var dailyButton=document.querySelector('.tab-btn[onclick*="switchTab(\'daily\'"]');
+  if(dailyButton&& !document.getElementById('tab-daily').classList.contains('active'))dailyButton.click();
+  else if(typeof load==='function')load();
   if(typeof renderTodayWorkoutCard==='function')renderTodayWorkoutCard();
-  v26Toast('Back to today');
+  window.scrollTo({top:0,behavior:'smooth'});
+  v26Toast('Showing today — '+today.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
 }
 function v26ToggleFocus(){
   var on=document.body.classList.toggle('v26-focus');
@@ -9626,9 +9633,13 @@ function v26ToggleFocus(){
   v26Toast(on?'Focus mode on':'Focus mode off');
 }
 function v26ToggleDensity(){
-  var on=document.body.classList.toggle('v26-comfortable');
-  localStorage.setItem('v26_roomy',on?'1':'0');
-  var b=document.getElementById('v26DensityBtn');if(b)b.textContent=on?'Compact':'Roomier';
+  var compact=document.body.classList.contains('v26-compact');
+  document.body.classList.toggle('v26-compact',!compact);
+  document.body.classList.toggle('v26-comfortable',compact);
+  localStorage.setItem('v26_density',compact?'roomy':'compact');
+  localStorage.removeItem('v26_roomy');
+  var b=document.getElementById('v26DensityBtn');if(b){b.textContent=compact?'View: Roomy':'View: Compact';b.setAttribute('aria-pressed',compact?'false':'true');}
+  v26Toast(compact?'Roomy view on':'Compact view on');
 }
 function v26SavedFeedback(){
   var el=document.getElementById('v26SaveText');if(!el)return;
@@ -9637,7 +9648,9 @@ function v26SavedFeedback(){
 }
 window.addEventListener('DOMContentLoaded',function(){
   if(localStorage.getItem('v26_focus')==='1'){document.body.classList.add('v26-focus');var f=document.getElementById('v26FocusBtn');if(f)f.textContent='Exit focus';}
-  if(localStorage.getItem('v26_roomy')==='1'){document.body.classList.add('v26-comfortable');var d=document.getElementById('v26DensityBtn');if(d)d.textContent='Compact';}
+  var density=localStorage.getItem('v26_density')||'compact';
+  document.body.classList.add(density==='roomy'?'v26-comfortable':'v26-compact');
+  var d=document.getElementById('v26DensityBtn');if(d){d.textContent=density==='roomy'?'View: Roomy':'View: Compact';d.setAttribute('aria-pressed',density==='compact'?'true':'false');}
   document.addEventListener('input',v26SavedFeedback,{passive:true});
   document.addEventListener('change',v26SavedFeedback,{passive:true});
   document.addEventListener('keydown',function(e){
