@@ -586,9 +586,9 @@ body.v26-compact .journal-col textarea{height:70px;}
 <div class="v26-toolbar" aria-label="Journal view controls">
   <span class="v26-save" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
   <span class="v26-spacer"></span>
-  <span class="v26-label">A calmer workspace</span>
+  <span class="v26-label">Page spacing:</span>
   <button class="v26-quiet-btn" type="button" onclick="v26GoToday()" title="Return to today (T)">Today</button>
-  <button class="v26-quiet-btn" type="button" onclick="v26ToggleDensity()" id="v26DensityBtn" title="Switch between compact and roomy spacing" aria-pressed="true">View: Compact</button>
+  <button class="v26-quiet-btn" type="button" onclick="v26ToggleDensity()" id="v26DensityBtn" title="Tight spacing fits more journal content on screen. Click for relaxed spacing." aria-label="Page spacing: Tight. Click for relaxed spacing." aria-pressed="true">Tight</button>
   <button class="v26-quiet-btn v26-focus-btn" type="button" onclick="v26ToggleFocus()" id="v26FocusBtn" title="Hide distractions (F)">Focus</button>
 </div>
 <div class="tabs-wrapper">
@@ -9638,8 +9638,8 @@ function v26ToggleDensity(){
   document.body.classList.toggle('v26-comfortable',compact);
   localStorage.setItem('v26_density',compact?'roomy':'compact');
   localStorage.removeItem('v26_roomy');
-  var b=document.getElementById('v26DensityBtn');if(b){b.textContent=compact?'View: Roomy':'View: Compact';b.setAttribute('aria-pressed',compact?'false':'true');}
-  v26Toast(compact?'Roomy view on':'Compact view on');
+  var b=document.getElementById('v26DensityBtn');if(b){b.textContent=compact?'Relaxed':'Tight';b.title=compact?'Relaxed spacing adds breathing room between journal sections. Click for tight spacing.':'Tight spacing fits more journal content on screen. Click for relaxed spacing.';b.setAttribute('aria-label',compact?'Page spacing: Relaxed. Click for tight spacing.':'Page spacing: Tight. Click for relaxed spacing.');b.setAttribute('aria-pressed',compact?'false':'true');}
+  v26Toast(compact?'Relaxed spacing — more breathing room':'Tight spacing — more content on screen');
 }
 function v26SavedFeedback(){
   var el=document.getElementById('v26SaveText');if(!el)return;
@@ -9650,7 +9650,7 @@ window.addEventListener('DOMContentLoaded',function(){
   if(localStorage.getItem('v26_focus')==='1'){document.body.classList.add('v26-focus');var f=document.getElementById('v26FocusBtn');if(f)f.textContent='Exit focus';}
   var density=localStorage.getItem('v26_density')||'compact';
   document.body.classList.add(density==='roomy'?'v26-comfortable':'v26-compact');
-  var d=document.getElementById('v26DensityBtn');if(d){d.textContent=density==='roomy'?'View: Roomy':'View: Compact';d.setAttribute('aria-pressed',density==='compact'?'true':'false');}
+  var d=document.getElementById('v26DensityBtn');if(d){d.textContent=density==='roomy'?'Relaxed':'Tight';d.title=density==='roomy'?'Relaxed spacing adds breathing room between journal sections. Click for tight spacing.':'Tight spacing fits more journal content on screen. Click for relaxed spacing.';d.setAttribute('aria-label',density==='roomy'?'Page spacing: Relaxed. Click for tight spacing.':'Page spacing: Tight. Click for relaxed spacing.');d.setAttribute('aria-pressed',density==='compact'?'true':'false');}
   document.addEventListener('input',v26SavedFeedback,{passive:true});
   document.addEventListener('change',v26SavedFeedback,{passive:true});
   document.addEventListener('keydown',function(e){
