@@ -1266,25 +1266,6 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div class="sb-item"><div class="sb-val" id="sbCount">—</div><div class="sb-lbl">Activities</div></div>
   </div>
 
-  <!-- Streak & Training Load -->
-  <div class="act-streak-row" id="actStreakRow">
-    <span class="act-streak-chip" id="actStreakChip" style="display:none;"></span>
-    <div class="act-load-bar" id="actLoadBar"></div>
-  </div>
-
-  <!-- Chart -->
-  <div class="act-chart-wrap" id="actChartWrap">
-    <div class="act-chart-title">
-      <span>Weekly Training</span>
-      <div class="act-chart-toggle">
-        <button id="chartMiBtn" class="active" onclick="setChartMode('miles')">Miles</button>
-        <button id="chartPwBtn" onclick="setChartMode('power')">Power</button>
-      </div>
-    </div>
-    <div id="actChartBars" style="display:flex;align-items:stretch;gap:2px;height:120px;padding:0 2px;overflow:hidden;"></div>
-    <div id="actChartLabels" style="display:flex;gap:2px;padding:2px 2px 0;overflow:hidden;"></div>
-  </div>
-
   <!-- Personal Records -->
   <div id="actPRSection" style="display:none;">
     <div class="act-section-toggle" onclick="togglePRs()"><span id="prArrow">▶</span> Personal Records</div>
@@ -1293,9 +1274,8 @@ body.v26-compact .journal-col textarea{height:70px;}
 
   <!-- CP / Power Zones setting -->
 
-  <!-- AI Training Plan -->
-  <div class="act-section-toggle" onclick="toggleTrainingPlan()" style="margin-top:4px;margin-bottom:8px;"><span id="tpArrow">&#x25B6;</span> &#x1F916; AI Training Plan</div>
-  <div id="tpSection" style="display:none;">
+  <!-- Text training plan upload -->
+  <div id="tpSection">
     <div class="tp-panel">
         <!-- Upload plan from text file -->
         <div style="margin-top:10px;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
@@ -1326,14 +1306,6 @@ body.v26-compact .journal-col textarea{height:70px;}
           </label>
           <span id="tpUploadStatus" style="margin-left:10px;font-size:0.75rem;color:#166534;"></span>
         </div>
-      <div id="tpOutput" style="display:none;">
-        <div class="tp-output" id="tpOutputText"></div>
-        <div class="tp-meta" id="tpMeta"></div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-          <button onclick="copyTrainingPlan()" style="font-size:0.78rem;padding:4px 12px;border-radius:6px;border:1px solid #d0d8ff;background:white;cursor:pointer;color:#667eea;">&#x1F4CB; Copy</button>
-          <button onclick="document.getElementById('tpOutput').style.display='none';" style="font-size:0.78rem;padding:4px 12px;border-radius:6px;border:1px solid #e9ecef;background:white;cursor:pointer;color:#888;">&#x2715; Close</button>
-        </div>
-      </div>
     </div>
   </div>
 
