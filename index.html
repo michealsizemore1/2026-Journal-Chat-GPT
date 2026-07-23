@@ -1602,6 +1602,7 @@ body.v26-compact .journal-col textarea{height:70px;}
       <div class="task-row sub-row"><label for="wSleepScore">&#x231B; Garmin Score:</label><input type="number" id="wSleepScore" placeholder="0-100" min="0" max="100" style="width:60px;border:none;border-bottom:1px solid #e9ecef;outline:none;font-size:0.95rem;background:transparent;"></div>
       <div class="task-row"><div class="tri-check" data-key="wHeadache" onclick="triClick(this)"></div><label>Headache/Migraine:</label><input type="text" id="wHeadacheNote" placeholder="Description, severity, duration..."></div>
     </div>
+    <div id="wellnessChartsHome" style="margin-top:16px;"></div>
   </div>
 </div>
 
@@ -1782,7 +1783,6 @@ body.v26-compact .journal-col textarea{height:70px;}
     </div>
     <button onclick="renderBPReport()" style="width:100%;background:#2980b9;color:#fff;border:none;padding:9px;border-radius:6px;font-size:0.9rem;cursor:pointer;margin-bottom:12px;">Generate Report</button>
     <div id="bpReportTable"></div>
-    <div id="wellnessChartsHome" style="margin-top:16px;"></div>
     <button onclick="printBPReport()" id="bpPrintBtn" style="display:none;width:100%;background:#2c3e50;color:#fff;border:none;padding:9px;border-radius:6px;font-size:0.9rem;cursor:pointer;margin-top:10px;">🖨️ Print</button>
   </div>
 </div>
