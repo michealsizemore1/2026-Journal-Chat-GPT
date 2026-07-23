@@ -861,8 +861,6 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div>
       <button class="ai-btn" onclick="aiReviewField('focus',this)" style="margin:0 0 6px;background:linear-gradient(135deg,#0ea5e9,#2563eb);">&#x2728; AI Focus for Next Week</button>
       <label>Focus for Next Week</label><textarea id="revFocus" placeholder="Top goals..."></textarea>
-      <button type="button" onclick="copyReviewFocusToDay()" style="margin-top:7px;background:#4f46e5;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:.78rem;font-weight:600;cursor:pointer;">&#x1F4C5; Copy Focus to Day</button>
-      <span id="copyReviewFocusConfirm" style="font-size:.76rem;color:#16a34a;display:none;margin-left:6px;">Copied!</span>
     </div>
     <div>
       <button class="ai-btn" onclick="aiWeeklyTakeaways()" style="margin:0 0 6px;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#x1F4D3; AI Weekly Takeaways</button>
@@ -1039,6 +1037,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 <!-- ===== END MEDITATE TAB ===== -->
 
 <div id="tab-library" class="tab-panel"><div class="panel">
+  <div id="libraryChartsGrid" class="dash-grid" style="padding:0 0 16px;"></div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
     <div class="tri-check" data-key="gaAudiobook" onclick="triClick(this)" title="Mark today's Audiobook complete"></div>
     <h2 style="margin:0;font-size:1.1rem;color:#667eea;">&#x1F4DA; Audiobook Library</h2>
@@ -1099,6 +1098,8 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div></div>
 
 <div id="tab-activities" class="tab-panel"><div class="panel">
+  <div id="activityChartsHome"></div>
+  <div id="activityChartsGrid" class="dash-grid" style="padding:0 0 16px;"></div>
   <!-- Daily Physical Exercises -->
   <div class="section" style="border:1px solid #f0f0f0;border-radius:10px;margin-bottom:12px;">
     <div class="section-title green">&#x1F3C3; Daily Physical Exercises</div>
@@ -1627,6 +1628,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 <!-- ===== WELLNESS TAB ===== -->
 <div class="tab-panel" id="tab-wellness">
   <div style="padding:12px;max-width:700px;margin:0 auto;">
+    <div id="wellnessChartsHome"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
       <h2 style="margin:0;color:#e74c3c;font-size:1.15rem;">&#x2764;&#xFE0F; Wellness</h2>
       <div id="wellnessTabDate" style="font-size:0.82rem;color:#888;"></div>
@@ -1824,6 +1826,7 @@ body.v26-compact .journal-col textarea{height:70px;}
   </div>
 </div>
 <div class="tab-panel" id="tab-skill-log"><div class="panel">
+  <div id="skillChartsGrid" class="dash-grid" style="padding:0 0 16px;"></div>
   <!-- Header -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
     <div style="display:flex;align-items:center;gap:8px;">
@@ -2014,6 +2017,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 
 <!-- ═══════════════════════════════ NUTRITION TAB ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-nutrition"><div class="panel">
+  <div id="nutritionChartsGrid" class="dash-grid" style="padding:0 0 16px;"></div>
 
   <!-- MEAL PLANNING -->
   <div class="section-title orange" style="margin-bottom:10px;">&#x1F4CB; Meal Planning</div>
@@ -3168,12 +3172,17 @@ function renderDashboard(){
     const r=localStorage.getItem('planner_'+dateKey);
     ms.push(r?getDM(JSON.parse(r),dateKey):getDM({},dateKey));
   }
-  const cfgs=[{k:'weight',l:'Weight',c:'#e74c3c'},{k:'sleep',l:'Sleep',c:'#9b59b6'},{k:'steps',l:'Steps',c:'#2ecc71'},{k:'calories',l:'Calories',c:'#f39c12'},{k:'water',l:'Water',c:'#3498db'},{k:'score',l:'Day Score',c:'#f0b429'},{k:'miles',l:'Miles',c:'#1abc9c'},{k:'pace',l:'Pace',c:'#e67e22'},{k:'watts',l:'Watts',c:'#8e44ad'},{k:'time',l:'Exer. Time',c:'#16a085'},{k:'audiobook',l:'Audiobook',c:'#27ae60'},{k:'skill',l:'Skill Time',c:'#e91e8c'}];
+  const cfgs=[{k:'score',l:'Day Score',c:'#f0b429'},{k:'sleep',l:'Sleep',c:'#9b59b6'},{k:'miles',l:'Miles',c:'#1abc9c'},{k:'weight',l:'Weight',c:'#e74c3c'}];
   const grid=document.getElementById('dashGrid');grid.innerHTML='';
   if(typeof Chart==='undefined'){
     grid.innerHTML='<div class="dash-card" style="grid-column:1/-1;"><h3>Dashboard unavailable</h3><div style="font-size:.88rem;color:#667085;line-height:1.5;">The chart library did not load. Check your internet connection, then refresh this page.</div></div>';
     return;
   }
+  const logged=ms.filter(function(m){return Object.values(m).some(Boolean);}).length,totalMiles=ms.reduce(function(a,m){return a+(m.miles||0);},0);
+  const scored=ms.filter(function(m){return m.score>0;}),slept=ms.filter(function(m){return m.sleep>0;});
+  const overview=document.createElement('div');overview.className='dash-card';overview.style.gridColumn='1 / -1';
+  overview.innerHTML='<h3>Weekly Overview</h3><div style="display:flex;gap:20px;flex-wrap:wrap;font-size:.88rem;color:#475467;"><span><strong>'+logged+'/7</strong> days logged</span><span><strong>'+totalMiles.toFixed(1)+'</strong> miles</span><span><strong>'+(scored.length?(scored.reduce(function(a,m){return a+m.score;},0)/scored.length).toFixed(1):'—')+'</strong> avg score</span><span><strong>'+(slept.length?fmtMins(slept.reduce(function(a,m){return a+m.sleep;},0)/slept.length):'—')+'</strong> avg sleep</span></div>';
+  grid.appendChild(overview);
   cfgs.forEach(({k,l,c})=>{
     const id='ch_'+k,values=ms.map(m=>m[k]||0);const card=document.createElement('div');card.className='dash-card';
     card.innerHTML='<h3>'+l+'</h3><canvas id="'+id+'"></canvas><div style="font-size:.72rem;color:#98a2b3;text-align:center;margin-top:4px;">'+(values.some(Boolean)?'Updated from this week':'No data logged this week')+'</div>';
@@ -3183,6 +3192,39 @@ function renderDashboard(){
   });
   renderHabitStreakChart(ws);
 }
+function getCurrentWeekChartData(){
+  const ws=wkStart(0),labels=[],metrics=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(ws);d.setDate(ws.getDate()+i);const dateKey=dk(d),raw=localStorage.getItem('planner_'+dateKey);
+    labels.push(d.toLocaleDateString('en-US',{weekday:'short'}));metrics.push(getDM(raw?JSON.parse(raw):{},dateKey));
+  }
+  return{labels:labels,metrics:metrics};
+}
+function renderSectionCharts(containerId,cfgs){
+  const grid=document.getElementById(containerId);if(!grid)return;
+  grid.innerHTML='';
+  if(typeof Chart==='undefined'){grid.innerHTML='<div class="dash-card"><h3>Charts unavailable</h3><div style="font-size:.82rem;color:#667085;">Check your internet connection and refresh.</div></div>';return;}
+  const data=getCurrentWeekChartData();
+  cfgs.forEach(function(cfg){
+    const id='section_'+containerId+'_'+cfg.k,values=data.metrics.map(function(m){return m[cfg.k]||0;});
+    const card=document.createElement('div');card.className='dash-card';
+    card.innerHTML='<h3>'+cfg.l+' — This Week</h3><canvas id="'+id+'"></canvas><div style="font-size:.72rem;color:#98a2b3;text-align:center;margin-top:4px;">'+(values.some(Boolean)?'Updated from your entries':'No data logged this week')+'</div>';
+    grid.appendChild(card);if(charts[id]){charts[id].destroy();delete charts[id];}
+    charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'line',data:{labels:data.labels,datasets:[{data:values,borderColor:cfg.c,backgroundColor:cfg.c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},animation:false}});
+  });
+}
+function relocateDashboardCharts(){
+  const wellness=document.getElementById('wellnessChartsHome'),activities=document.getElementById('activityChartsHome');
+  const bpCanvas=document.getElementById('bpChart'),bp=bpCanvas?bpCanvas.closest('.bp-chart-wrap'):null,weight=document.getElementById('weightChartWrap'),miles=document.getElementById('milesChartWrap');
+  if(wellness&&bp)wellness.appendChild(bp);
+  if(wellness&&weight)wellness.appendChild(weight);
+  if(activities&&miles)activities.appendChild(miles);
+}
+function renderActivitySectionCharts(){renderSectionCharts('activityChartsGrid',[{k:'pace',l:'Pace',c:'#e67e22'},{k:'watts',l:'Watts',c:'#8e44ad'},{k:'time',l:'Exercise Time',c:'#16a085'}]);renderMilesChart();}
+function renderNutritionSectionCharts(){renderSectionCharts('nutritionChartsGrid',[{k:'calories',l:'Calories',c:'#f39c12'},{k:'water',l:'Water',c:'#3498db'}]);}
+function renderLibrarySectionCharts(){renderSectionCharts('libraryChartsGrid',[{k:'audiobook',l:'Audiobook Time',c:'#27ae60'}]);}
+function renderSkillSectionCharts(){renderSectionCharts('skillChartsGrid',[{k:'skill',l:'Skill-Building Time',c:'#e91e8c'}]);}
+function renderWellnessSectionCharts(){renderBPChart();renderWeightChart();}
 
 // Weekly habit trend: days-hit (0-7) for Bible / Prayer / Exercise / Water over the dashboard week.
 function renderHabitStreakChart(ws){
@@ -7740,16 +7782,15 @@ function switchTab(tab,e){
   document.getElementById('aiToolbar').style.display=isDaily?'block':'none';
   if(tab==='weekly')renderWeekly();if(tab==='monthly')renderMonthly();
   if(tab==='yearly')renderYearly();if(tab==='dashboard')renderDashboard();
-  if(tab==='review')renderReview();if(tab==='library')renderLibrary();
-  if(tab==='activities'){_actFirstLoad=true;collapseAllActs();loadCurrentPlan();refreshTrainingPreview();}
+  if(tab==='review')renderReview();if(tab==='library'){renderLibrary();renderLibrarySectionCharts();}
+  if(tab==='activities'){_actFirstLoad=true;collapseAllActs();loadCurrentPlan();refreshTrainingPreview();renderActivitySectionCharts();}
   if(tab==='bible')renderBibleTab();
-  if(tab==='skill-log')renderSkillLog();
+  if(tab==='skill-log'){renderSkillLog();renderSkillSectionCharts();}
   if(tab==='thinking'){if(typeof mmStart==='function')mmStart();if(typeof finStart==='function')finStart();if(typeof frmStart==='function')frmStart();renderThinkingArchive();renderDecisionJournal();}
-  if(tab==='nutrition'){renderFoodItems();renderFavsList();}
+  if(tab==='nutrition'){renderFoodItems();renderFavsList();renderNutritionSectionCharts();}
   if(tab==='habits'){renderCustomHabits();renderHabitScorecard();var dl=document.getElementById('habitTabDate');if(dl)dl.textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}
   if(tab==='meditate'){meditInitTab();}
-  if(tab==='wellness'){var wdl=document.getElementById('wellnessTabDate');if(wdl)wdl.textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}
-  if(tab==='dashboard'){renderBPChart();renderWeightChart();renderMilesChart();}
+  if(tab==='wellness'){var wdl=document.getElementById('wellnessTabDate');if(wdl)wdl.textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});renderWellnessSectionCharts();}
   if(tab==='weekly'){renderGoals();}
   localStorage.setItem('last_active_tab',tab);
 }
@@ -8389,25 +8430,6 @@ function copyItemsToDay(ids,confirmId){
   localStorage.setItem(tKey,JSON.stringify(tData));
   var conf=document.getElementById(confirmId);if(conf){conf.textContent='Copied to '+dateKey+'!';conf.style.display='inline';setTimeout(function(){conf.style.display='none';},3000);}
 }
-function copyReviewFocusToDay(){
-  var text=(document.getElementById('revFocus').value||'').trim();
-  if(!text){alert('Add a Focus for Next Week first.');return;}
-  var target=new Date();target.setDate(target.getDate()+1);
-  var dateKey=askCopyDate(target);if(!dateKey)return;
-  var key='planner_'+dateKey,data={};try{data=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){}
-  var lines=text.split(/\n+/).map(function(s){return s.replace(/^[\s•*\-\d.)]+/,'').trim();}).filter(Boolean).slice(0,3);
-  var copied=0;
-  lines.forEach(function(line){
-    for(var i=0;i<3;i++){
-      var field='pt'+i+'t';
-      if(!data[field]||!data[field].trim()){data[field]=line;data['pt'+i+'c']='';copied++;break;}
-    }
-  });
-  if(!copied){alert('That day already has three priority tasks. Choose another day or clear a task slot first.');return;}
-  localStorage.setItem(key,JSON.stringify(data));
-  var conf=document.getElementById('copyReviewFocusConfirm');if(conf){conf.textContent='Copied to '+dateKey+'!';conf.style.display='inline';setTimeout(function(){conf.style.display='none';},3000);}
-}
-
 function togglePdfMenu(){document.getElementById('pdfMenu').classList.toggle('open');}
 document.addEventListener('click',e=>{if(!e.target.closest('.pdf-wrap'))document.getElementById('pdfMenu').classList.remove('open');});
 function printView(tab){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));if(tab==='weekly')renderWeekly();if(tab==='monthly')renderMonthly();document.getElementById('tab-'+tab).classList.add('active');setTimeout(window.print,200);}
@@ -9752,6 +9774,7 @@ function v26SavedFeedback(){
   window._v26SaveTimer=setTimeout(function(){el.textContent='Saved on this device';},450);
 }
 window.addEventListener('DOMContentLoaded',function(){
+  relocateDashboardCharts();
   if(localStorage.getItem('v26_focus')==='1'){document.body.classList.add('v26-focus');var f=document.getElementById('v26FocusBtn');if(f)f.textContent='Exit focus';}
   var density=localStorage.getItem('v26_density')||'compact';
   document.body.classList.add(density==='roomy'?'v26-comfortable':'v26-compact');
