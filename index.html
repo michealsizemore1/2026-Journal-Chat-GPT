@@ -211,6 +211,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 
 /* Activities enhancements */
 .act-stats-bar{display:flex;flex-wrap:wrap;gap:8px 16px;background:linear-gradient(135deg,#fff5e6,#fff);border:1px solid #ffd5a8;border-radius:10px;padding:12px 16px;margin-bottom:12px;}
+#actStatsBar{display:none!important;}
 .act-stats-bar .sb-item{text-align:center;}
 .act-stats-bar .sb-val{font-size:1.1rem;font-weight:800;color:#e67e22;word-break:break-word;}
 .act-stats-bar .sb-lbl{font-size:0.72rem;color:#999;text-transform:uppercase;letter-spacing:0.04em;}
@@ -1204,18 +1205,6 @@ body.v26-compact .journal-col textarea{height:70px;}
       <button class="lib-add-btn" style="background:#27ae60;" onclick="exportActivities()">&#x1F4BE; Export</button>
       <button class="lib-add-btn" style="background:#e74c3c;" onclick="clearAllActivities()">&#x1F5D1; Clear All</button>
       <button class="lib-add-btn" onclick="toggleAddActivity()">+ Add</button>
-    </div>
-  </div>
-
-  <!-- Sources collapsible panel -->
-  <div style="margin-bottom:10px;">
-    <button onclick="toggleActSources()" style="background:none;border:1px solid #e9ecef;border-radius:7px;padding:5px 12px;font-size:0.78rem;cursor:pointer;color:#667eea;font-weight:600;display:flex;align-items:center;gap:6px;">
-      <span id="actSourcesChev">&#x25B6;</span> Import Sources
-    </button>
-    <div id="actSourcesPanel" style="display:none;margin-top:8px;padding:10px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;">
-      <strong>&#x2139;&#xFE0F; How to import:</strong><br>
-      <strong>Garmin:</strong> garmin.com/modern/main/activities &rarr; Export CSV &nbsp;|&nbsp;
-      <strong>Stryd:</strong> Stryd app &rarr; Profile &rarr; Export Training Log (CSV)
     </div>
   </div>
 
