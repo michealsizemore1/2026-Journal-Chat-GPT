@@ -545,6 +545,8 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .tab-note-ta{width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:8px;padding:8px 10px;font-size:0.83rem;font-family:inherit;color:#374151;background:#fafafa;resize:vertical;min-height:52px;line-height:1.5;}
 .tab-note-ta:focus{outline:none;border-color:#667eea;background:#fff;}
 .tab-note-label{font-size:0.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#9ca3af;padding:10px 14px 2px;display:block;}
+#tabNotesBar.has-notes{border-color:#a9dfbf;background:#f4fff8;}
+#tabNotesBar.has-notes #tabNotesLabel,#tabNotesBar.has-notes #tabNotesStatus{color:#1f8f50;font-weight:800;}
 
 /* v26 calm workspace refresh */
 :root{--ink:#172033;--muted:#68738a;--line:#e6e9f0;--surface:#ffffff;--canvas:#f4f6fb;--brand:#5b5bd6;--brand2:#7c3aed;--focus:0 0 0 3px rgba(91,91,214,.22);color-scheme:light;}
@@ -670,7 +672,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div>
 <div id="tabNotesBar" class="compact-mini-bar">
   <div class="compact-mini-head" id="tabNotesToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="tabNotesBody" onclick="toggleTabNotes()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTabNotes();}">
-    <span id="tabNotesArrow">&#x25B6;</span><span>&#x1F4DD; Tab Notes</span><span id="tabNotesStatus">No notes</span>
+    <span id="tabNotesArrow">&#x25B6;</span><span id="tabNotesLabel">&#x1F4DD; Tab Notes</span><span id="tabNotesStatus">No notes</span>
   </div>
   <div class="compact-mini-body" id="tabNotesBody">
     <textarea id="tabNoteTA" rows="2" placeholder="Notes..." oninput="saveTabNote()" style="width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:8px;padding:8px 10px;font-size:0.83rem;font-family:inherit;color:#374151;background:#fff;resize:vertical;min-height:52px;line-height:1.5;display:block;"></textarea>
@@ -10251,8 +10253,10 @@ function loadTabNote(tab){
   updateTabNoteStatus();
 }
 function updateTabNoteStatus(){
-  var ta=document.getElementById('tabNoteTA'),status=document.getElementById('tabNotesStatus');
-  if(status)status.textContent=ta&&ta.value.trim()?'Notes saved':'No notes';
+  var ta=document.getElementById('tabNoteTA'),status=document.getElementById('tabNotesStatus'),bar=document.getElementById('tabNotesBar');
+  var hasNote=!!(ta&&ta.value.trim());
+  if(status)status.textContent=hasNote?'Notes saved':'No notes';
+  if(bar)bar.classList.toggle('has-notes',hasNote);
 }
 function loadAllTabNotes(){
   loadTabNote(_currentNoteTab);
