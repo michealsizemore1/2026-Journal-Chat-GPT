@@ -3270,6 +3270,56 @@ function renderBPChart(){
 }
 
 
+function openBPReport(){
+  var modal=document.getElementById('bpReportModal'),date=document.getElementById('bpReportDate');
+  if(!modal)return;if(date)date.value=dk(today);modal.style.display='flex';bpPeriodChange();
+}
+function closeBPReport(){var modal=document.getElementById('bpReportModal');if(modal)modal.style.display='none';}
+function bpPeriodChange(){
+  var period=(document.getElementById('bpReportPeriod')||{}).value||'weekly';
+  var single=document.getElementById('bpSingleDateRow'),range=document.getElementById('bpRangeRow');
+  if(single)single.style.display=period==='daily'?'block':'none';
+  if(range)range.style.display=period==='range'?'block':'none';
+  if(period==='range'){
+    var end=document.getElementById('bpRangeEnd'),start=document.getElementById('bpRangeStart');
+    if(end&&!end.value)end.value=dk(today);
+    if(start&&!start.value){var d=new Date(today);d.setDate(d.getDate()-29);start.value=dk(d);}
+  }
+  renderBPReport();
+}
+function bpReportBounds(){
+  var period=(document.getElementById('bpReportPeriod')||{}).value||'weekly',anchor=new Date(today);
+  if(period==='daily'){var dv=(document.getElementById('bpReportDate')||{}).value;if(dv)anchor=new Date(dv+'T12:00:00');return{start:new Date(anchor),end:new Date(anchor)};}
+  if(period==='range'){var sv=(document.getElementById('bpRangeStart')||{}).value,ev=(document.getElementById('bpRangeEnd')||{}).value;return{start:sv?new Date(sv+'T12:00:00'):new Date(anchor),end:ev?new Date(ev+'T12:00:00'):new Date(anchor)};}
+  var start=new Date(anchor),end=new Date(anchor);
+  if(period==='weekly'){start=wkStartOf(anchor);end=new Date(start);end.setDate(end.getDate()+6);}
+  else if(period==='monthly'){start=new Date(anchor.getFullYear(),anchor.getMonth(),1);end=new Date(anchor.getFullYear(),anchor.getMonth()+1,0);}
+  else if(period==='yearly'){start=new Date(anchor.getFullYear(),0,1);end=new Date(anchor.getFullYear(),11,31);}
+  return{start:start,end:end};
+}
+function renderBPReport(){
+  var out=document.getElementById('bpReportTable');if(!out)return;
+  var bounds=bpReportBounds();if(bounds.start>bounds.end){out.innerHTML='<div style="color:#b42318;font-size:.82rem;">The start date must be before the end date.</div>';return;}
+  var rows=[];
+  for(var d=new Date(bounds.start);d<=bounds.end;d.setDate(d.getDate()+1)){
+    var raw=localStorage.getItem('planner_'+dk(d));if(!raw)continue;
+    var data;try{data=JSON.parse(raw);}catch(e){continue;}
+    var bp=parseBP(data.wBPVal),pulse=parseFloat(data.wPulseVal)||0;if(bp.sys||pulse)rows.push({date:new Date(d),sys:bp.sys,dia:bp.dia,pulse:pulse});
+  }
+  var print=document.getElementById('bpPrintBtn');
+  if(!rows.length){out.innerHTML='<div style="background:#f8fafc;border:1px solid #e4e7ec;border-radius:8px;padding:12px;font-size:.82rem;color:#667085;">No blood-pressure or pulse readings were logged for this period.</div>';if(print)print.style.display='none';return;}
+  var bpRows=rows.filter(function(r){return r.sys&&r.dia;}),pulseRows=rows.filter(function(r){return r.pulse;});
+  var avg=function(arr,key){return arr.length?Math.round(arr.reduce(function(s,r){return s+r[key];},0)/arr.length):0;};
+  out.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><div class="review-stat"><strong>'+avg(bpRows,'sys')+'/'+avg(bpRows,'dia')+'</strong>Average BP</div><div class="review-stat"><strong>'+(avg(pulseRows,'pulse')||'—')+'</strong>Average Pulse</div><div class="review-stat"><strong>'+rows.length+'</strong>Readings</div></div><div style="overflow-x:auto;"><table class="summary-table" style="display:table;margin-bottom:0;"><thead><tr><th>Date</th><th>Systolic</th><th>Diastolic</th><th>Pulse</th></tr></thead><tbody>'+rows.map(function(r){return'<tr><td>'+r.date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</td><td>'+(r.sys||'—')+'</td><td>'+(r.dia||'—')+'</td><td>'+(r.pulse||'—')+'</td></tr>';}).join('')+'</tbody></table></div>';
+  if(print)print.style.display='block';
+}
+function printBPReport(){
+  var content=(document.getElementById('bpReportTable')||{}).innerHTML;if(!content)return;
+  var w=window.open('','_blank','width=800,height=700');if(!w){alert('Please allow pop-ups to print the report.');return;}
+  w.document.write('<!doctype html><html><head><title>Blood Pressure Report</title><style>body{font-family:Arial,sans-serif;padding:28px;color:#222}h1{font-size:20px}table{width:100%;border-collapse:collapse}th,td{padding:8px;border-bottom:1px solid #ddd;text-align:left}.review-stat{display:inline-block;margin:0 8px 12px 0;padding:8px 12px;background:#f3f4f6;border-radius:7px}.review-stat strong{display:block;font-size:18px}@media print{body{padding:0}}</style></head><body><h1>Blood Pressure and Pulse Report</h1>'+content+'</body></html>');
+  w.document.close();w.focus();setTimeout(function(){w.print();},250);
+}
+
 function renderWeightChart(){
   const wrap=document.getElementById('weightChartWrap');
   const canvas=document.getElementById('weightChart');
@@ -4340,13 +4390,11 @@ function scanFoodLabel(ev){
         if(m)try{parsed=JSON.parse(m[0]);}catch(e2){throw new Error('Could not parse AI response: '+txt.slice(0,100));}
         else throw new Error('No JSON found in response: '+txt.slice(0,100));
       }
-      var meal=prompt('Add "'+parsed.name+'" ('+parsed.cal+' cal) to which meal? (breakfast / lunch / dinner / snack / sports)','breakfast');
-      if(!meal||MEALS.indexOf(meal.toLowerCase())<0)meal='snack';
-      meal=meal.toLowerCase();
-      if(!window._foodLog)window._foodLog=[];
-      window._foodLog.push({id:'f'+Date.now(),meal:meal,name:parsed.name||'Scanned Food',cal:parsed.cal||null,prot:parsed.prot||null,fat:parsed.fat||null,carbs:parsed.carbs||null});
-      _setMealOpen(meal,true);
-      renderFoodItems();save();
+      window._pendingScanFood={name:parsed.name||'Scanned Food',cal:parsed.cal||null,prot:parsed.prot||null,fat:parsed.fat||null,carbs:parsed.carbs||null};
+      var nameEl=document.getElementById('scanResultName'),macroEl=document.getElementById('scanResultMacros'),modal=document.getElementById('scanConfirmModal');
+      if(nameEl)nameEl.textContent=window._pendingScanFood.name;
+      if(macroEl)macroEl.textContent=(window._pendingScanFood.cal||0)+' cal | '+(window._pendingScanFood.prot||0)+'g protein | '+(window._pendingScanFood.fat||0)+'g fat | '+(window._pendingScanFood.carbs||0)+'g carbs';
+      if(modal)modal.style.display='flex';
     }).catch(function(err){
       try{document.body.removeChild(status);}catch(e){}
       alert('Scan failed: '+err.message);
@@ -4357,6 +4405,17 @@ function scanFoodLabel(ev){
 }
 
 // ── Nutrition-to-Run AI ──────────────────────────────
+function confirmScanAdd(){
+  var food=window._pendingScanFood;if(!food){alert('No scanned food is waiting to be added.');return;}
+  var meal=(document.getElementById('scanMealTarget')||{}).value||'snack';
+  if(MEALS.indexOf(meal)<0)meal='snack';
+  if(!window._foodLog)window._foodLog=[];
+  window._foodLog.push({id:'f'+Date.now(),meal:meal,name:food.name,cal:food.cal,prot:food.prot,fat:food.fat,carbs:food.carbs});
+  _setMealOpen(meal,true);renderFoodItems();save();
+  var modal=document.getElementById('scanConfirmModal');if(modal)modal.style.display='none';
+  window._pendingScanFood=null;
+  if(typeof v26Toast==='function')v26Toast('Scanned food added');
+}
 function openFuelAIModal(){
   var key=localStorage.getItem('ai_key');
   if(!key){alert('Set your AI key in Settings first.');return;}
