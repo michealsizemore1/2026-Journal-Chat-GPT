@@ -217,6 +217,24 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .activity-period-details strong{color:#344054;font-size:.74rem;white-space:nowrap;}
 .activity-period-details .tile-cp-input{width:58px;border:1px solid #a9dfbf;border-radius:5px;padding:2px 4px;text-align:right;font-size:.74rem;font-weight:700;color:#344054;background:rgba(255,255,255,.78);outline:none;}
 .activity-period-details .tile-cp-input:focus{border-color:#27ae60;box-shadow:0 0 0 2px rgba(39,174,96,.14);}
+.check-overview{margin:10px 16px 4px;border:1px solid #c7d2fe;border-radius:11px;background:#f8faff;overflow:hidden;}
+.check-overview-head{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;color:#3730a3;font-weight:700;font-size:.88rem;}
+.check-overview-head:focus-visible{outline:3px solid rgba(79,70,229,.25);outline-offset:-3px;}
+.check-overview-summary{margin-left:auto;font-size:.76rem;font-weight:600;color:#6366f1;text-align:right;}
+.check-overview-body{display:none;border-top:1px solid #dfe4ff;padding:10px 12px 12px;}
+.check-overview-filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
+.check-overview-filters button{border:1px solid #c7d2fe;background:#fff;color:#4f46e5;border-radius:14px;padding:4px 10px;font-size:.72rem;font-weight:700;cursor:pointer;}
+.check-overview-filters button.active{background:#4f46e5;color:#fff;border-color:#4f46e5;}
+.check-overview-group{margin-top:9px;}
+.check-overview-group-title{font-size:.7rem;font-weight:800;color:#667085;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.check-overview-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:5px;}
+.check-overview-item{display:flex;align-items:center;gap:7px;width:100%;text-align:left;border:1px solid #e4e7ec;background:#fff;border-radius:7px;padding:6px 8px;color:#344054;font-size:.76rem;cursor:pointer;min-width:0;}
+.check-overview-item:hover{border-color:#a5b4fc;background:#f5f7ff;}
+.check-overview-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:#d0d5dd;}
+.check-overview-item.done .check-overview-dot{background:#27ae60;}
+.check-overview-item.other .check-overview-dot{background:#8e44ad;}
+.check-overview-item.todo .check-overview-dot{background:#d0d5dd;border:1px solid #98a2b3;box-sizing:border-box;}
+.check-overview-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .act-filter-shell{border:1px solid #e4e7ec;border-radius:10px;background:#fafbfc;margin-bottom:12px;overflow:hidden;}
 .act-filter-summary{list-style:none;cursor:pointer;padding:9px 12px;font-size:.8rem;font-weight:700;color:#475467;display:flex;align-items:center;justify-content:space-between;}
 .act-filter-summary::-webkit-details-marker{display:none;}
@@ -693,6 +711,22 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div>
 <div id="tab-daily" class="tab-panel active">
 <div id="todayGlance" style="display:flex;gap:18px;flex-wrap:wrap;padding:8px 16px;background:#f0f4ff;border-bottom:1px solid #dfe4f5;font-size:0.85rem;font-weight:600;color:#4338ca;"></div>
+<div class="check-overview">
+  <div class="check-overview-head" id="dailyCheckOverviewToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="dailyCheckOverviewBody" onclick="toggleDailyCheckOverview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDailyCheckOverview();}">
+    <span id="dailyCheckOverviewArrow">&#x25B6;</span>
+    <span>&#x2705; Daily Check-In Overview</span>
+    <span class="check-overview-summary" id="dailyCheckOverviewSummary">Loading status...</span>
+  </div>
+  <div class="check-overview-body" id="dailyCheckOverviewBody">
+    <div class="check-overview-filters" id="dailyCheckOverviewFilters">
+      <button class="active" data-filter="all" onclick="setDailyCheckFilter('all',this)">Show All</button>
+      <button data-filter="todo" onclick="setDailyCheckFilter('todo',this)">To Do Only</button>
+      <button data-filter="done" onclick="setDailyCheckFilter('done',this)">Completed Only</button>
+      <button data-filter="other" onclick="setDailyCheckFilter('other',this)">Other Status</button>
+    </div>
+    <div id="dailyCheckOverviewList"></div>
+  </div>
+</div>
 <div class="tab-toolbar">
   <div style="display:flex;gap:6px;flex-wrap:wrap;">
     <button class="copy-btn" id="copyDayBtn" onclick="copyDay()">&#x1F4CB; Copy Day</button>
@@ -709,11 +743,11 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div>
 <div style="padding:12px 16px 0;">
   <label class="section-title" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-    <input type="checkbox" id="reviewCheck" onchange="save()" style="width:16px;height:16px;cursor:pointer;accent-color:#667eea;flex-shrink:0;">
+    <input type="checkbox" id="reviewCheck" onchange="save();renderDailyCheckOverview()" style="width:16px;height:16px;cursor:pointer;accent-color:#667eea;flex-shrink:0;">
     &#x1F50D; Review Tasks, Goals &amp; Calendar
   </label>
   <label class="section-title" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-    <input type="checkbox" id="prepJournalCheck" onchange="save()" style="width:16px;height:16px;cursor:pointer;accent-color:#667eea;flex-shrink:0;">
+    <input type="checkbox" id="prepJournalCheck" onchange="save();renderDailyCheckOverview()" style="width:16px;height:16px;cursor:pointer;accent-color:#667eea;flex-shrink:0;">
     &#x1F4D6; Go Through Journal to Prepare for Tomorrow
   </label>
 </div>
@@ -2308,6 +2342,7 @@ function triClick(el){
     applyTriState(el,next);
   }
   save();
+  renderDailyCheckOverview();
   const wt=document.getElementById('tab-weekly');
   if(wt&&wt.classList.contains('active'))try{renderWeekly();}catch(e){}
 }
@@ -2327,6 +2362,110 @@ function updateTodayGlance(){
     return chk&&chk.dataset.state==='green';
   }).length;
   el.innerHTML='<span>&#x2705; '+doneCount+'/3 Priorities</span><span>&#x2B50; Day Score '+scoreVal+'/5</span>';
+  renderDailyCheckOverview();
+}
+
+var dailyCheckFilter='all';
+var DAILY_CHECK_TAB_NAMES={
+  daily:'Daily',activities:'Activities',bible:'Bible',meditate:'Meditation',
+  wellness:'Wellness',nutrition:'Nutrition',library:'Library',
+  'skill-log':'Skill Building',thinking:'Thinking',habits:'Habits'
+};
+function dailyCheckLabel(el){
+  if(el.id==='reviewCheck')return'Review Tasks, Goals & Calendar';
+  if(el.id==='prepJournalCheck')return'Prepare Journal for Tomorrow';
+  var row=el.closest('.priority-item,.task-row,.goal-row');
+  if(row){
+    var input=row.querySelector('input[type="text"],textarea');
+    if(input&&input.value.trim())return input.value.trim();
+    if(input&&input.placeholder)return input.placeholder.replace(/\.\.\.$/,'').trim();
+    var label=row.querySelector('label');
+    if(label){
+      var clone=label.cloneNode(true);
+      clone.querySelectorAll('span').forEach(function(s){s.remove();});
+      var text=clone.textContent.replace(/\s+/g,' ').replace(/:$/,'').trim();
+      if(text)return text;
+    }
+  }
+  if(el.title){
+    var title=el.title.replace(/^Mark\s+/i,'').replace(/\s+complete$/i,'').trim();
+    if(title)return title;
+  }
+  return (el.dataset.key||el.id||'Check-in').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_-]+/g,' ');
+}
+function collectDailyChecks(){
+  var seen={},items=[];
+  document.querySelectorAll('.tri-check[data-key]').forEach(function(el){
+    var key=el.dataset.key;if(!key||seen[key])return;seen[key]=true;
+    var panel=el.closest('.tab-panel');
+    var tab=panel&&panel.id?panel.id.replace(/^tab-/,''):'daily';
+    var state=el.dataset.state||'';
+    items.push({key:key,id:'',tab:tab,group:DAILY_CHECK_TAB_NAMES[tab]||tab,status:state==='green'?'done':state?'other':'todo',label:dailyCheckLabel(el)});
+  });
+  ['reviewCheck','prepJournalCheck'].forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    items.push({key:'',id:id,tab:'daily',group:'Daily',status:el.checked?'done':'todo',label:dailyCheckLabel(el)});
+  });
+  return items;
+}
+function renderDailyCheckOverview(){
+  var summary=document.getElementById('dailyCheckOverviewSummary');
+  var list=document.getElementById('dailyCheckOverviewList');
+  if(!summary||!list)return;
+  var items=collectDailyChecks();
+  var done=items.filter(function(i){return i.status==='done';}).length;
+  var todo=items.filter(function(i){return i.status==='todo';}).length;
+  var other=items.length-done-todo;
+  summary.textContent=done+' completed • '+todo+' remaining'+(other?' • '+other+' other':'');
+  var filtered=dailyCheckFilter==='all'?items:items.filter(function(i){return i.status===dailyCheckFilter;});
+  if(!filtered.length){
+    list.innerHTML='<div style="font-size:.78rem;color:#98a2b3;text-align:center;padding:10px;">No items in this view.</div>';
+    return;
+  }
+  var groups={};
+  filtered.forEach(function(item){if(!groups[item.group])groups[item.group]=[];groups[item.group].push(item);});
+  var order=Object.keys(DAILY_CHECK_TAB_NAMES).map(function(k){return DAILY_CHECK_TAB_NAMES[k];});
+  list.innerHTML=Object.keys(groups).sort(function(a,b){
+    var ai=order.indexOf(a),bi=order.indexOf(b);
+    return (ai<0?999:ai)-(bi<0?999:bi)||a.localeCompare(b);
+  }).map(function(group){
+    var rows=groups[group].map(function(item){
+      return '<button class="check-overview-item '+item.status+'" data-key="'+escHtml(item.key)+'" data-id="'+escHtml(item.id)+'" data-tab="'+escHtml(item.tab)+'" onclick="jumpToDailyCheck(this)" title="Open '+escHtml(group)+'">'
+        +'<span class="check-overview-dot"></span><span>'+escHtml(item.label)+'</span></button>';
+    }).join('');
+    return '<div class="check-overview-group"><div class="check-overview-group-title">'+escHtml(group)+'</div><div class="check-overview-items">'+rows+'</div></div>';
+  }).join('');
+}
+function toggleDailyCheckOverview(){
+  var body=document.getElementById('dailyCheckOverviewBody');
+  var arrow=document.getElementById('dailyCheckOverviewArrow');
+  var toggle=document.getElementById('dailyCheckOverviewToggle');
+  if(!body)return;
+  var opening=body.style.display==='none'||!body.style.display;
+  body.style.display=opening?'block':'none';
+  if(arrow)arrow.innerHTML=opening?'&#x25BC;':'&#x25B6;';
+  if(toggle)toggle.setAttribute('aria-expanded',opening?'true':'false');
+  if(opening)renderDailyCheckOverview();
+}
+function setDailyCheckFilter(filter,btn){
+  dailyCheckFilter=filter;
+  document.querySelectorAll('#dailyCheckOverviewFilters button').forEach(function(b){b.classList.toggle('active',b===btn);});
+  renderDailyCheckOverview();
+}
+function jumpToDailyCheck(btn){
+  var tab=btn.dataset.tab||'daily';
+  switchTab(tab,null);
+  var target=btn.dataset.id?document.getElementById(btn.dataset.id):document.querySelector('.tri-check[data-key="'+btn.dataset.key+'"]');
+  if(!target)return;
+  var panel=target.closest('.tab-panel'),parent=target.parentElement;
+  while(parent&&parent!==panel){
+    if(parent.style&&parent.style.display==='none')parent.style.display='block';
+    parent=parent.parentElement;
+  }
+  setTimeout(function(){
+    target.scrollIntoView({behavior:'smooth',block:'center'});
+    target.focus({preventScroll:true});
+  },80);
 }
 
 function updateWaterDisplay(){const cups=(waterOz/8).toFixed(1);const el=document.getElementById('waterDisplay');if(el)el.textContent=waterOz+' oz ('+cups+' cups)';}
@@ -7934,7 +8073,7 @@ function switchTab(tab,e){
   document.getElementById('tab-'+tab).classList.add('active');
   if(e)e.target.classList.add('active');
   const isDaily=tab==='daily';
-  if(isDaily)load();
+  if(isDaily){load();renderDailyCheckOverview();}
   document.getElementById('streakBar').style.display=isDaily?'flex':'none';
   document.getElementById('aiToolbar').style.display=isDaily?'block':'none';
   if(tab==='weekly')renderWeekly();if(tab==='monthly')renderMonthly();
