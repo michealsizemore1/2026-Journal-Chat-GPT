@@ -212,6 +212,9 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .act-title-block{display:flex;flex-direction:column;gap:3px;}
 .act-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;}
 .act-header-actions .lib-add-btn,.act-header-actions button{padding:6px 10px!important;font-size:.76rem!important;border-radius:7px!important;line-height:1.2;min-height:30px;}
+.activity-period-details{border-top:1px solid rgba(71,84,103,.14);margin-top:8px;padding-top:7px;display:grid;gap:4px;}
+.activity-period-details div{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;color:#667085;}
+.activity-period-details strong{color:#344054;font-size:.74rem;white-space:nowrap;}
 .act-filter-shell{border:1px solid #e4e7ec;border-radius:10px;background:#fafbfc;margin-bottom:12px;overflow:hidden;}
 .act-filter-summary{list-style:none;cursor:pointer;padding:9px 12px;font-size:.8rem;font-weight:700;color:#475467;display:flex;align-items:center;justify-content:space-between;}
 .act-filter-summary::-webkit-details-marker{display:none;}
@@ -1116,7 +1119,6 @@ body.v26-compact .journal-col textarea{height:70px;}
 
 <div id="tab-activities" class="tab-panel"><div class="panel">
   <div id="activityChartsHome"></div>
-  <div id="activityChartsGrid" class="dash-grid" style="padding:0 0 16px;"></div>
   <!-- Daily Physical Exercises -->
   <div class="section" style="border:1px solid #f0f0f0;border-radius:10px;margin-bottom:12px;">
     <div class="section-title green">&#x1F3C3; Daily Physical Exercises</div>
@@ -1134,21 +1136,41 @@ body.v26-compact .journal-col textarea{height:70px;}
       <div style="font-size:0.72rem;font-weight:700;color:#1e8449;text-transform:uppercase;letter-spacing:.04em;">This Week</div>
       <div id="mileThisWeek" style="font-size:1.3rem;font-weight:700;color:#1a5276;">—</div>
       <div style="font-size:0.7rem;color:#888;">miles</div>
+      <div class="activity-period-details">
+        <div><span>Avg pace</span><strong id="paceThisWeek">—</strong></div>
+        <div><span>Avg power</span><strong id="wattsThisWeek">—</strong></div>
+        <div><span>Exercise time</span><strong id="timeThisWeek">—</strong></div>
+      </div>
     </div>
     <div style="flex:1;min-width:120px;background:linear-gradient(135deg,#eaf3fb,#d6eaf8);border:1px solid #a9cce3;border-radius:10px;padding:10px 12px;text-align:center;">
       <div style="font-size:0.72rem;font-weight:700;color:#1a5276;text-transform:uppercase;letter-spacing:.04em;">Last Week</div>
       <div id="mileLastWeek" style="font-size:1.3rem;font-weight:700;color:#1a5276;">—</div>
       <div style="font-size:0.7rem;color:#888;">miles</div>
+      <div class="activity-period-details">
+        <div><span>Avg pace</span><strong id="paceLastWeek">—</strong></div>
+        <div><span>Avg power</span><strong id="wattsLastWeek">—</strong></div>
+        <div><span>Exercise time</span><strong id="timeLastWeek">—</strong></div>
+      </div>
     </div>
     <div style="flex:1;min-width:120px;background:linear-gradient(135deg,#fef9e7,#fdebd0);border:1px solid #f0c080;border-radius:10px;padding:10px 12px;text-align:center;">
       <div style="font-size:0.72rem;font-weight:700;color:#d35400;text-transform:uppercase;letter-spacing:.04em;">Month to Date</div>
       <div id="mileMTD" style="font-size:1.3rem;font-weight:700;color:#1a5276;">—</div>
       <div style="font-size:0.7rem;color:#888;">miles</div>
+      <div class="activity-period-details">
+        <div><span>Avg pace</span><strong id="paceMTD">—</strong></div>
+        <div><span>Avg power</span><strong id="wattsMTD">—</strong></div>
+        <div><span>Exercise time</span><strong id="timeMTD">—</strong></div>
+      </div>
     </div>
     <div style="flex:1;min-width:120px;background:linear-gradient(135deg,#f5eef8,#e8daef);border:1px solid #c39bd3;border-radius:10px;padding:10px 12px;text-align:center;">
       <div style="font-size:0.72rem;font-weight:700;color:#6c3483;text-transform:uppercase;letter-spacing:.04em;">Year to Date</div>
       <div id="mileYTD" style="font-size:1.3rem;font-weight:700;color:#1a5276;">—</div>
       <div style="font-size:0.7rem;color:#888;">miles</div>
+      <div class="activity-period-details">
+        <div><span>Avg pace</span><strong id="paceYTD">—</strong></div>
+        <div><span>Avg power</span><strong id="wattsYTD">—</strong></div>
+        <div><span>Exercise time</span><strong id="timeYTD">—</strong></div>
+      </div>
     </div>
   </div>
   <!-- Shoe Tracker -->
@@ -1204,6 +1226,43 @@ body.v26-compact .journal-col textarea{height:70px;}
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
         <button onclick="closeShoeModal()" style="background:#f0f0f0;color:#555;border:none;padding:8px 16px;border-radius:7px;cursor:pointer;font-size:0.88rem;">Cancel</button>
         <button onclick="saveShoe()" style="background:#e67e22;color:#fff;border:none;padding:8px 18px;border-radius:7px;cursor:pointer;font-size:0.88rem;font-weight:700;">Save Shoe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text training plan upload: intentionally placed after the complete Shoe Tracker component -->
+  <div class="act-section-toggle" onclick="toggleTrainingPlan()" style="margin-top:4px;margin-bottom:8px;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTrainingPlan();}">
+    <span id="tpArrow">&#x25B6;</span> &#x1F4C2; Upload Plan from Text File
+  </div>
+  <div id="tpSection" style="display:none;">
+    <div class="tp-panel">
+      <div style="margin-top:10px;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+        <div style="font-size:0.78rem;font-weight:700;color:#166534;margin-bottom:4px;">Plan details</div>
+        <div style="font-size:0.72rem;color:#4b7c5e;margin-bottom:8px;">&#x26A0;&#xFE0F; Note: If your plan was generated from a Garmin CSV export, paste the plan into a .txt file before uploading here.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+          <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;">
+            <label style="font-size:0.72rem;font-weight:600;color:#166534;">Plan Start Date</label>
+            <input type="date" id="tpUploadStartDate" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;outline:none;background:white;">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;">
+            <label style="font-size:0.72rem;font-weight:600;color:#166534;">Race Date</label>
+            <input type="date" id="tpUploadRaceDate" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;outline:none;background:white;">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:100px;">
+            <label style="font-size:0.72rem;font-weight:600;color:#166534;">Race Distance</label>
+            <select id="tpUploadDist" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;background:white;">
+              <option value="5K">5K</option>
+              <option value="10K">10K</option>
+              <option value="Half Marathon">Half Marathon</option>
+              <option value="Marathon" selected>Marathon</option>
+            </select>
+          </div>
+        </div>
+        <label style="display:inline-block;background:#166534;color:#fff;padding:7px 16px;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;">
+          &#x1F4C4; Choose .txt File
+          <input type="file" accept=".txt" style="display:none;" onchange="uploadPlanFromFile(event)">
+        </label>
+        <span id="tpUploadStatus" style="margin-left:10px;font-size:0.75rem;color:#166534;"></span>
       </div>
     </div>
   </div>
@@ -1271,44 +1330,6 @@ body.v26-compact .journal-col textarea{height:70px;}
   </div>
 
   <!-- CP / Power Zones setting -->
-
-  <!-- Text training plan upload -->
-  <div class="act-section-toggle" onclick="toggleTrainingPlan()" style="margin-top:4px;margin-bottom:8px;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTrainingPlan();}">
-    <span id="tpArrow">&#x25B6;</span> &#x1F4C2; Upload Plan from Text File
-  </div>
-  <div id="tpSection" style="display:none;">
-    <div class="tp-panel">
-        <!-- Upload plan from text file -->
-        <div style="margin-top:10px;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
-          <div style="font-size:0.78rem;font-weight:700;color:#166534;margin-bottom:4px;">Plan details</div>
-          <div style="font-size:0.72rem;color:#4b7c5e;margin-bottom:8px;">&#x26A0;&#xFE0F; Note: If your plan was generated from a Garmin CSV export, paste the plan into a .txt file before uploading here.</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-            <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;">
-              <label style="font-size:0.72rem;font-weight:600;color:#166534;">Plan Start Date</label>
-              <input type="date" id="tpUploadStartDate" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;outline:none;background:white;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;">
-              <label style="font-size:0.72rem;font-weight:600;color:#166534;">Race Date</label>
-              <input type="date" id="tpUploadRaceDate" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;outline:none;background:white;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:100px;">
-              <label style="font-size:0.72rem;font-weight:600;color:#166534;">Race Distance</label>
-              <select id="tpUploadDist" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;background:white;">
-                <option value="5K">5K</option>
-                <option value="10K">10K</option>
-                <option value="Half Marathon">Half Marathon</option>
-                <option value="Marathon" selected>Marathon</option>
-              </select>
-            </div>
-          </div>
-          <label style="display:inline-block;background:#166534;color:#fff;padding:7px 16px;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;">
-            &#x1F4C4; Choose .txt File
-            <input type="file" accept=".txt" style="display:none;" onchange="uploadPlanFromFile(event)">
-          </label>
-          <span id="tpUploadStatus" style="margin-left:10px;font-size:0.75rem;color:#166534;"></span>
-        </div>
-    </div>
-  </div>
 
   <div class="cp-row">
     <span>⚡ Critical Power:</span>
@@ -3225,11 +3246,6 @@ function relocateDashboardCharts(){
   if(activities&&miles)activities.appendChild(miles);
 }
 function renderActivitySectionCharts(){
-  renderSectionCharts('activityChartsGrid',[
-    {k:'pace',l:'Average Running Pace',tooltipLabel:'Average pace',axisLabel:'Minutes per mile',c:'#e67e22',reverse:true,help:'Lower is faster. Each point is the average pace from that day’s logged runs.',format:function(v){return fmtPace(v)+'/mi';}},
-    {k:'watts',l:'Average Running Power',tooltipLabel:'Average power',axisLabel:'Watts (W)',c:'#8e44ad',help:'Higher watts mean greater running power output. Each point averages that day’s recorded runs.',format:function(v){return Math.round(v)+' W';}},
-    {k:'time',l:'Total Exercise Time',tooltipLabel:'Exercise time',axisLabel:'Minutes',c:'#16a085',help:'Total duration of all activities logged on each day.',format:function(v){return fmtMins(v);}}
-  ]);
   renderMilesChart();
 }
 function renderNutritionSectionCharts(){renderSectionCharts('nutritionChartsGrid',[{k:'calories',l:'Calories',c:'#f39c12'},{k:'water',l:'Water',c:'#3498db'}]);}
@@ -9080,14 +9096,27 @@ function renderMileageSummary(){
   const mtdStart=new Date(now.getFullYear(),now.getMonth(),1);
   const ytdStart=new Date(now.getFullYear(),0,1);
   let thisWeek=0,lastWeek=0,mtd=0,ytd=0;
+  const periodStats={
+    ThisWeek:{pace:0,paceN:0,watts:0,wattsN:0,time:0},
+    LastWeek:{pace:0,paceN:0,watts:0,wattsN:0,time:0},
+    MTD:{pace:0,paceN:0,watts:0,wattsN:0,time:0},
+    YTD:{pace:0,paceN:0,watts:0,wattsN:0,time:0}
+  };
+  function addActivityStats(bucket,a){
+    const pace=a.pace?parsePace(a.pace):0;
+    const watts=parseFloat(a.power)||0;
+    if(pace){bucket.pace+=pace;bucket.paceN++;}
+    if(watts){bucket.watts+=watts;bucket.wattsN++;}
+    bucket.time+=parseMins(a.duration);
+  }
   acts.forEach(a=>{
     const m=parseFloat(a.distance)||0;
-    if(!m||!a.date)return;
+    if(!a.date)return;
     const d=new Date(a.date+'T00:00:00');
-    if(d>=thisMonStart)thisWeek+=m;
-    if(d>=lastMonStart&&d<thisMonStart)lastWeek+=m;
-    if(d>=mtdStart)mtd+=m;
-    if(d>=ytdStart)ytd+=m;
+    if(d>=thisMonStart){thisWeek+=m;addActivityStats(periodStats.ThisWeek,a);}
+    if(d>=lastMonStart&&d<thisMonStart){lastWeek+=m;addActivityStats(periodStats.LastWeek,a);}
+    if(d>=mtdStart){mtd+=m;addActivityStats(periodStats.MTD,a);}
+    if(d>=ytdStart){ytd+=m;addActivityStats(periodStats.YTD,a);}
   });
   // Also pull from daily journal exMiles (in case not logged as activity)
   for(let i=0;i<localStorage.length;i++){
@@ -9109,6 +9138,15 @@ function renderMileageSummary(){
   const fmt=v=>v>0?v.toFixed(1):'0.0';
   const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=fmt(v);};
   set('mileThisWeek',thisWeek);set('mileLastWeek',lastWeek);set('mileMTD',mtd);set('mileYTD',ytd);
+  Object.keys(periodStats).forEach(function(suffix){
+    const stat=periodStats[suffix];
+    const paceEl=document.getElementById('pace'+suffix);
+    const wattsEl=document.getElementById('watts'+suffix);
+    const timeEl=document.getElementById('time'+suffix);
+    if(paceEl)paceEl.textContent=stat.paceN?fmtPace(stat.pace/stat.paceN)+'/mi':'—';
+    if(wattsEl)wattsEl.textContent=stat.wattsN?Math.round(stat.watts/stat.wattsN)+' W':'—';
+    if(timeEl)timeEl.textContent=stat.time?fmtMins(stat.time):'—';
+  });
 }
 
 
