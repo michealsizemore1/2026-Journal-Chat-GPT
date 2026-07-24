@@ -592,7 +592,17 @@ body.v26-compact .section,body.v26-compact .journaling-section{padding-top:10px;
 body.v26-compact .task-row,body.v26-compact .priority-item{margin-bottom:2px;min-height:28px;}
 body.v26-compact .journal-col textarea{height:70px;}
 .v26-quiet-btn[aria-pressed="true"]{background:#ededff;color:var(--brand);border-color:#b8b8ef;box-shadow:inset 0 0 0 1px rgba(91,91,214,.08);}
-@media(max-width:700px){body{padding:0;background:#fff}.container{border:0;border-radius:0;box-shadow:none}.header{padding:12px}.v26-toolbar{padding:8px 10px}.v26-toolbar .v26-label{display:none}.v26-quiet-btn{padding:7px 9px}.tabs-wrapper{top:0}}
+@media(max-width:700px){
+  body{padding:0;background:#fff}.container{border:0;border-radius:0;box-shadow:none}.header{padding:12px}
+  .v26-toolbar{padding:8px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .v26-toolbar .v26-label{display:none}
+  .v26-toolbar .v26-spacer{display:block;flex:0 0 100%;height:0}
+  .v26-toolbar .v26-save{font-size:.76rem;min-width:0}
+  .v26-toolbar #journalCloudSyncBtn{margin-right:auto}
+  .v26-toolbar .v26-spacer + .v26-quiet-btn{margin-left:auto}
+  .v26-quiet-btn{padding:7px 9px}
+  .tabs-wrapper{top:0}
+}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
 .journal-home{margin:10px 16px;border:1px solid #d8def0;border-radius:12px;background:#fff;overflow:hidden;}
 .journal-home summary{list-style:none;display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;font-size:.86rem;font-weight:800;color:#344054;background:#f8f9fc;}
