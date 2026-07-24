@@ -1255,12 +1255,6 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div class="sb-item"><div class="sb-val" id="sbCount">—</div><div class="sb-lbl">Activities</div></div>
   </div>
 
-  <!-- Personal Records -->
-  <div id="actPRSection" style="display:none;">
-    <div class="act-section-toggle" onclick="togglePRs()"><span id="prArrow">▶</span> Personal Records</div>
-    <div id="actPRGrid" class="act-pr-grid" style="display:none;"></div>
-  </div>
-
   <!-- CP / Power Zones setting -->
 
   <!-- Text training plan upload -->
@@ -5604,7 +5598,7 @@ function renderRunMetrics(){
   var acts=getActivities();
   var runTypes=['run','running','trail run','trail running','treadmill','treadmill running','track running','road running','virtual run'];
   var runs=acts.filter(function(a){var t=(a.type||'').toLowerCase();return runTypes.some(function(r){return t===r||t.includes('run');});});
-  if(!runs.length){panel.innerHTML='<div style="color:#aaa;text-align:center;">No runs recorded yet.</div>';return;}
+  if(!acts.length){panel.innerHTML='<div style="color:#aaa;text-align:center;">No activities recorded yet.</div>';return;}
   // Parse duration string "h:mm:ss" or "m:ss" to seconds
   function durSecs(d){
     if(!d)return 0;
@@ -5617,6 +5611,9 @@ function renderRunMetrics(){
   function fmtSecs(s){var h=Math.floor(s/3600);var m=Math.floor((s%3600)/60);return h?h+'h '+(m?m+'m':''):m+'m';}
   function fmtDate(dt){return dt?new Date(dt+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'';}
   function fmtDateShort(dt){return dt?new Date(dt+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):''}
+  function maxActivity(key){return acts.reduce(function(best,a){var value=parseFloat(a[key])||0;return value&&(!best||value>(parseFloat(best[key])||0))?a:best;},null);}
+  var peakPowerAct=maxActivity('power'),mostElevAct=maxActivity('elevGain'),mostCalAct=maxActivity('calories');
+  function recordSub(a){return a?((a.title?escHtml(a.title)+' &bull; ':'')+fmtDateShort(a.date)):'';}
 
   var totalMiles=0,totalDurSec=0,longRun=0,longRunTitle='',longDate='',bestPaceSec=0,bestPaceTitle='',bestPaceDate='',paceSum=0,paceCount=0;
   var runs10=[],totalElev=0,thisYearMiles=0,thisMonthMiles=0,hrSum=0,hrCount=0;
@@ -5682,6 +5679,9 @@ function renderRunMetrics(){
     +metBox('&#x23F3;','Total Time',totalDurSec?fmtSecs(totalDurSec):'-','all runs')
     +metBox('&#x1F4C5;','This Month',thisMonthMiles.toFixed(1)+' mi','')
     +metBox('&#x1F4C6;','This Year',thisYearMiles.toFixed(1)+' mi','')
+    +(peakPowerAct?metBox('&#x26A1;','Peak Average Watt',Math.round(parseFloat(peakPowerAct.power))+' W',recordSub(peakPowerAct)):'')
+    +(mostElevAct?metBox('&#x26F0;','Most Elevation Gain',Math.round(parseFloat(mostElevAct.elevGain)).toLocaleString()+' ft',recordSub(mostElevAct)):'')
+    +(mostCalAct?metBox('&#x1F525;','Most Calories Burned',Math.round(parseFloat(mostCalAct.calories)).toLocaleString()+' cal',recordSub(mostCalAct)):'')
     +(avgHR?metBox('&#x2764;','Avg Heart Rate',avgHR+' bpm',hrCount+' run'+(hrCount!==1?'s':'')+' averaged'):'')
     +(totalElev>0?metBox('&#x26F0;','Total Elevation',Math.round(totalElev).toLocaleString()+' ft','all runs'):'')
     +'</div>'
@@ -9060,7 +9060,7 @@ function renderActivities(){
     return(b.date||'').localeCompare(a.date||'');
   });
 
-  calcStatsBar(filtered);calcPRs(acts);calcStreakAndLoad(acts);
+  calcStatsBar(filtered);calcStreakAndLoad(acts);
 
   // Source breakdown
   var gCnt=0,sCnt=0,mCnt=0;
