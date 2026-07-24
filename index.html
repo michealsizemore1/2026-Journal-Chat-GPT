@@ -594,6 +594,35 @@ body.v26-compact .journal-col textarea{height:70px;}
 .v26-quiet-btn[aria-pressed="true"]{background:#ededff;color:var(--brand);border-color:#b8b8ef;box-shadow:inset 0 0 0 1px rgba(91,91,214,.08);}
 @media(max-width:700px){body{padding:0;background:#fff}.container{border:0;border-radius:0;box-shadow:none}.header{padding:12px}.v26-toolbar{padding:8px 10px}.v26-toolbar .v26-label{display:none}.v26-quiet-btn{padding:7px 9px}.tabs-wrapper{top:0}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+.journal-home{margin:10px 16px;border:1px solid #d8def0;border-radius:12px;background:#fff;overflow:hidden;}
+.journal-home summary{list-style:none;display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;font-size:.86rem;font-weight:800;color:#344054;background:#f8f9fc;}
+.journal-home summary::-webkit-details-marker{display:none;}
+.journal-home summary:after{content:'›';margin-left:auto;font-size:1.1rem;color:#98a2b3;transform:rotate(90deg);}
+.journal-home:not([open]) summary:after{transform:rotate(0);}
+.journal-home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px;}
+.journal-home-card{border:1px solid #e4e7ec;border-radius:9px;padding:9px 10px;background:#fff;min-height:68px;}
+.journal-home-card h3{margin:0 0 5px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#667085;}
+.journal-home-card .home-value{font-size:.86rem;color:#344054;line-height:1.4;}
+.journal-home-card .home-value strong{font-size:1rem;color:#172033;}
+.nav-has-note:after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#22a06b;margin-left:6px;box-shadow:0 0 0 2px rgba(34,160,107,.13);}
+.journal-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:10px 0 14px;}
+.journal-settings-group{border:1px solid #e4e7ec;border-radius:9px;padding:10px;background:#fafbfc;}
+.journal-settings-group h3{margin:0 0 7px;font-size:.76rem;color:#475467;text-transform:uppercase;letter-spacing:.04em;}
+.journal-setting-row{display:flex;align-items:center;gap:7px;margin:6px 0;font-size:.8rem;color:#475467;}
+.journal-setting-row input[type="checkbox"]{accent-color:#5b5bd6;}
+.storage-health{font-size:.76rem;line-height:1.45;color:#667085;background:#f8fafc;border-radius:7px;padding:8px;margin-top:8px;}
+.journal-float-top{position:fixed;right:18px;bottom:18px;z-index:1200;border:1px solid #d0d5dd;background:#fff;color:#475467;border-radius:999px;padding:8px 11px;box-shadow:0 4px 16px rgba(16,24,40,.14);cursor:pointer;display:none;}
+.journal-mobile-dock{display:none;}
+.section,.panel,.review-section,.journaling-section{scroll-margin-top:70px;}
+@media(max-width:800px){.journal-home-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-settings-grid{grid-template-columns:1fr;}}
+@media(max-width:700px){
+  body{padding-bottom:64px;}
+  .journal-mobile-dock{position:fixed;display:grid;grid-template-columns:repeat(4,1fr);left:0;right:0;bottom:0;z-index:2500;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e4e7ec;box-shadow:0 -4px 18px rgba(16,24,40,.08);}
+  .journal-mobile-dock button{border:0;background:none;color:#475467;padding:8px 3px 7px;font-size:.68rem;font-weight:700;min-height:49px;}
+  .journal-mobile-dock button span{display:block;font-size:1rem;line-height:1.1;margin-bottom:2px;}
+  .journal-float-top{display:none!important;}
+}
+@media(max-width:430px){.journal-home-grid{grid-template-columns:1fr;}.journal-home{margin-left:10px;margin-right:10px;}}
 </style>
 </head>
 <body>
@@ -649,7 +678,7 @@ body.v26-compact .journal-col textarea{height:70px;}
       <button onclick="printView('monthly')">Monthly</button>
     </div>
   </div>
-  <button class="hdr-btn" onclick="openSettings()">&#x2699;&#xFE0F; AI Key</button>
+  <button class="hdr-btn" onclick="openSettings()">&#x2699;&#xFE0F; Settings</button>
 </div>
 <div class="v26-toolbar" aria-label="Journal view controls">
   <span class="v26-save" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
@@ -721,6 +750,10 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div>
 <div id="tab-daily" class="tab-panel active">
 <div id="todayGlance" style="display:flex;gap:18px;flex-wrap:wrap;padding:8px 16px;background:#f0f4ff;border-bottom:1px solid #dfe4f5;font-size:0.85rem;font-weight:600;color:#4338ca;"></div>
+<details class="journal-home" id="journalHome" open>
+  <summary>&#x1F3E0; Today Home <span id="journalHomeDate" style="font-size:.72rem;font-weight:600;color:#98a2b3;"></span></summary>
+  <div class="journal-home-grid" id="journalHomeGrid"></div>
+</details>
 <div class="check-overview">
   <div class="check-overview-head" id="dailyCheckOverviewToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="dailyCheckOverviewBody" onclick="toggleDailyCheckOverview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDailyCheckOverview();}">
     <span id="dailyCheckOverviewArrow">&#x25B6;</span>
@@ -1758,14 +1791,42 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div>
 <!-- Settings Modal -->
 <div class="modal-overlay" id="settingsModal">
-  <div class="modal">
-    <h2>&#x2728; AI Settings</h2>
-    <p>Enter your Anthropic API key to enable AI features. Your key is stored only on this device and never sent anywhere except directly to Anthropic's servers.</p>
-    <p style="margin-bottom:8px;"><a href="https://console.anthropic.com" target="_blank" style="color:#667eea;font-size:0.85rem;">Get a key at console.anthropic.com →</a></p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+  <div class="modal" style="max-width:680px;max-height:88vh;overflow-y:auto;">
+    <h2>&#x2699;&#xFE0F; Journal Settings</h2>
+    <div class="journal-settings-grid">
+      <div class="journal-settings-group">
+        <h3>Today Home</h3>
+        <label class="journal-setting-row"><input type="checkbox" data-home-pref="priorities"> Priorities and goals</label>
+        <label class="journal-setting-row"><input type="checkbox" data-home-pref="checkins"> Check-in progress</label>
+        <label class="journal-setting-row"><input type="checkbox" data-home-pref="training"> Today&#39;s training</label>
+        <label class="journal-setting-row"><input type="checkbox" data-home-pref="wellness"> Wellness highlights</label>
+        <label class="journal-setting-row"><input type="checkbox" data-home-pref="nutrition"> Nutrition status</label>
+        <label class="journal-setting-row"><input type="checkbox" data-home-pref="notes"> Notes and review</label>
+      </div>
+      <div class="journal-settings-group">
+        <h3>Journal Behavior</h3>
+        <label class="journal-setting-row"><input type="checkbox" id="settingAIContext"> Give AI relevant daily context</label>
+        <label class="journal-setting-row">Backup reminder
+          <select id="settingBackupDays" style="margin-left:auto;border:1px solid #d0d5dd;border-radius:6px;padding:4px 6px;background:#fff;">
+            <option value="3">Every 3 days</option><option value="7">Every 7 days</option><option value="14">Every 14 days</option><option value="30">Every 30 days</option>
+          </select>
+        </label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">
+          <button class="btn-secondary" onclick="exportBackup()">Backup Now</button>
+          <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Restore</button>
+          <button class="btn-secondary" onclick="journalConsistencyCheck()">Check Journal</button>
+        </div>
+        <div id="journalStorageHealth" class="storage-health">Checking journal storage...</div>
+      </div>
+    </div>
+    <div class="journal-settings-group" style="margin-bottom:12px;">
+      <h3>AI Connection</h3>
+      <p style="font-size:.8rem;margin:0 0 8px;color:#667085;">Your Anthropic API key stays on this device and is sent only to Anthropic when you use an AI feature. <a href="https://console.anthropic.com" target="_blank" style="color:#667eea;">Get a key</a></p>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    </div>
     <div class="modal-btns">
       <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
-      <button class="btn-primary" onclick="saveApiKey()">Save</button>
+      <button class="btn-primary" onclick="saveJournalSettings()">Save Settings</button>
     </div>
   </div>
 </div>
@@ -2576,6 +2637,7 @@ function save(){
   localStorage.setItem('planner_'+dk(today),JSON.stringify(d));
   renderStreaks();
   updateIssuesCount();
+  renderJournalHome();
 }
 
 
@@ -2855,7 +2917,7 @@ function loadTodayWorkout(){
   if(!raw){alert('No active training plan found. Generate a plan in the Activities tab first.');return;}
   const plan=JSON.parse(raw);
   const key=localStorage.getItem('ai_key');
-  if(!key){alert('Add your Anthropic API key via the ⚙️ AI Key button first.');return;}
+  if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return;}
   const btn=document.getElementById('twLoadBtn');
   const body=document.getElementById('twBody');
   if(btn){btn.disabled=true;btn.textContent='⏳ Loading...';}
@@ -3006,6 +3068,8 @@ function load(){
       if(nuOpen==='0'){nutrBody.style.display='none';var chev2=nutrBody.previousElementSibling&&nutrBody.previousElementSibling.querySelector('.nu-chev');if(chev2)chev2.textContent='▸';}
     }
   })();
+  renderJournalHome();
+  refreshJournalNavStatus();
 }
 
 function attachListeners(){
@@ -3767,7 +3831,7 @@ function nextDayRunContext(){
 }
 function aiMealPlanForNextRun(btn){
   if(!localStorage.getItem('ai_key')){
-    alert('Add your Anthropic API key via the AI Key button first.');
+    alert('Add your Anthropic API key in Settings first.');
     return;
   }
   var context=nextDayRunContext();
@@ -3816,11 +3880,13 @@ function callAI(prompt,resultDivId,maxTok){
 }
 function aiCall(prompt,maxTok,onResult,onErr){
   const key=localStorage.getItem('ai_key');
-  if(!key){alert('Add your Anthropic API key via the ⚙️ AI Key button first.');return false;}
+  if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return false;}
+  const context=journalAIContext();
+  const enrichedPrompt=(context?context+'\n\n':'')+prompt;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:maxTok,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:maxTok,messages:[{role:'user',content:enrichedPrompt}]})
   }).then(r=>r.json()).then(data=>{
     if(data.error){onErr&&onErr(data.error.message);return;}
     onResult((data.content[0].text||'').trim());
@@ -3928,7 +3994,7 @@ function toggleWeekRunNotes(){
 }
 function aiWeeklyRunWrapUp(btn){
   if(!localStorage.getItem('ai_key')){
-    alert('Add your Anthropic API key via the AI Key button first.');
+    alert('Add your Anthropic API key in Settings first.');
     return;
   }
   var start=wrnMonday(wrnOff),end=new Date(start);
@@ -4196,7 +4262,7 @@ function aiWeeklyTakeaways(){
     +'4. AN ENCOURAGING WORD — A brief, genuine word of encouragement based on what was shared\n\n'
     +'Be specific and personal — reference actual things written in the journal. Be warm and insightful, not generic. Under 350 words.';
   const key=localStorage.getItem('ai_key');
-  if(!key){box.textContent='⚠️ Add your AI key first (⚙️ AI Key button).';return;}
+  if(!key){box.textContent='⚠️ Add your AI key first in ⚙️ Settings.';return;}
   aiCall(prompt,4000,function(text){
     aiShow('aiTakeawaysBox',text,'Weekly Takeaways — '+weekLabel);
   },function(err){box.textContent='Error: '+err;});
@@ -4204,7 +4270,7 @@ function aiWeeklyTakeaways(){
 // ── Daily Bread AI ────────────────────────────────────────
 function aiDailyBread(){
   const key=localStorage.getItem('ai_key');
-  if(!key){alert('Add your Anthropic API key via the ⚙️ AI Key button first.');return;}
+  if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return;}
   const btn=document.querySelector('[onclick="aiDailyBread()"]');
   if(btn){btn.textContent='…';btn.disabled=true;}
   const now=new Date();
@@ -6965,9 +7031,9 @@ function importLibrary(ev){
 }
 
 // ── AI Settings ───────────────────────────────────────────
-function openSettings(){document.getElementById('settingsModal').style.display='flex';const k=localStorage.getItem('ai_key')||'';document.getElementById('apiKeyInput').value=k;}
+function openSettings(){document.getElementById('settingsModal').style.display='flex';const k=localStorage.getItem('ai_key')||'';document.getElementById('apiKeyInput').value=k;loadJournalSettings();}
 function closeSettings(){document.getElementById('settingsModal').style.display='none';}
-function saveApiKey(){const k=(document.getElementById('apiKeyInput').value||'').trim();if(k)localStorage.setItem('ai_key',k);else localStorage.removeItem('ai_key');closeSettings();alert('API key saved.');}
+function saveApiKey(){saveJournalSettings();}
 
 // ── Tabs / Print / Backup ─────────────────────────────────
 function clearPage(tab){
@@ -9117,11 +9183,9 @@ document.addEventListener('click',e=>{if(!e.target.closest('.pdf-wrap'))document
 function printView(tab){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));if(tab==='weekly')renderWeekly();if(tab==='monthly')renderMonthly();document.getElementById('tab-'+tab).classList.add('active');setTimeout(window.print,200);}
 function exportBackup(){
   const d={};
-  const BACKUP_PREFIXES=['planner_','review_','food_','bible_'];
-  const BACKUP_KEYS=['library_books','activities_data','favorites_data','saved_meals','ai_key','current_training_plan','archived_plans','bp_readings','workout_library','current_workout','skill_log_data','hidden_skill_daily_ids','ai_archive','habit_list','medit_sessions','medit_scripture','audible_book','audible_chapter','audible_passages','audible_notes'];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
-    if(BACKUP_PREFIXES.some(p=>k.startsWith(p))||BACKUP_KEYS.includes(k))d[k]=localStorage.getItem(k);
+    if(k)d[k]=localStorage.getItem(k);
   }
   Promise.all([getAllBookDocuments(),getAllBookCovers()]).then(function(results){
     if(results[0]&&results[0].length)d['__idb_book_documents']=JSON.stringify(results[0]);
@@ -9166,7 +9230,8 @@ function checkBackupReminder(){
     msg="You haven't backed up your journal yet.";
   } else {
     var days=Math.floor((Date.now()-new Date(lastTs).getTime())/86400000);
-    if(days<7)return;
+    var reminderDays=parseInt(journalPrefs().backupDays||7,10);
+    if(days<reminderDays)return;
     msg='Your last backup was '+days+' days ago.';
   }
   var txt=document.getElementById('backupReminderText');if(txt)txt.textContent=msg;
@@ -9178,7 +9243,9 @@ function importBackup(ev){
   reader.onload=e=>{
     try{
       const d=JSON.parse(e.target.result);
-      if(!confirm('Overwrite current data with backup?\n\nThis cannot be undone.'))return;
+      const plannerCount=Object.keys(d).filter(function(k){return k.indexOf('planner_')===0;}).length;
+      const activityCount=(()=>{try{return JSON.parse(d.activities_data||'[]').length;}catch(e2){return 0;}})();
+      if(!confirm('Restore preview:\n\n'+plannerCount+' daily entries\n'+activityCount+' activities\n'+Object.keys(d).length+' saved data groups\n\nOverwrite matching current data with this backup?'))return;
       Object.entries(d).forEach(([k,v])=>{if(!k.startsWith('__idb_'))localStorage.setItem(k,v);});
       var docPromises=[];var covPromises=[];
       try{if(d['__idb_book_documents']){var docs=JSON.parse(d['__idb_book_documents']);docPromises=docs.map(function(doc){return putBookDocument(doc);});}}catch(e2){}
@@ -10073,7 +10140,7 @@ function refreshTrainingPreview(){
 }
 function generateTrainingPlan(){
   const key=localStorage.getItem('ai_key');
-  if(!key){alert('Add your Anthropic API key via the ⚙️ AI Key button first.');return;}
+  if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return;}
   const distSel=(document.getElementById('tpDistance')||{}).value||'5K';
   const dist=distSel==='custom'?((document.getElementById('tpCustomDist')||{}).value||'5K').trim():distSel;
   const weeks=parseInt((document.getElementById('tpWeeks')||{}).value||'8');
@@ -10430,9 +10497,110 @@ function updateTabNoteStatus(){
   var hasNote=!!(ta&&ta.value.trim());
   if(status)status.textContent=hasNote?'Notes saved':'No notes';
   if(bar)bar.classList.toggle('has-notes',hasNote);
+  refreshJournalNavStatus();
 }
 function loadAllTabNotes(){
   loadTabNote(_currentNoteTab);
+}
+
+/* ===== Journal experience module: home, preferences, navigation, reliability ===== */
+var JOURNAL_UI_CONFIG={
+  homeCards:['priorities','checkins','training','wellness','nutrition','notes'],
+  homeLabels:{priorities:'Priorities & Goals',checkins:'Daily Check-In',training:'Today’s Training',wellness:'Wellness',nutrition:'Nutrition',notes:'Notes & Review'}
+};
+function journalPrefs(){
+  var defaults={homeCards:JOURNAL_UI_CONFIG.homeCards.slice(),aiContext:true,backupDays:7};
+  try{return Object.assign(defaults,JSON.parse(localStorage.getItem('journal_ui_prefs')||'{}'));}catch(e){return defaults;}
+}
+function journalViewData(){
+  try{return JSON.parse(localStorage.getItem('planner_'+dk(today))||'{}');}catch(e){return{};}
+}
+function journalHomeCard(id,title,body){
+  return'<div class="journal-home-card" data-home-card="'+id+'"><h3>'+title+'</h3><div class="home-value">'+body+'</div></div>';
+}
+function renderJournalHome(){
+  var grid=document.getElementById('journalHomeGrid');if(!grid)return;
+  var prefs=journalPrefs(),visible=Array.isArray(prefs.homeCards)?prefs.homeCards:JOURNAL_UI_CONFIG.homeCards;
+  var d=journalViewData(),cards={};
+  var priorityText=['pt0t','pt1t','pt2t'].map(function(k){return(d[k]||'').trim();}).filter(Boolean);
+  var goalText=['dg0t','dg1t','dg2t'].map(function(k){return(d[k]||'').trim();}).filter(Boolean);
+  cards.priorities=journalHomeCard('priorities','Priorities & Goals','<strong>'+priorityText.length+'/3</strong> priorities set &nbsp;•&nbsp; <strong>'+goalText.length+'/3</strong> goals set');
+  var checks=collectDailyChecks(),done=checks.filter(function(i){return i.status==='green';}).length,open=checks.filter(function(i){return i.status==='blank';}).length;
+  cards.checkins=journalHomeCard('checkins','Daily Check-In','<strong>'+done+'</strong> complete &nbsp;•&nbsp; <strong>'+open+'</strong> still blank');
+  var acts=getActivities().filter(function(a){return a.date===dk(today);});
+  var workout=localStorage.getItem('workout_cache_'+dk(today))||'';
+  var training=acts.length?(acts[0].title||acts[0].type||'Activity logged'):(workout?workout.split(/\r?\n/)[0]:'No activity loaded');
+  cards.training=journalHomeCard('training','Today’s Training',escHtml(String(training).slice(0,150)));
+  var wellness=[d.wBPVal?'BP '+d.wBPVal:'',d.wSleepVal?'Sleep '+d.wSleepVal+' hr':'',d.wWghtVal?'Weight '+d.wWghtVal:''].filter(Boolean);
+  cards.wellness=journalHomeCard('wellness','Wellness',wellness.length?escHtml(wellness.join(' • ')):'No wellness metrics entered');
+  var foods=Array.isArray(d.foodLog)?d.foodLog:[],water=parseFloat(d.waterOz)||0;
+  cards.nutrition=journalHomeCard('nutrition','Nutrition','<strong>'+foods.length+'</strong> food item'+(foods.length===1?'':'s')+' &nbsp;•&nbsp; <strong>'+water+'</strong> oz water');
+  var dailyNotes=[d.jAccomplish,d.jImprov,d.jGratitude,d.jNotes,localStorage.getItem('tabNote_daily')].filter(function(v){return v&&String(v).trim();}).length;
+  cards.notes=journalHomeCard('notes','Notes & Review','<strong>'+dailyNotes+'</strong> note area'+(dailyNotes===1?'':'s')+' with content');
+  grid.innerHTML=visible.map(function(id){return cards[id]||'';}).join('')||'<div class="home-value" style="padding:8px;color:#667085;">Choose Home cards in Settings.</div>';
+  var date=document.getElementById('journalHomeDate');if(date)date.textContent=fmtD(today);
+}
+function refreshJournalNavStatus(){
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    var m=(btn.getAttribute('onclick')||'').match(/switchTab\('([^']+)'/),tab=m&&m[1];
+    btn.classList.toggle('nav-has-note',!!(tab&&localStorage.getItem('tabNote_'+tab)));
+  });
+  document.querySelectorAll('.hm-nav-btn').forEach(function(btn){
+    var tab=btn.id.replace(/^hm-/,'');
+    btn.classList.toggle('nav-has-note',!!localStorage.getItem('tabNote_'+tab));
+  });
+}
+function openMobileCheckIn(){
+  v26GoToday();
+  setTimeout(function(){
+    var body=document.getElementById('dailyCheckOverviewBody');
+    if(body&&body.style.display!=='block')toggleDailyCheckOverview();
+    var box=document.querySelector('.check-overview');if(box)box.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
+}
+function journalStorageHealth(){
+  var bytes=0,planner=0,invalid=0;
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i),v=localStorage.getItem(k)||'';bytes+=(k.length+v.length)*2;
+    if(k&&k.indexOf('planner_')===0){planner++;try{JSON.parse(v);}catch(e){invalid++;}}
+  }
+  var mb=(bytes/1048576).toFixed(2),last=localStorage.getItem('last_backup_ts'),lastText=last?new Date(last).toLocaleDateString():'Never';
+  var el=document.getElementById('journalStorageHealth');
+  if(el)el.innerHTML='<strong>'+(invalid?'Attention needed':'Journal healthy')+'</strong><br>'+planner+' daily entries • about '+mb+' MB on this device • last backup: '+lastText+(invalid?'<br>'+invalid+' unreadable daily record(s) found.':'');
+  return{bytes:bytes,planner:planner,invalid:invalid};
+}
+function journalConsistencyCheck(){
+  var h=journalStorageHealth(),issues=[];
+  ['activities_data','library_books','skill_log_data','current_training_plan'].forEach(function(k){
+    var v=localStorage.getItem(k);if(v){try{JSON.parse(v);}catch(e){issues.push(k);}}
+  });
+  alert(!h.invalid&&!issues.length?'Journal check passed. Your saved records are readable.':'Journal check found '+(h.invalid+issues.length)+' item(s) that may need attention. Make a backup before further changes.');
+}
+function loadJournalSettings(){
+  var p=journalPrefs();
+  document.querySelectorAll('[data-home-pref]').forEach(function(cb){cb.checked=p.homeCards.indexOf(cb.dataset.homePref)>=0;});
+  var ai=document.getElementById('settingAIContext');if(ai)ai.checked=p.aiContext!==false;
+  var days=document.getElementById('settingBackupDays');if(days)days.value=String(p.backupDays||7);
+  journalStorageHealth();
+}
+function saveJournalSettings(){
+  var cards=Array.from(document.querySelectorAll('[data-home-pref]:checked')).map(function(cb){return cb.dataset.homePref;});
+  var ai=document.getElementById('settingAIContext'),days=document.getElementById('settingBackupDays');
+  localStorage.setItem('journal_ui_prefs',JSON.stringify({homeCards:cards,aiContext:!ai||ai.checked,backupDays:parseInt(days&&days.value||'7',10)}));
+  var key=(document.getElementById('apiKeyInput').value||'').trim();if(key)localStorage.setItem('ai_key',key);else localStorage.removeItem('ai_key');
+  renderJournalHome();closeSettings();v26Toast('Settings saved');
+}
+function journalAIContext(){
+  if(journalPrefs().aiContext===false)return'';
+  var d=journalViewData(),parts=[];
+  if(d.wSleepVal)parts.push('sleep '+d.wSleepVal+' hours');
+  if(d.wWghtVal)parts.push('weight '+d.wWghtVal);
+  if(d.wBPVal)parts.push('BP '+d.wBPVal);
+  if(d.waterOz)parts.push('water '+d.waterOz+' oz');
+  if(d.jNotes)parts.push('journal note: '+String(d.jNotes).slice(0,240));
+  var acts=getActivities().filter(function(a){return a.date===dk(today);});
+  if(acts.length)parts.push('today activity: '+[acts[0].title,acts[0].distance?acts[0].distance+' mi':'',acts[0].pace?acts[0].pace+'/mi':''].filter(Boolean).join(', '));
+  return parts.length?'\n\nRELEVANT JOURNAL CONTEXT ('+dk(today)+')\n'+parts.join('\n'):'';
 }
 
 /* v26 quality-of-life enhancements. Existing storage keys and data remain unchanged. */
@@ -10478,6 +10646,9 @@ window.addEventListener('DOMContentLoaded',function(){
   var density=localStorage.getItem('v26_density')||'compact';
   document.body.classList.add(density==='roomy'?'v26-comfortable':'v26-compact');
   var d=document.getElementById('v26DensityBtn');if(d){d.textContent=density==='roomy'?'Relaxed':'Tight';d.title=density==='roomy'?'Relaxed spacing adds breathing room between journal sections. Click for tight spacing.':'Tight spacing fits more journal content on screen. Click for relaxed spacing.';d.setAttribute('aria-label',density==='roomy'?'Page spacing: Relaxed. Click for tight spacing.':'Page spacing: Tight. Click for relaxed spacing.');d.setAttribute('aria-pressed',density==='compact'?'true':'false');}
+  renderJournalHome();
+  refreshJournalNavStatus();
+  window.addEventListener('scroll',function(){var top=document.getElementById('journalFloatTop');if(top)top.style.display=window.scrollY>650?'block':'none';},{passive:true});
   document.addEventListener('input',v26SavedFeedback,{passive:true});
   document.addEventListener('change',v26SavedFeedback,{passive:true});
   document.addEventListener('keydown',function(e){
@@ -10488,6 +10659,13 @@ window.addEventListener('DOMContentLoaded',function(){
   });
 });
 </script>
+<button class="journal-float-top" id="journalFloatTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">&#x2191; Top</button>
+<nav class="journal-mobile-dock" aria-label="Quick journal navigation">
+  <button onclick="v26GoToday()"><span>&#x1F3E0;</span>Today</button>
+  <button onclick="openMobileCheckIn()"><span>&#x2705;</span>Check-In</button>
+  <button onclick="window.scrollTo({top:0,behavior:'smooth'})"><span>&#x2191;</span>Top</button>
+  <button onclick="toggleHamburger(event)"><span>&#x2630;</span>More</button>
+</nav>
 <div id="v26Toast" class="v26-toast" role="status" aria-live="polite"></div>
 </body>
 </html>
