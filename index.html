@@ -225,6 +225,17 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .check-overview-filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;}
 .check-overview-filters button{border:1px solid #c7d2fe;background:#fff;color:#4f46e5;border-radius:14px;padding:4px 10px;font-size:.72rem;font-weight:700;cursor:pointer;}
 .check-overview-filters button.active{background:#4f46e5;color:#fff;border-color:#4f46e5;}
+.check-filter-mark{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border:2px solid currentColor;border-radius:3px;margin-right:4px;font-size:9px;font-weight:900;line-height:1;vertical-align:-2px;}
+.check-overview-filters button[data-filter="blank"]{color:#667085;border-color:#c5c9d0;}
+.check-overview-filters button[data-filter="green"]{color:#1f8f50;border-color:#86d5aa;}
+.check-overview-filters button[data-filter="red"]{color:#cf3f32;border-color:#f0aaa3;}
+.check-overview-filters button[data-filter="black"]{color:#222;border-color:#888;}
+.check-overview-filters button[data-filter="purple"]{color:#7d3c98;border-color:#c9a4d8;}
+.check-overview-filters button[data-filter="blank"].active{background:#667085;border-color:#667085;color:#fff;}
+.check-overview-filters button[data-filter="green"].active{background:#1f8f50;border-color:#1f8f50;color:#fff;}
+.check-overview-filters button[data-filter="red"].active{background:#cf3f32;border-color:#cf3f32;color:#fff;}
+.check-overview-filters button[data-filter="black"].active{background:#222;border-color:#222;color:#fff;}
+.check-overview-filters button[data-filter="purple"].active{background:#7d3c98;border-color:#7d3c98;color:#fff;}
 .check-overview-group{margin-top:9px;}
 .check-overview-group-title{font-size:.7rem;font-weight:800;color:#667085;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
 .check-overview-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:5px;}
@@ -717,11 +728,11 @@ body.v26-compact .journal-col textarea{height:70px;}
   <div class="check-overview-body" id="dailyCheckOverviewBody">
     <div class="check-overview-filters" id="dailyCheckOverviewFilters">
       <button class="active" data-filter="all" onclick="setDailyCheckFilter('all',this)">Show All</button>
-      <button data-filter="blank" onclick="setDailyCheckFilter('blank',this)">Blank (Needs Check)</button>
-      <button data-filter="green" onclick="setDailyCheckFilter('green',this)">Complete</button>
-      <button data-filter="red" onclick="setDailyCheckFilter('red',this)">Not Complete</button>
-      <button data-filter="black" onclick="setDailyCheckFilter('black',this)">Not Applicable</button>
-      <button data-filter="purple" onclick="setDailyCheckFilter('purple',this)">Partially Complete</button>
+      <button data-filter="blank" onclick="setDailyCheckFilter('blank',this)"><span class="check-filter-mark" aria-hidden="true"></span><span class="check-filter-label">Blank</span></button>
+      <button data-filter="green" onclick="setDailyCheckFilter('green',this)"><span class="check-filter-mark" aria-hidden="true">&#x2713;</span><span class="check-filter-label">Complete</span></button>
+      <button data-filter="red" onclick="setDailyCheckFilter('red',this)"><span class="check-filter-mark" aria-hidden="true">&#x2713;</span><span class="check-filter-label">Not Complete</span></button>
+      <button data-filter="black" onclick="setDailyCheckFilter('black',this)"><span class="check-filter-mark" aria-hidden="true">&#x2713;</span><span class="check-filter-label">Not Applicable</span></button>
+      <button data-filter="purple" onclick="setDailyCheckFilter('purple',this)"><span class="check-filter-mark" aria-hidden="true">&#x2713;</span><span class="check-filter-label">Partially Complete</span></button>
     </div>
     <div id="dailyCheckOverviewList"></div>
   </div>
@@ -2496,11 +2507,12 @@ function collectDailyChecks(){
     if(tab==='habits')return;
     var state=el.dataset.state||'';
     if(state==='orange'||state==='blue')state='purple';
+    if(['green','red','black','purple'].indexOf(state)<0)state='';
     items.push({key:key,id:'',tab:tab,group:dailyCheckGroup(el,tab),status:state||'blank',label:dailyCheckLabel(el)});
   });
   ['reviewCheck','prepJournalCheck'].forEach(function(id){
     var el=document.getElementById(id);if(!el)return;
-    items.push({key:'',id:id,tab:'daily',group:'Daily',status:el.checked?'green':'blank',label:dailyCheckLabel(el)});
+    items.push({key:'',id:id,tab:'daily',group:dailyCheckGroup(el,'daily'),status:el.checked?'green':'blank',label:dailyCheckLabel(el)});
   });
   return items;
 }
@@ -2518,11 +2530,7 @@ function renderDailyCheckOverview(){
   }
   var groups={};
   filtered.forEach(function(item){if(!groups[item.group])groups[item.group]=[];groups[item.group].push(item);});
-  var order=Object.keys(DAILY_CHECK_TAB_NAMES).map(function(k){return DAILY_CHECK_TAB_NAMES[k];});
-  list.innerHTML=Object.keys(groups).sort(function(a,b){
-    var ai=order.indexOf(a),bi=order.indexOf(b);
-    return (ai<0?999:ai)-(bi<0?999:bi)||a.localeCompare(b);
-  }).map(function(group){
+  list.innerHTML=Object.keys(groups).map(function(group){
     var rows=groups[group].map(function(item){
       return '<button class="check-overview-item '+item.status+'" data-key="'+escHtml(item.key)+'" data-id="'+escHtml(item.id)+'" data-tab="'+escHtml(item.tab)+'" onclick="jumpToDailyCheck(this)" title="Open '+escHtml(group)+'">'
         +'<span class="check-overview-box">'+(item.status==='blank'?'':'&#x2713;')+'</span><span>'+escHtml(item.label)+'</span></button>';
