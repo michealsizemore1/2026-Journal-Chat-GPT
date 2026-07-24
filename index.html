@@ -215,6 +215,8 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .activity-period-details{border-top:1px solid rgba(71,84,103,.14);margin-top:8px;padding-top:7px;display:grid;gap:4px;}
 .activity-period-details div{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;color:#667085;}
 .activity-period-details strong{color:#344054;font-size:.74rem;white-space:nowrap;}
+.activity-period-details .tile-cp-input{width:58px;border:1px solid #a9dfbf;border-radius:5px;padding:2px 4px;text-align:right;font-size:.74rem;font-weight:700;color:#344054;background:rgba(255,255,255,.78);outline:none;}
+.activity-period-details .tile-cp-input:focus{border-color:#27ae60;box-shadow:0 0 0 2px rgba(39,174,96,.14);}
 .act-filter-shell{border:1px solid #e4e7ec;border-radius:10px;background:#fafbfc;margin-bottom:12px;overflow:hidden;}
 .act-filter-summary{list-style:none;cursor:pointer;padding:9px 12px;font-size:.8rem;font-weight:700;color:#475467;display:flex;align-items:center;justify-content:space-between;}
 .act-filter-summary::-webkit-details-marker{display:none;}
@@ -253,8 +255,6 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .act-load-lbl{font-size:0.62rem;color:#bbb;}
 .zone-badge{display:inline-block;font-size:0.68rem;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:5px;color:white;}
 .z1{background:#5dade2;}.z2{background:#58d68d;}.z3{background:#f4d03f;color:#555;}.z4{background:#e67e22;}.z5{background:#e74c3c;}
-.cp-row{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:#666;margin-bottom:10px;flex-wrap:wrap;}
-.cp-input{width:80px;border:1px solid #e9ecef;border-radius:6px;padding:4px 8px;font-size:0.85rem;outline:none;}
 .act-note-edit{width:100%;border:1px solid #ffd5a8;border-radius:5px;padding:5px;font-size:0.82rem;font-family:inherit;resize:vertical;min-height:40px;background:#fffdf8;outline:none;margin-top:6px;}
 .act-journal-btn{font-size:0.72rem;padding:3px 8px;border-radius:10px;border:none;background:#667eea;color:white;cursor:pointer;white-space:nowrap;}
 .act-note-btn{font-size:0.72rem;padding:3px 8px;border-radius:10px;border:none;background:#f0f0f0;color:#555;cursor:pointer;}
@@ -1118,7 +1118,6 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div></div>
 
 <div id="tab-activities" class="tab-panel"><div class="panel">
-  <div id="activityChartsHome"></div>
   <!-- Daily Physical Exercises -->
   <div class="section" style="border:1px solid #f0f0f0;border-radius:10px;margin-bottom:12px;">
     <div class="section-title green">&#x1F3C3; Daily Physical Exercises</div>
@@ -1130,6 +1129,7 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div class="task-row"><div class="tri-check" data-key="exDogWalk" onclick="triClick(this)"></div><label>Dog Walk:</label><input type="text" id="exDogWalkVal" placeholder="Duration/notes..."></div>
     <div class="goal-row"><label>Goal 10,000 steps - Actual:</label><input type="number" id="exSteps" min="0" placeholder="Steps"></div>
   </div>
+  <div id="activityChartsHome"></div>
   <!-- Mileage Summary -->
   <div id="mileageSummaryBar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
     <div style="flex:1;min-width:120px;background:linear-gradient(135deg,#e8f8f0,#d5f5e3);border:1px solid #a9dfbf;border-radius:10px;padding:10px 12px;text-align:center;">
@@ -1140,6 +1140,7 @@ body.v26-compact .journal-col textarea{height:70px;}
         <div><span>Avg pace</span><strong id="paceThisWeek">—</strong></div>
         <div><span>Avg power</span><strong id="wattsThisWeek">—</strong></div>
         <div><span>Exercise time</span><strong id="timeThisWeek">—</strong></div>
+        <div><span>Critical power</span><strong><input type="number" class="tile-cp-input" id="cpInput" placeholder="280" min="1" inputmode="numeric" oninput="saveCPAndRender()" title="Editable Critical Power in watts, used for power-zone colors"> W</strong></div>
       </div>
     </div>
     <div style="flex:1;min-width:120px;background:linear-gradient(135deg,#eaf3fb,#d6eaf8);border:1px solid #a9cce3;border-radius:10px;padding:10px 12px;text-align:center;">
@@ -1330,12 +1331,6 @@ body.v26-compact .journal-col textarea{height:70px;}
   </div>
 
   <!-- CP / Power Zones setting -->
-
-  <div class="cp-row">
-    <span>⚡ Critical Power:</span>
-    <input type="number" class="cp-input" id="cpInput" placeholder="e.g. 280" oninput="saveCPAndRender()" title="Your Critical Power in watts — used for power zone colors">
-    <span style="color:#bbb;">W &nbsp;(for zone colors)</span>
-  </div>
 
   <!-- Filters -->
   <div class="act-search-row">
