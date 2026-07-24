@@ -1258,11 +1258,14 @@ body.v26-compact .journal-col textarea{height:70px;}
   <!-- CP / Power Zones setting -->
 
   <!-- Text training plan upload -->
-  <div id="tpSection">
+  <div class="act-section-toggle" onclick="toggleTrainingPlan()" style="margin-top:4px;margin-bottom:8px;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTrainingPlan();}">
+    <span id="tpArrow">&#x25B6;</span> &#x1F4C2; Upload Plan from Text File
+  </div>
+  <div id="tpSection" style="display:none;">
     <div class="tp-panel">
         <!-- Upload plan from text file -->
         <div style="margin-top:10px;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
-          <div style="font-size:0.78rem;font-weight:700;color:#166534;margin-bottom:4px;">&#x1F4C2; Upload Plan from Text File</div>
+          <div style="font-size:0.78rem;font-weight:700;color:#166534;margin-bottom:4px;">Plan details</div>
           <div style="font-size:0.72rem;color:#4b7c5e;margin-bottom:8px;">&#x26A0;&#xFE0F; Note: If your plan was generated from a Garmin CSV export, paste the plan into a .txt file before uploading here.</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
             <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;">
