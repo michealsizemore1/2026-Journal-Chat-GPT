@@ -719,6 +719,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div>
 <div class="v26-toolbar" aria-label="Journal view controls">
   <span class="v26-save" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
+  <button class="v26-quiet-btn" type="button" id="journalCloudSyncBtn" onclick="journalCloudSmartSync()" title="Check for newer information on this device and in the private cloud">&#x21BB; Sync</button>
   <span class="v26-spacer"></span>
   <span class="v26-label">Page spacing:</span>
   <button class="v26-quiet-btn" type="button" onclick="v26GoToday()" title="Return to today (T)">Today</button>
@@ -1863,7 +1864,7 @@ body.v26-compact .journal-col textarea{height:70px;}
           <span id="cloudSettingsStatus" style="font-size:.8rem;color:#475569;">Checking connection...</span>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">
-          <button class="btn-secondary" type="button" onclick="journalCloudSyncNow()">Sync Now</button>
+          <button class="btn-secondary" type="button" onclick="journalCloudSmartSync()">Sync Now</button>
           <button class="btn-secondary" type="button" onclick="journalCloudDownloadNow()">Get Latest from Cloud</button>
           <button class="btn-secondary" type="button" onclick="journalCloudSignOut()">Sign Out</button>
         </div>
@@ -10798,7 +10799,56 @@ async function journalCloudSignOut(){
   if(!confirm('Sign out of private cloud sync on this device? Your local journal information will remain on this device.'))return;
   await journalCloudClient.auth.signOut();location.reload();
 }
-function journalCloudSyncNow(){if(!journalCloudUser){alert('Sign in to use cloud sync.');return;}journalCloudUpload(true);}
+async function journalCloudSmartSync(){
+  if(!journalCloudUser){alert('Sign in to use cloud sync.');return;}
+  if(journalCloudBusy)return;
+  var btn=document.getElementById('journalCloudSyncBtn');
+  if(btn){btn.disabled=true;btn.textContent='Checking...';}
+  journalCloudBusy=true;journalCloudSetStatus('Checking both devices and cloud...','busy');
+  try{
+    var result=await journalCloudClient.from('journal_state').select('journal_data,updated_at,revision,last_device').eq('user_id',journalCloudUser.id).maybeSingle();
+    if(result.error)throw result.error;
+    if(!result.data){
+      journalCloudBusy=false;
+      await journalCloudUpload(true);
+      return;
+    }
+    var cloudTime=new Date(result.data.updated_at).getTime();
+    var lastSync=localStorage.getItem('journal_cloud_last_sync');
+    var localTime=lastSync?new Date(lastSync).getTime():0;
+    var dirty=localStorage.getItem('journal_cloud_dirty')==='1';
+    if(cloudTime>localTime+1000){
+      if(dirty){
+        journalCloudShowChoice(
+          'Changes found in both places',
+          'This device and the cloud both changed since the last sync. Choose which copy should become current.',
+          [
+            {label:'Use the newer cloud journal',action:function(){journalCloudApply(result.data.journal_data,result.data.updated_at);}},
+            {label:'Keep this device and upload it instead',secondary:true,action:async function(){journalCloudCloseChoice();journalCloudBusy=false;await journalCloudUpload(true);}}
+          ]
+        );
+      }else{
+        journalCloudApply(result.data.journal_data,result.data.updated_at);
+      }
+      return;
+    }
+    if(dirty){
+      journalCloudBusy=false;
+      await journalCloudUpload(true);
+      return;
+    }
+    journalCloudSetStatus('Synced just now','ok');
+    v26Toast('Journal is up to date');
+    setTimeout(function(){if(!localStorage.getItem('journal_cloud_dirty'))journalCloudSetStatus('Saved on this device and cloud','ok');},2400);
+  }catch(e){
+    journalCloudSetStatus(navigator.onLine?'Sync check needs attention':'Offline — saved on this device','error');
+    alert('The sync check did not complete. Your journal remains safely saved on this device.');
+  }finally{
+    journalCloudBusy=false;
+    if(btn){btn.disabled=false;btn.innerHTML='&#x21BB; Sync';}
+  }
+}
+function journalCloudSyncNow(){journalCloudSmartSync();}
 async function journalCloudDownloadNow(){
   if(!journalCloudUser){alert('Sign in to use cloud sync.');return;}
   if(!confirm('Replace this device’s journal with the latest cloud copy?\n\nMake sure the device with your newest information has finished syncing first.'))return;
