@@ -10667,7 +10667,7 @@ function journalAIContext(){
 /* ===== Private Supabase cloud sync ===== */
 var JOURNAL_SUPABASE_URL='https://dtsirzzklkdncmchwebr.supabase.co';
 var JOURNAL_SUPABASE_KEY='sb_publishable_FiX7PK2M6NKTI4hGZCg4OQ_ShVr0Aho';
-var journalCloudClient=null,journalCloudUser=null,journalCloudTimer=null,journalCloudApplying=false,journalCloudBusy=false,journalCloudReady=false,journalCloudPreparedFor='';
+var journalCloudClient=null,journalCloudUser=null,journalCloudTimer=null,journalCloudApplying=false,journalCloudBusy=false,journalCloudReady=false,journalCloudPreparedFor='',journalCloudChangeSeq=0;
 function journalCloudCanSyncKey(k){
   if(!k)return false;
   var lower=String(k).toLowerCase();
@@ -10697,29 +10697,59 @@ function journalCloudSetStatus(text,state){
 }
 function journalCloudSchedule(){
   if(journalCloudApplying||!journalCloudUser||!journalCloudReady)return;
+  journalCloudChangeSeq++;
   localStorage.setItem('journal_cloud_dirty','1');
   journalCloudSetStatus('Saved locally — cloud sync pending','busy');
   clearTimeout(journalCloudTimer);
-  journalCloudTimer=setTimeout(function(){journalCloudUpload(false);},1800);
+  journalCloudTimer=setTimeout(function(){journalCloudSmartSync();},1800);
 }
-async function journalCloudUpload(showMessage){
+async function journalCloudUpload(showMessage,expectedRevision){
   if(!journalCloudClient||!journalCloudUser||journalCloudBusy)return false;
   journalCloudBusy=true;journalCloudSetStatus('Synchronizing securely...','busy');
   try{
+    var uploadSeq=journalCloudChangeSeq;
     var payload=journalCloudPayload();
-    var result=await journalCloudClient.from('journal_state').upsert({
+    var values={
       user_id:journalCloudUser.id,
       journal_data:payload,
       last_device:(navigator.platform||'Browser').slice(0,100)
-    },{onConflict:'user_id'}).select('updated_at,revision').single();
+    };
+    var result;
+    if(typeof expectedRevision==='number'){
+      result=await journalCloudClient.from('journal_state').update(values)
+        .eq('user_id',journalCloudUser.id).eq('revision',expectedRevision)
+        .select('updated_at,revision').maybeSingle();
+      if(!result.error&&!result.data){
+        var latest=await journalCloudClient.from('journal_state').select('journal_data,updated_at,revision,last_device').eq('user_id',journalCloudUser.id).maybeSingle();
+        if(latest.error)throw latest.error;
+        journalCloudBusy=false;
+        journalCloudShowChoice(
+          'Another device changed the journal',
+          'The cloud journal changed while this device was preparing its upload. Nothing from this device was overwritten.',
+          [
+            {label:'Use the newer cloud journal',action:function(){journalCloudApply(latest.data.journal_data,latest.data.updated_at,latest.data.revision);}},
+            {label:'Keep this device and overwrite the cloud',secondary:true,action:async function(){journalCloudCloseChoice();await journalCloudUpload(true);}}
+          ]
+        );
+        journalCloudSetStatus('Sync decision needed','error');
+        return false;
+      }
+    }else{
+      result=await journalCloudClient.from('journal_state').upsert(values,{onConflict:'user_id'}).select('updated_at,revision').single();
+    }
     if(result.error)throw result.error;
     journalCloudApplying=true;
     localStorage.setItem('journal_cloud_last_sync',result.data.updated_at||new Date().toISOString());
-    localStorage.removeItem('journal_cloud_dirty');
+    localStorage.setItem('journal_cloud_revision',String(result.data.revision||''));
+    if(uploadSeq===journalCloudChangeSeq)localStorage.removeItem('journal_cloud_dirty');
     journalCloudApplying=false;
     journalCloudReady=true;
-    journalCloudSetStatus('Saved on this device and cloud','ok');
-    if(showMessage)v26Toast('Cloud sync complete');
+    if(uploadSeq===journalCloudChangeSeq)journalCloudSetStatus('Saved on this device and cloud','ok');
+    else{
+      journalCloudSetStatus('New changes waiting to sync','busy');
+      clearTimeout(journalCloudTimer);journalCloudTimer=setTimeout(function(){journalCloudSmartSync();},400);
+    }
+    if(showMessage&&uploadSeq===journalCloudChangeSeq)v26Toast('Cloud sync complete');
     return true;
   }catch(e){
     journalCloudSetStatus(navigator.onLine?'Cloud sync needs attention':'Offline — saved on this device','error');
@@ -10727,13 +10757,14 @@ async function journalCloudUpload(showMessage){
     return false;
   }finally{journalCloudBusy=false;}
 }
-function journalCloudApply(payload,updatedAt){
+function journalCloudApply(payload,updatedAt,revision){
   journalCloudApplying=true;
   var remove=[];
   for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(journalCloudCanSyncKey(k))remove.push(k);}
   remove.forEach(function(k){localStorage.removeItem(k);});
   Object.keys(payload||{}).forEach(function(k){if(journalCloudCanSyncKey(k))localStorage.setItem(k,String(payload[k]));});
   localStorage.setItem('journal_cloud_last_sync',updatedAt||new Date().toISOString());
+  if(revision!=null)localStorage.setItem('journal_cloud_revision',String(revision));
   localStorage.removeItem('journal_cloud_dirty');
   journalCloudApplying=false;
   location.reload();
@@ -10764,14 +10795,14 @@ async function journalCloudPrepare(){
     );
     journalCloudSetStatus('Waiting for first cloud upload','busy');return;
   }
-  if(!hasLocal){journalCloudApply(cloud.journal_data,cloud.updated_at);return;}
+  if(!hasLocal){journalCloudApply(cloud.journal_data,cloud.updated_at,cloud.revision);return;}
   if(!lastSync){
     journalCloudShowChoice(
       'Journal information exists in both places',
       'For safety, choose which copy should become the current journal. Neither copy will be changed until you choose.',
       [
         {label:'Keep this device and upload it to the cloud',action:async function(){journalCloudCloseChoice();await journalCloudUpload(true);}},
-        {label:'Use the existing cloud journal on this device',secondary:true,action:function(){journalCloudApply(cloud.journal_data,cloud.updated_at);}}
+        {label:'Use the existing cloud journal on this device',secondary:true,action:function(){journalCloudApply(cloud.journal_data,cloud.updated_at,cloud.revision);}}
       ]
     );return;
   }
@@ -10782,15 +10813,15 @@ async function journalCloudPrepare(){
         'Newer cloud copy detected',
         'This device also has unsynchronized changes. Choose which copy should win.',
         [
-          {label:'Get the newer cloud journal',action:function(){journalCloudApply(cloud.journal_data,cloud.updated_at);}},
+          {label:'Get the newer cloud journal',action:function(){journalCloudApply(cloud.journal_data,cloud.updated_at,cloud.revision);}},
           {label:'Keep this device and upload it instead',secondary:true,action:async function(){journalCloudCloseChoice();await journalCloudUpload(true);}}
         ]
       );return;
     }
-    journalCloudApply(cloud.journal_data,cloud.updated_at);return;
+    journalCloudApply(cloud.journal_data,cloud.updated_at,cloud.revision);return;
   }
   journalCloudReady=true;
-  if(localStorage.getItem('journal_cloud_dirty'))await journalCloudUpload(false);
+  if(localStorage.getItem('journal_cloud_dirty'))await journalCloudUpload(false,cloud.revision);
   else journalCloudSetStatus('Saved on this device and cloud','ok');
 }
 async function journalCloudSignIn(ev){
@@ -10833,18 +10864,18 @@ async function journalCloudSmartSync(){
           'Changes found in both places',
           'This device and the cloud both changed since the last sync. Choose which copy should become current.',
           [
-            {label:'Use the newer cloud journal',action:function(){journalCloudApply(result.data.journal_data,result.data.updated_at);}},
+            {label:'Use the newer cloud journal',action:function(){journalCloudApply(result.data.journal_data,result.data.updated_at,result.data.revision);}},
             {label:'Keep this device and upload it instead',secondary:true,action:async function(){journalCloudCloseChoice();journalCloudBusy=false;await journalCloudUpload(true);}}
           ]
         );
       }else{
-        journalCloudApply(result.data.journal_data,result.data.updated_at);
+        journalCloudApply(result.data.journal_data,result.data.updated_at,result.data.revision);
       }
       return;
     }
     if(dirty){
       journalCloudBusy=false;
-      await journalCloudUpload(true);
+      await journalCloudUpload(true,result.data.revision);
       return;
     }
     journalCloudSetStatus('Synced just now','ok');
@@ -10869,7 +10900,7 @@ async function journalCloudDownloadNow(){
     alert('The latest cloud journal could not be downloaded. No information on this device was changed.');
     return;
   }
-  journalCloudApply(result.data.journal_data,result.data.updated_at);
+  journalCloudApply(result.data.journal_data,result.data.updated_at,result.data.revision);
 }
 function journalCloudInit(){
   if(!window.supabase||!window.supabase.createClient){
@@ -10892,9 +10923,8 @@ function journalCloudInit(){
   var originalSet=Storage.prototype.setItem,originalRemove=Storage.prototype.removeItem;
   Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&journalCloudCanSyncKey(k))journalCloudSchedule();};
   Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&journalCloudCanSyncKey(k))journalCloudSchedule();};
-  window.addEventListener('online',function(){if(journalCloudUser&&localStorage.getItem('journal_cloud_dirty'))journalCloudUpload(false);});
+  window.addEventListener('online',function(){if(journalCloudUser&&localStorage.getItem('journal_cloud_dirty'))journalCloudSmartSync();});
   window.addEventListener('offline',function(){journalCloudSetStatus('Offline — saved on this device','error');});
-  window.addEventListener('beforeunload',function(){if(journalCloudUser&&localStorage.getItem('journal_cloud_dirty'))journalCloudUpload(false);});
 }
 
 /* v26 quality-of-life enhancements. Existing storage keys and data remain unchanged. */
