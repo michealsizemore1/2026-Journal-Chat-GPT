@@ -1294,37 +1294,11 @@ body.v26-compact .journal-col textarea{height:70px;}
   <div class="act-section-toggle" onclick="toggleTrainingPlan()" style="margin-top:4px;margin-bottom:8px;" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTrainingPlan();}">
     <span id="tpArrow">&#x25B6;</span> &#x1F4C2; Upload Plan from Text File
   </div>
-  <div id="tpSection" style="display:none;">
-    <div class="tp-panel">
-      <div style="margin-top:10px;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
-        <div style="font-size:0.78rem;font-weight:700;color:#166534;margin-bottom:4px;">Plan details</div>
-        <div style="font-size:0.72rem;color:#4b7c5e;margin-bottom:8px;">&#x26A0;&#xFE0F; Note: If your plan was generated from a Garmin CSV export, paste the plan into a .txt file before uploading here.</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-          <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;">
-            <label style="font-size:0.72rem;font-weight:600;color:#166534;">Plan Start Date</label>
-            <input type="date" id="tpUploadStartDate" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;outline:none;background:white;">
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:130px;">
-            <label style="font-size:0.72rem;font-weight:600;color:#166534;">Race Date</label>
-            <input type="date" id="tpUploadRaceDate" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;outline:none;background:white;">
-          </div>
-          <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:100px;">
-            <label style="font-size:0.72rem;font-weight:600;color:#166534;">Race Distance</label>
-            <select id="tpUploadDist" style="border:1px solid #bbf7d0;border-radius:6px;padding:5px 8px;font-size:0.82rem;background:white;">
-              <option value="5K">5K</option>
-              <option value="10K">10K</option>
-              <option value="Half Marathon">Half Marathon</option>
-              <option value="Marathon" selected>Marathon</option>
-            </select>
-          </div>
-        </div>
-        <label style="display:inline-block;background:#166534;color:#fff;padding:7px 16px;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;">
-          &#x1F4C4; Choose .txt File
-          <input type="file" accept=".txt" style="display:none;" onchange="uploadPlanFromFile(event)">
-        </label>
-        <span id="tpUploadStatus" style="margin-left:10px;font-size:0.75rem;color:#166534;"></span>
-      </div>
-    </div>
+  <div id="tpSection" style="display:none;padding:2px 0 12px;">
+    <label style="display:inline-block;background:#166534;color:#fff;padding:7px 16px;border-radius:6px;font-size:0.78rem;font-weight:700;cursor:pointer;">
+      &#x1F4C4; Choose .txt File
+      <input type="file" accept=".txt" style="display:none;" onchange="uploadPlanFromFile(event)">
+    </label>
   </div>
 
   <!-- Today's Workout card: contained within the Activities tab -->
@@ -10265,24 +10239,15 @@ Be specific with paces (use min/mile), distances, and workout structures. Make t
 }
 function uploadPlanFromFile(evt){
   const file=evt.target.files[0];if(!file)return;
-  const status=document.getElementById('tpUploadStatus');
   const reader=new FileReader();
   reader.onload=e=>{
     const text=(e.target.result||'').trim();
-    if(!text){if(status)status.textContent='File appears empty.';return;}
-    // Use dedicated upload fields
-    const dist=(document.getElementById('tpUploadDist')||{}).value||'Marathon';
-    const raceDate=(document.getElementById('tpUploadRaceDate')||{}).value||'';
-    const planStartDate=(document.getElementById('tpUploadStartDate')||{}).value||dk(new Date());
-    // Calculate weeks from start→race if both provided, else default
-    let weeks=6;
-    if(raceDate&&planStartDate){
-      const ms=new Date(raceDate+'T00:00:00')-new Date(planStartDate+'T00:00:00');
-      const w=Math.round(ms/(7*24*60*60*1000));
-      if(w>0&&w<=52)weeks=w;
-    }
-    const metaStr='Uploaded plan • '+dist+' • '+weeks+' weeks'+(raceDate?' • Race: '+new Date(raceDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'');
-    const planObj={text,dist,weeks,raceDate,startDate:planStartDate,meta:metaStr,createdAt:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})};
+    if(!text){alert('The selected text file is empty.');evt.target.value='';return;}
+    const weekMatches=Array.from(text.matchAll(/\bweek\s+(\d{1,2})\b/gi)).map(m=>parseInt(m[1],10)).filter(n=>n>0&&n<=52);
+    const weeks=weekMatches.length?Math.max.apply(null,weekMatches):0;
+    const planStartDate=dk(new Date());
+    const metaStr='Uploaded text plan'+(weeks?' • '+weeks+' weeks':'');
+    const planObj={text,dist:'',weeks,raceDate:'',startDate:planStartDate,meta:metaStr,createdAt:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})};
     localStorage.setItem('current_training_plan',JSON.stringify(planObj));
     // Clear stale workout caches so new plan entries load fresh
     const _ck=[];for(let _i=0;_i<localStorage.length;_i++){const _k=localStorage.key(_i);if(_k&&_k.startsWith('workout_cache_'))_ck.push(_k);}
@@ -10294,7 +10259,7 @@ function uploadPlanFromFile(evt){
     if(meta)meta.textContent=metaStr;
     if(outputDiv){outputDiv.style.display='block';setTimeout(()=>outputDiv.scrollIntoView({behavior:'smooth',block:'start'}),100);}
     loadCurrentPlan();
-    if(status)status.textContent='✅ Plan loaded! ('+weeks+' weeks to '+dist+(raceDate?' • Race: '+raceDate:'')+')';
+    alert('Training plan loaded from '+file.name+'.');
     evt.target.value='';
   };
   reader.readAsText(file);
