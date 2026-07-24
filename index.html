@@ -3188,10 +3188,33 @@ function renderSectionCharts(containerId,cfgs){
   const data=getCurrentWeekChartData();
   cfgs.forEach(function(cfg){
     const id='section_'+containerId+'_'+cfg.k,values=data.metrics.map(function(m){return m[cfg.k]||0;});
+    const plotted=values.map(function(v){return v>0?v:null;});
+    const logged=values.filter(function(v){return v>0;});
+    const formatValue=cfg.format||function(v){return Math.round(v)+(cfg.unit?' '+cfg.unit:'');};
+    const avg=logged.length?logged.reduce(function(sum,v){return sum+v;},0)/logged.length:0;
+    const min=logged.length?Math.min.apply(null,logged):0,max=logged.length?Math.max.apply(null,logged):0;
+    const summary=logged.length
+      ?'<strong>'+formatValue(avg)+'</strong> weekly average &nbsp;&bull;&nbsp; <strong>'+formatValue(min)+' to '+formatValue(max)+'</strong> range'
+      :'No data logged this week';
     const card=document.createElement('div');card.className='dash-card';
-    card.innerHTML='<h3>'+cfg.l+' — This Week</h3><canvas id="'+id+'"></canvas><div style="font-size:.72rem;color:#98a2b3;text-align:center;margin-top:4px;">'+(values.some(Boolean)?'Updated from your entries':'No data logged this week')+'</div>';
+    card.innerHTML='<h3 style="margin-bottom:3px;">'+cfg.l+' &mdash; This Week</h3>'
+      +(cfg.help?'<div style="font-size:.75rem;color:#667085;margin-bottom:8px;line-height:1.35;">'+cfg.help+'</div>':'')
+      +'<div style="height:220px;"><canvas id="'+id+'"></canvas></div>'
+      +'<div style="font-size:.75rem;color:#667085;text-align:center;margin-top:8px;line-height:1.4;">'+summary+'</div>';
     grid.appendChild(card);if(charts[id]){charts[id].destroy();delete charts[id];}
-    charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'line',data:{labels:data.labels,datasets:[{data:values,borderColor:cfg.c,backgroundColor:cfg.c+'22',fill:true,tension:.3,pointRadius:4}]},options:{plugins:{legend:{display:false}},animation:false}});
+    charts[id]=new Chart(document.getElementById(id).getContext('2d'),{
+      type:'line',
+      data:{labels:data.labels,datasets:[{data:plotted,borderColor:cfg.c,backgroundColor:cfg.c+'18',fill:true,tension:.25,pointRadius:5,pointHoverRadius:7,spanGaps:true,borderWidth:2}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,animation:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return (cfg.tooltipLabel||cfg.l)+': '+formatValue(ctx.parsed.y);}}}},
+        scales:{
+          x:{grid:{display:false},ticks:{color:'#667085',font:{size:11}}},
+          y:{reverse:!!cfg.reverse,grace:'12%',title:{display:true,text:cfg.axisLabel||cfg.l,color:'#475467',font:{size:11,weight:'600'}},ticks:{color:'#667085',font:{size:10},callback:function(v){return formatValue(v);}},grid:{color:'rgba(148,163,184,.18)'}}
+        }
+      }
+    });
   });
 }
 function relocateDashboardCharts(){
@@ -3201,7 +3224,14 @@ function relocateDashboardCharts(){
   if(wellness&&weight)wellness.appendChild(weight);
   if(activities&&miles)activities.appendChild(miles);
 }
-function renderActivitySectionCharts(){renderSectionCharts('activityChartsGrid',[{k:'pace',l:'Pace',c:'#e67e22'},{k:'watts',l:'Watts',c:'#8e44ad'},{k:'time',l:'Exercise Time',c:'#16a085'}]);renderMilesChart();}
+function renderActivitySectionCharts(){
+  renderSectionCharts('activityChartsGrid',[
+    {k:'pace',l:'Average Running Pace',tooltipLabel:'Average pace',axisLabel:'Minutes per mile',c:'#e67e22',reverse:true,help:'Lower is faster. Each point is the average pace from that day’s logged runs.',format:function(v){return fmtPace(v)+'/mi';}},
+    {k:'watts',l:'Average Running Power',tooltipLabel:'Average power',axisLabel:'Watts (W)',c:'#8e44ad',help:'Higher watts mean greater running power output. Each point averages that day’s recorded runs.',format:function(v){return Math.round(v)+' W';}},
+    {k:'time',l:'Total Exercise Time',tooltipLabel:'Exercise time',axisLabel:'Minutes',c:'#16a085',help:'Total duration of all activities logged on each day.',format:function(v){return fmtMins(v);}}
+  ]);
+  renderMilesChart();
+}
 function renderNutritionSectionCharts(){renderSectionCharts('nutritionChartsGrid',[{k:'calories',l:'Calories',c:'#f39c12'},{k:'water',l:'Water',c:'#3498db'}]);}
 function renderLibrarySectionCharts(){renderSectionCharts('libraryChartsGrid',[{k:'audiobook',l:'Audiobook Time',c:'#27ae60'}]);}
 function renderSkillSectionCharts(){renderSectionCharts('skillChartsGrid',[{k:'skill',l:'Skill-Building Time',c:'#e91e8c'}]);}
