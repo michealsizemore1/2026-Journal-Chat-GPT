@@ -3462,6 +3462,15 @@ function relocateDashboardCharts(){
   if(wellness&&weight)wellness.appendChild(weight);
   if(activities&&miles)activities.appendChild(miles);
 }
+function arrangeActivityTrainingCards(){
+  const panel=document.querySelector('#tab-activities > .panel');
+  const workout=document.getElementById('todayWorkoutCard');
+  const active=document.getElementById('tpPersistSection');
+  const archive=document.getElementById('tpArchiveSection');
+  if(!panel)return;
+  if(active&&archive)panel.insertBefore(active,archive);
+  if(workout)panel.insertBefore(workout,panel.firstElementChild);
+}
 function renderActivitySectionCharts(){
   renderMilesChart();
 }
@@ -10462,6 +10471,7 @@ function v26SavedFeedback(){
   window._v26SaveTimer=setTimeout(function(){el.textContent='Saved on this device';},450);
 }
 window.addEventListener('DOMContentLoaded',function(){
+  arrangeActivityTrainingCards();
   relocateDashboardCharts();
   makeHabitsInformational();
   if(localStorage.getItem('v26_focus')==='1'){document.body.classList.add('v26-focus');var f=document.getElementById('v26FocusBtn');if(f)f.textContent='Exit focus';}
