@@ -1174,6 +1174,28 @@ body.v26-compact .journal-col textarea{height:70px;}
 </div></div>
 
 <div id="tab-activities" class="tab-panel"><div class="panel">
+  <!-- Persistent Training Plan -->
+  <div id="tpPersistSection" style="display:none;" class="tp-persist">
+    <div class="tp-persist-header">
+      <span class="tp-persist-title">&#x1F4CB; Active Training Plan</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="tp-action-btn" style="background:#667eea;color:white;" onclick="openAdjustPlan()">&#x270F; Adjust</button>
+        <button class="tp-action-btn" style="background:#27ae60;color:white;" onclick="archivePlan()">&#x1F4E6; Archive</button>
+        <button class="tp-action-btn" style="background:#e74c3c;color:white;" onclick="deletePlan()">&#x1F5D1; Delete</button>
+      </div>
+    </div>
+    <div class="tp-persist-meta" id="tpPersistMeta"></div>
+    <div class="tp-persist-body" id="tpPersistBody"></div>
+    <div class="tp-adjust-box" id="tpAdjustBox">
+      <div style="font-size:0.82rem;font-weight:600;color:#667eea;margin-bottom:6px;">&#x1F4AC; Tell AI how to adjust the plan:</div>
+      <textarea id="tpAdjustInput" placeholder="e.g. I missed this week due to illness, please shift the plan forward one week and adjust the long run schedule accordingly..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="tp-gen-btn" id="tpAdjustBtn" onclick="submitAdjustPlan()">&#x2728; Adjust Plan</button>
+        <button onclick="closeAdjustPlan()" style="font-size:0.84rem;padding:5px 14px;border-radius:6px;border:1px solid #e9ecef;background:white;cursor:pointer;color:#888;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Daily Physical Exercises -->
   <div class="section" style="border:1px solid #f0f0f0;border-radius:10px;margin-bottom:12px;">
     <div class="section-title green compact-toggle" role="button" tabindex="0" aria-expanded="false" aria-controls="physicalExerciseBody" onclick="toggleCompactSection('physicalExerciseBody','physicalExerciseArrow',this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCompactSection('physicalExerciseBody','physicalExerciseArrow',this);}">
@@ -1463,28 +1485,6 @@ body.v26-compact .journal-col textarea{height:70px;}
 
   <div id="runMetricsPanel" style="display:none;background:#fff8f0;border:1px solid #f5cba7;border-radius:10px;padding:14px 16px;margin-bottom:12px;"></div>
   <div id="activityList"></div>
-  </div>
-
-  <!-- Persistent Training Plan -->
-  <div id="tpPersistSection" style="display:none;" class="tp-persist">
-    <div class="tp-persist-header">
-      <span class="tp-persist-title">&#x1F4CB; Active Training Plan</span>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="tp-action-btn" style="background:#667eea;color:white;" onclick="openAdjustPlan()">&#x270F; Adjust</button>
-        <button class="tp-action-btn" style="background:#27ae60;color:white;" onclick="archivePlan()">&#x1F4E6; Archive</button>
-        <button class="tp-action-btn" style="background:#e74c3c;color:white;" onclick="deletePlan()">&#x1F5D1; Delete</button>
-      </div>
-    </div>
-    <div class="tp-persist-meta" id="tpPersistMeta"></div>
-    <div class="tp-persist-body" id="tpPersistBody"></div>
-    <div class="tp-adjust-box" id="tpAdjustBox">
-      <div style="font-size:0.82rem;font-weight:600;color:#667eea;margin-bottom:6px;">&#x1F4AC; Tell AI how to adjust the plan:</div>
-      <textarea id="tpAdjustInput" placeholder="e.g. I missed this week due to illness, please shift the plan forward one week and adjust the long run schedule accordingly..."></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="tp-gen-btn" id="tpAdjustBtn" onclick="submitAdjustPlan()">&#x2728; Adjust Plan</button>
-        <button onclick="closeAdjustPlan()" style="font-size:0.84rem;padding:5px 14px;border-radius:6px;border:1px solid #e9ecef;background:white;cursor:pointer;color:#888;">Cancel</button>
-      </div>
-    </div>
   </div>
 
   <!-- Archived Plans -->
