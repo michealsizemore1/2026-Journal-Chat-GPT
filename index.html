@@ -1268,11 +1268,12 @@ body.v26-compact .journal-col textarea{height:70px;}
     </div>
   </div>
 
-  <!-- Header -->
+  <div class="act-section-toggle" onclick="toggleActivitiesLog()" role="button" tabindex="0" aria-expanded="false" aria-controls="activitiesLogSection" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleActivitiesLog();}" style="background:#fffaf5;border:1px solid #f3dcc7;border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:1rem;">
+    <span id="activitiesLogArrow">&#x25B6;</span> &#x1F3C3; Activities
+  </div>
+  <div id="activitiesLogSection" style="display:none;">
+  <!-- Header actions -->
   <div class="act-header-clean">
-    <div class="act-title-block">
-      <h2 style="margin:0;font-size:1.1rem;color:#e67e22;">&#x1F3C3; Activities</h2>
-    </div>
     <div class="act-header-actions">
       <button class="lib-add-btn" onclick="toggleAddActivity()">+ Add</button>
       <label class="lib-add-btn" style="background:#00b2e3;cursor:pointer;" title="Import Garmin Connect CSV">&#x1F4E5; Garmin<input type="file" accept=".csv" style="display:none" onchange="importActivities(event,'garmin')"></label>
@@ -1397,6 +1398,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 
   <div id="runMetricsPanel" style="display:none;background:#fff8f0;border:1px solid #f5cba7;border-radius:10px;padding:14px 16px;margin-bottom:12px;"></div>
   <div id="activityList"></div>
+  </div>
 
   <!-- Persistent Training Plan -->
   <div id="tpPersistSection" style="display:none;" class="tp-persist">
@@ -3586,6 +3588,17 @@ function saveWrnNote(){
 }
 function clearWrnNote(){var ta=document.getElementById('wrnNote');if(ta)ta.value='';saveWrnNote();}
 function changeWrnWeek(delta){wrnOff+=delta;loadWrnNote();}
+function toggleActivitiesLog(){
+  var section=document.getElementById('activitiesLogSection');
+  var arrow=document.getElementById('activitiesLogArrow');
+  var toggle=section?section.previousElementSibling:null;
+  if(!section)return;
+  var opening=section.style.display==='none';
+  section.style.display=opening?'block':'none';
+  if(arrow)arrow.innerHTML=opening?'&#x25BC;':'&#x25B6;';
+  if(toggle)toggle.setAttribute('aria-expanded',opening?'true':'false');
+  if(opening)renderActivities();
+}
 function toggleWeekRunNotes(){
   var sec=document.getElementById('wrnSection');var arr=document.getElementById('wrnArrow');
   if(!sec)return;var open=sec.style.display!=='none';
