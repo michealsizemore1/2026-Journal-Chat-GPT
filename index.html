@@ -210,7 +210,6 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .act-filter select,.act-filter input{border:1px solid #e9ecef;border-radius:6px;padding:5px 10px;font-size:0.84rem;color:#555;outline:none;background:white;}
 .act-header-clean{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;background:#fffaf5;border:1px solid #f3dcc7;border-radius:12px;}
 .act-title-block{display:flex;flex-direction:column;gap:3px;}
-.act-count-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;min-height:20px;}
 .act-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;}
 .act-header-actions .lib-add-btn,.act-header-actions button{padding:6px 10px!important;font-size:.76rem!important;border-radius:7px!important;line-height:1.2;min-height:30px;}
 .act-filter-shell{border:1px solid #e4e7ec;border-radius:10px;background:#fafbfc;margin-bottom:12px;overflow:hidden;}
@@ -1213,10 +1212,6 @@ body.v26-compact .journal-col textarea{height:70px;}
   <div class="act-header-clean">
     <div class="act-title-block">
       <h2 style="margin:0;font-size:1.1rem;color:#e67e22;">&#x1F3C3; Activities</h2>
-      <div class="act-count-row">
-      <span id="actCount" style="font-size:0.82rem;color:#888;"></span>
-      <span id="actShowingLabel" style="font-size:0.78rem;color:#aaa;"></span>
-      </div>
     </div>
     <div class="act-header-actions">
       <button class="lib-add-btn" onclick="toggleAddActivity()">+ Add</button>
@@ -1225,7 +1220,6 @@ body.v26-compact .journal-col textarea{height:70px;}
       <button class="lib-add-btn" style="background:#27ae60;" onclick="exportActivities()">&#x1F4BE; Export</button>
       <button id="actExpandAllBtn" style="display:none;background:#e67e22;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:0.75rem;cursor:pointer;" onclick="expandAllActs()">&#x229E; Expand</button>
       <button id="actCollapseAllBtn" style="display:none;background:#888;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:0.75rem;cursor:pointer;" onclick="collapseAllActs()">&#x229F; Collapse</button>
-      <button class="lib-add-btn" style="background:#e74c3c;" onclick="clearAllActivities()">&#x1F5D1; Clear All</button>
     </div>
   </div>
 
@@ -8627,12 +8621,6 @@ function getActivities(){const r=localStorage.getItem('activities_data');return 
 function saveActivities(a){localStorage.setItem('activities_data',JSON.stringify(a));}
 
 
-function clearAllActivities(){
-  if(!confirm('Delete ALL '+getActivities().length+' activities? This cannot be undone.'))return;
-  localStorage.removeItem('activities_data');
-  renderActivities();
-  alert('All activities cleared. You can now re-import your CSV.');
-}
 function toggleAddActivity(){
   const f=document.getElementById('addActivityForm');if(!f)return;
   if(f.style.display!=='none'){cancelAddActivity();return;}
