@@ -1187,7 +1187,6 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div class="goal-row"><label>Goal 10,000 steps - Actual:</label><input type="number" id="exSteps" min="0" placeholder="Steps"></div>
     </div>
   </div>
-  <div id="activityChartsHome"></div>
   <!-- Mileage Summary -->
   <div id="mileageSummaryBar" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
     <div style="flex:1;min-width:120px;background:linear-gradient(135deg,#e8f8f0,#d5f5e3);border:1px solid #a9dfbf;border-radius:10px;padding:10px 12px;text-align:center;">
@@ -1517,6 +1516,9 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div class="act-section-toggle" onclick="toggleArchivedPlans()"><span id="archiveArrow">&#x25B6;</span> &#x1F4BC; Archived Plans</div>
     <div id="tpArchiveList" style="display:none;"></div>
   </div>
+
+  <!-- Activities charts -->
+  <div id="activityChartsHome" style="margin-top:16px;"></div>
 
 </div></div>
 <!-- BIBLE NOTES TAB -->
@@ -2106,8 +2108,6 @@ body.v26-compact .journal-col textarea{height:70px;}
 
 <!-- ═══════════════════════════════ NUTRITION TAB ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-nutrition"><div class="panel">
-  <div id="nutritionChartsGrid" class="dash-grid" style="padding:0 0 16px;"></div>
-
   <!-- MEAL PLANNING -->
   <div class="section-title orange" style="margin-bottom:10px;">&#x1F4CB; Meal Planning</div>
   <div style="background:#fffdf5;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
@@ -2264,6 +2264,9 @@ body.v26-compact .journal-col textarea{height:70px;}
   </div>
   <!-- Legacy totals (hidden, kept for save/load compat) -->
   <input type="hidden" id="nuCalVal"><input type="hidden" id="nuProtVal"><input type="hidden" id="nuFatVal"><input type="hidden" id="nuCarbsVal">
+
+  <!-- Nutrition charts -->
+  <div id="nutritionChartsGrid" class="dash-grid" style="padding:16px 0 0;"></div>
 
 </div></div>
 <!-- ═══════════════════════════════ END NUTRITION TAB ═══════════════════════════════ -->
@@ -2469,8 +2472,6 @@ function dailyCheckLabel(el){
   var row=el.closest('.priority-item,.task-row,.goal-row');
   if(row){
     var input=row.querySelector('input[type="text"],textarea');
-    if(input&&input.value.trim())return input.value.trim();
-    if(input&&input.placeholder)return input.placeholder.replace(/\.\.\.$/,'').trim();
     var label=row.querySelector('label');
     if(label){
       var clone=label.cloneNode(true);
@@ -2478,6 +2479,8 @@ function dailyCheckLabel(el){
       var text=clone.textContent.replace(/\s+/g,' ').replace(/:$/,'').trim();
       if(text)return text;
     }
+    if(input&&input.value.trim())return input.value.trim();
+    if(input&&input.placeholder)return input.placeholder.replace(/\.\.\.$/,'').trim();
   }
   if(el.title){
     var title=el.title.replace(/^Mark\s+/i,'').replace(/\s+complete$/i,'').trim();
