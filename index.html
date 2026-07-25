@@ -1728,6 +1728,11 @@ body.v26-compact .journal-col textarea{height:70px;}
       </label>
       <span style="font-size:0.72rem;color:#528062;">Uploaded files are saved with this Sermon date.</span>
     </div>
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap;">
+      <input type="url" id="bTranscriptYouTubeURL" placeholder="Paste YouTube sermon link..." style="flex:1 1 230px;min-width:0;border:1px solid #b7e4c7;border-radius:7px;padding:7px 9px;font-size:0.82rem;box-sizing:border-box;">
+      <button id="bYouTubeFillBtn" onclick="youtubeTranscriptFill()" style="background:#dc2626;color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:0.8rem;cursor:pointer;font-weight:700;white-space:nowrap;">&#x25B6; Get Transcript &amp; Fill Fields</button>
+    </div>
+    <div style="font-size:0.69rem;color:#71867a;margin:-3px 0 8px;">Works with public YouTube videos that have accessible captions. AI credits are used only after captions are found.</div>
     <textarea id="bTranscriptText" rows="5" oninput="markTranscriptEdited()" placeholder="Paste or upload sermon transcript here..." style="width:100%;border:1px solid #b7e4c7;border-radius:7px;padding:8px;font-size:0.82rem;resize:vertical;box-sizing:border-box;font-family:'Courier New',Courier,monospace;white-space:pre;overflow-x:auto;" wrap="off" spellcheck="false"></textarea>
     <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
       <button onclick="aiTranscriptFill()" id="bTranscriptAIBtn" style="background:linear-gradient(135deg,#1e6b3a,#27ae60);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:0.85rem;cursor:pointer;font-weight:600;">&#x1F9E0; AI Fill All Fields</button>
@@ -5699,6 +5704,34 @@ function clearTranscript(){
   if(status)status.style.display='none';
   updateTranscriptSummary('','');
 }
+async function youtubeTranscriptFill(){
+  var url=((document.getElementById('bTranscriptYouTubeURL')||{}).value||'').trim();
+  if(!url){alert('Paste the YouTube sermon link first.');return;}
+  var btn=document.getElementById('bYouTubeFillBtn'),status=document.getElementById('bTranscriptStatus');
+  if(btn){btn.disabled=true;btn.textContent='Getting captions...';}
+  if(status){status.style.display='inline';status.style.color='#667eea';status.textContent='Retrieving available YouTube captions...';}
+  try{
+    var data=await journalProtectedFunction({action:'youtube-transcript',url:url});
+    var text=data.transcript||'';
+    if(!text)throw new Error('No transcript text was returned.');
+    var ta=document.getElementById('bTranscriptText');
+    var label='YouTube captions'+(data.title?' — '+data.title:'');
+    if(ta){ta.value=text;ta.dataset.fileName=label;}
+    var sermonURL=document.getElementById('bSermonURL');if(sermonURL)sermonURL.value=url;
+    var title=document.getElementById('bSermonTitle');if(title&&data.title&&!title.value)title.value=data.title;
+    var speaker=document.getElementById('bSermonSpeaker');if(speaker&&data.author&&!speaker.value)speaker.value=data.author;
+    persistUploadedTranscript(label,text);
+    updateTranscriptSummary(label,text);
+    toggleSermonTranscript(true);
+    if(status){status.style.color='#27ae60';status.textContent='Captions saved. AI is filling the sermon fields...';}
+    if(btn){btn.textContent='Captions found';}
+    aiTranscriptFill();
+  }catch(error){
+    if(status){status.style.color='#e74c3c';status.textContent=error.message||String(error);}
+  }finally{
+    setTimeout(function(){if(btn){btn.disabled=false;btn.innerHTML='&#x25B6; Get Transcript &amp; Fill Fields';}},900);
+  }
+}
 function aiTranscriptFill(){
   var transcript=(document.getElementById('bTranscriptText')||{}).value||'';
   if(!transcript.trim()){alert('Please paste or upload a transcript first.');return;}
@@ -5708,7 +5741,7 @@ function aiTranscriptFill(){
   var status=document.getElementById('bTranscriptStatus');
   if(btn){btn.disabled=true;btn.textContent='Analyzing...';}
   if(status){status.style.display='inline';status.textContent='AI is reading the transcript...';}
-  var maxChars=8000;
+  var maxChars=60000;
   var excerpt=transcript.length>maxChars?transcript.slice(0,maxChars)+'...[truncated]':transcript;
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
@@ -5725,6 +5758,7 @@ function aiTranscriptFill(){
       var el=document.getElementById(map[k]);
       if(el&&fields[k])el.value=fields[k];
     });
+    saveBibleEntry();
     if(btn){btn.disabled=false;btn.textContent='&#x1F9E0; AI Fill All Fields';}
     if(status){status.textContent='&#x2713; Fields filled from transcript!';status.style.color='#27ae60';}
   }).catch(function(e){
@@ -5770,11 +5804,14 @@ function loadBibleEntry(){
     fields.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.value=e[keys[i]]||'';});
     const transcript=document.getElementById('bTranscriptText');
     if(transcript){transcript.value=e.transcript||'';transcript.dataset.fileName=e.transcriptFileName||'';}
+    const youtube=document.getElementById('bTranscriptYouTubeURL');
+    if(youtube)youtube.value=/youtu\.?be/i.test(e.sermonURL||'')?(e.sermonURL||''):'';
     updateTranscriptSummary(e.transcriptFileName||'',e.transcript||'');
   } else {
     fields.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     const transcript=document.getElementById('bTranscriptText');
     if(transcript){transcript.value='';transcript.dataset.fileName='';}
+    const youtube=document.getElementById('bTranscriptYouTubeURL');if(youtube)youtube.value='';
     updateTranscriptSummary('','');
   }
   const transcriptFile=document.getElementById('bTranscriptFile');if(transcriptFile)transcriptFile.value='';
@@ -10893,6 +10930,20 @@ function journalInstallAIProxy(){
   };
 }
 function journalAIAvailable(){return !!(journalCloudClient&&journalCloudUser);}
+async function journalProtectedFunction(body){
+  if(!journalCloudClient||!journalCloudUser)throw new Error('Sign in to your private journal first.');
+  var sessionResult=await journalCloudClient.auth.getSession();
+  var token=sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.access_token;
+  if(!token)throw new Error('Your journal session expired. Sign in again.');
+  var response=await journalOriginalFetch(JOURNAL_SUPABASE_URL+'/functions/v1/anthropic-proxy',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,'apikey':JOURNAL_SUPABASE_KEY},
+    body:JSON.stringify(body||{})
+  });
+  var data=await response.json().catch(function(){return{};});
+  if(!response.ok)throw new Error((data.error&&data.error.message)||'The protected journal service could not complete the request.');
+  return data;
+}
 function journalCloudCanSyncKey(k){
   if(!k)return false;
   var lower=String(k).toLowerCase();
