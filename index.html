@@ -411,6 +411,8 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .meal-header:hover{background:#fff3e0;}
 .meal-body{padding:8px 10px;background:#fff;}
 .meal-add-btn{background:#e67e22;color:#fff;border:none;padding:3px 8px;border-radius:5px;font-size:0.75rem;cursor:pointer;white-space:nowrap;}
+.meal-action-btn{background:#fff;border:1px solid #d9c8aa;color:#6b4b16;padding:5px 9px;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.meal-action-btn:hover{background:#fff4de;border-color:#e6a94f;}
 .meal-header>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1;}
 .meal-header>.meal-right{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 .meal-subtotal{font-size:0.72rem;color:#888;white-space:nowrap;}
@@ -1693,14 +1695,8 @@ body.v26-compact .journal-col textarea{height:70px;}
 
 
 
-    <!-- Date Navigation -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;background:linear-gradient(135deg,#fff8f0,#fdebd0);border-radius:10px;padding:10px 12px;border:1px solid #f0c080;">
-      <button onclick="biblePrevDay()" style="background:#e67e22;color:#fff;border:none;border-radius:6px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">&#x2039;</button>
-      <input type="date" id="bibleDate" onchange="loadBibleEntry()" style="flex:1;border:1px solid #e9ecef;border-radius:6px;padding:6px 8px;font-size:0.9rem;text-align:center;">
-      <button onclick="bibleNextDay()" style="background:#e67e22;color:#fff;border:none;border-radius:6px;width:32px;height:32px;font-size:1.1rem;cursor:pointer;">&#x203A;</button>
-      <button onclick="saveBibleEntry()" style="background:linear-gradient(135deg,#e67e22,#d35400);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:0.85rem;cursor:pointer;white-space:nowrap;">&#x1F4BE; Save</button>
-      <button onclick="clearBibleEntry()" style="background:#e9ecef;color:#888;border:none;border-radius:6px;padding:6px 12px;font-size:0.85rem;cursor:pointer;white-space:nowrap;">&#x1F5D1; Clear</button>
-    </div>
+    <!-- Bible entries follow the journal's active date. -->
+    <input type="hidden" id="bibleDate">
 
     <!-- Sermon Section -->
     <div class="section" style="margin-bottom:10px;">
@@ -1728,9 +1724,11 @@ body.v26-compact .journal-col textarea{height:70px;}
     </div>
   </div>
 </div>
-<div style="display:flex;align-items:center;gap:8px;">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
   <div class="tri-check" data-key="spSermon" onclick="triClick(this)" title="Mark Sermon complete"></div>
   <div class="section-title" style="color:#6d4c41;background:linear-gradient(135deg,#fff8f0,#fdebd0);border-left:4px solid #e67e22;flex:1;">&#x1F3AC; Sermon</div>
+  <button id="bBibleSaveBtn" onclick="saveBibleEntry()" style="background:linear-gradient(135deg,#e67e22,#d35400);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x1F4BE; Save</button>
+  <button onclick="clearBibleEntry()" style="background:#e9ecef;color:#777;border:none;border-radius:6px;padding:6px 10px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x1F5D1; Clear</button>
 </div>
       <div class="task-row"><label style="min-width:90px;font-weight:600;">Title:</label><input type="text" id="bSermonTitle" placeholder="Sermon title…" style="flex:1;border:1px solid #e9ecef;border-radius:6px;padding:5px 8px;font-size:0.85rem;"></div>
       <div class="task-row"><label style="min-width:90px;font-weight:600;">Speaker:</label><input type="text" id="bSermonSpeaker" placeholder="Pastor / speaker…" style="flex:1;border:1px solid #e9ecef;border-radius:6px;padding:5px 8px;font-size:0.85rem;"></div>
@@ -2262,26 +2260,26 @@ body.v26-compact .journal-col textarea{height:70px;}
   <div id="mealSections" style="margin-bottom:8px;max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div class="meal-section" id="ms-breakfast" data-meal="breakfast">
       <div class="meal-header" onclick="toggleMealSection('breakfast')">
-        <span>🌅 Breakfast</span><div class="meal-right"><span class="meal-subtotal" id="st-breakfast" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('breakfast')" style="background:none;border:none;color:#667eea;font-size:0.9rem;cursor:pointer;padding:0 2px;" title="Save breakfast as a meal">&#x1F4BE;</button><button onclick="event.stopPropagation();addFoodItem('breakfast')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-breakfast">▸</span></div>
+        <span>🌅 Breakfast</span><div class="meal-right"><span class="meal-subtotal" id="st-breakfast" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('breakfast')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-breakfast">▸</span></div>
       </div>
       <div class="meal-body" id="mb-breakfast" style="display:none;"><div id="foodList-breakfast"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-breakfast" rows="1" placeholder="Breakfast notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-breakfast" rows="1" placeholder="Breakfast notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('breakfast')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('breakfast')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-lunch" data-meal="lunch">
       <div class="meal-header" onclick="toggleMealSection('lunch')">
-        <span>🥗 Lunch</span><div class="meal-right"><span class="meal-subtotal" id="st-lunch" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('lunch')" style="background:none;border:none;color:#667eea;font-size:0.9rem;cursor:pointer;padding:0 2px;" title="Save lunch as a meal">&#x1F4BE;</button><button onclick="event.stopPropagation();addFoodItem('lunch')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-lunch">▸</span></div>
+        <span>🥗 Lunch</span><div class="meal-right"><span class="meal-subtotal" id="st-lunch" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('lunch')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-lunch">▸</span></div>
       </div>
       <div class="meal-body" id="mb-lunch" style="display:none;"><div id="foodList-lunch"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-lunch" rows="1" placeholder="Lunch notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-lunch" rows="1" placeholder="Lunch notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('lunch')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('lunch')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-dinner" data-meal="dinner">
       <div class="meal-header" onclick="toggleMealSection('dinner')">
-        <span>🍽️ Dinner</span><div class="meal-right"><span class="meal-subtotal" id="st-dinner" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('dinner')" style="background:none;border:none;color:#667eea;font-size:0.9rem;cursor:pointer;padding:0 2px;" title="Save dinner as a meal">&#x1F4BE;</button><button onclick="event.stopPropagation();addFoodItem('dinner')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-dinner">▸</span></div>
+        <span>🍽️ Dinner</span><div class="meal-right"><span class="meal-subtotal" id="st-dinner" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('dinner')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-dinner">▸</span></div>
       </div>
       <div class="meal-body" id="mb-dinner" style="display:none;"><div id="foodList-dinner"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-dinner" rows="1" placeholder="Dinner notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-dinner" rows="1" placeholder="Dinner notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('dinner')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('dinner')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-snack" data-meal="snack">
@@ -2421,7 +2419,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 <!-- Copy Day Modal -->
 <div id="copyDayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:12px;padding:22px;width:90%;max-width:340px;box-shadow:0 4px 24px rgba(0,0,0,0.18);">
-    <h3 style="margin:0 0 14px;font-size:1rem;color:#2c3e50;">&#x1F4C5; Copy Food Between Days</h3>
+    <h3 id="copyDayModalTitle" style="margin:0 0 14px;font-size:1rem;color:#2c3e50;">&#x1F4C5; Copy Food Between Days</h3>
     <label style="font-size:0.82rem;color:#555;display:block;margin-bottom:6px;">Copy FROM date:</label>
     <input type="date" id="copyDayFrom" onchange="updateCopyDayFoodList()" style="width:100%;border:1px solid #ddd;border-radius:6px;padding:7px;font-size:0.9rem;margin-bottom:12px;box-sizing:border-box;">
     <label style="font-size:0.82rem;color:#555;display:block;margin-bottom:6px;">Copy TO date:</label>
@@ -4882,10 +4880,26 @@ function deleteMeal(idx){
 function openCopyDayModal(){
   var modal=document.getElementById('copyDayModal');if(!modal)return;
   modal.style.display='flex';
+  var title=document.getElementById('copyDayModalTitle');if(title)title.innerHTML='&#x1F4C5; Copy Food Between Days';
   var from=document.getElementById('copyDayFrom');
   var to=document.getElementById('copyDayTo');
   if(from)from.value=dk(today);
   if(to)to.value=dk(today);
+  updateCopyDayFoodList();
+}
+function openCopyMealToDate(mealType){
+  var modal=document.getElementById('copyDayModal');if(!modal)return;
+  var label=(MEAL_LABELS[mealType]||mealType).replace(/^[^\w]+/,'');
+  var title=document.getElementById('copyDayModalTitle');
+  if(title)title.textContent='Copy '+label+' to Date';
+  var from=document.getElementById('copyDayFrom');
+  var to=document.getElementById('copyDayTo');
+  var meal=document.getElementById('copyDayMeal');
+  var nextDay=new Date(today);nextDay.setDate(nextDay.getDate()+1);
+  if(from)from.value=dk(today);
+  if(to)to.value=dk(nextDay);
+  if(meal)meal.value=mealType;
+  modal.style.display='flex';
   updateCopyDayFoodList();
 }
 
@@ -5708,7 +5722,7 @@ function saveBibleEntry(){
   const transcriptStatus=document.getElementById('bTranscriptStatus');
   if(transcriptStatus&&entry.transcript){transcriptStatus.style.display='inline';transcriptStatus.style.color='#27ae60';transcriptStatus.textContent='Transcript saved with this Sermon date';}
   renderBibleHistory();
-  const btn=document.querySelector('#tab-bible button[onclick="saveBibleEntry()"]');
+  const btn=document.getElementById('bBibleSaveBtn');
   if(btn){const orig=btn.textContent;btn.textContent='✓ Saved!';setTimeout(()=>btn.textContent=orig,1500);}
 }
 function loadBibleEntry(){
@@ -6077,10 +6091,7 @@ function toggleSkillCard(id){
 }
 function renderBibleTab(){
   const inp=document.getElementById('bibleDate');
-  if(inp&&!inp.value){
-    const t=new Date();
-    inp.value=bibleDateKey(t);
-  }
+  if(inp)inp.value=bibleDateKey(today);
   loadBibleEntry();
   renderBibleImages(getBibleDateInput());
   try{_initScriptureFocus();}catch(e){}
