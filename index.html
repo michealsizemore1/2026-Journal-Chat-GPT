@@ -1222,6 +1222,19 @@ body.v26-compact .journal-col textarea{height:70px;}
     <label for="gaAudiobookTime" style="font-size:0.85rem;font-weight:600;color:#555;white-space:nowrap;">&#x23F1; Reading/Listening Time:</label>
     <input type="text" id="gaAudiobookTime" placeholder="e.g. 45 min" style="flex:1;max-width:220px;border:1px solid #e9ecef;border-radius:6px;padding:6px 10px;font-size:0.85rem;">
   </div>
+  <div style="border:1px solid #cfd5ff;background:#f8f9ff;border-radius:10px;margin-bottom:14px;overflow:hidden;">
+    <div onclick="toggleAudiobookFinishPlanner()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;cursor:pointer;color:#4f46a5;font-size:0.84rem;font-weight:700;">
+      <span>&#x1F3AF; Finish an Audiobook by Date</span><span id="audioPlanArrow">&#x25B6;</span>
+    </div>
+    <div id="audioPlanPanel" style="display:none;border-top:1px solid #dfe3ff;padding:10px 12px;">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end;">
+        <div style="flex:2 1 180px;"><label style="display:block;font-size:0.72rem;font-weight:700;color:#555;margin-bottom:3px;">Audiobook name</label><input id="audioPlanBook" type="text" placeholder="Enter the book title" style="width:100%;box-sizing:border-box;border:1px solid #cfd5ff;border-radius:6px;padding:7px 9px;font-size:0.84rem;"></div>
+        <div style="flex:1 1 145px;"><label style="display:block;font-size:0.72rem;font-weight:700;color:#555;margin-bottom:3px;">Finish by</label><input id="audioPlanDate" type="date" style="width:100%;box-sizing:border-box;border:1px solid #cfd5ff;border-radius:6px;padding:7px 9px;font-size:0.84rem;"></div>
+        <button id="audioPlanCreateBtn" onclick="createAudiobookFinishPlan()" style="background:#667eea;color:#fff;border:none;border-radius:7px;padding:8px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;white-space:nowrap;">Create Outline</button>
+      </div>
+      <div id="audioPlanResult" style="display:none;margin-top:10px;"></div>
+    </div>
+  </div>
   <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
       <select class="lib-sort" onchange="sortOrder=this.value;renderLibrary()">
@@ -2480,6 +2493,25 @@ function wkStart(off=0){const t=new Date();t.setDate(t.getDate()+off*7);const do
 function wkStartOf(d){const dow=(d.getDay()+6)%7;const ws=new Date(d);ws.setDate(d.getDate()-dow);ws.setHours(0,0,0,0);return ws;}
 function parseMins(s){if(!s)return 0;s=s.trim();let m=s.match(/(\d+)\s*hr?s?\s*(\d*)\s*min?s?/i);if(m)return+m[1]*60+(+m[2]||0);m=s.match(/(\d+)\s*min?s?/i);if(m)return+m[1];m=s.match(/^(\d+):(\d{2}):(\d{2})$/);if(m)return+m[1]*60+ +m[2]+ +m[3]/60;m=s.match(/^(\d+):(\d{2})$/);if(m)return+m[1]*60+ +m[2];const n=parseFloat(s);return isNaN(n)?0:Math.round(n);}
 function fmtMins(m){if(!m)return'-';m=Math.round(m);return m<60?m+'m':Math.floor(m/60)+'h '+(m%60)+'m';}
+function parseTimedMins(s){
+  if(!s)return 0;
+  var str=String(s).trim();
+  var p=str.match(/^(\d+):(\d{1,2}):(\d{1,2})$/);
+  if(p)return(+p[1]*60)+(+p[2])+(+p[3]/60);
+  p=str.match(/^(\d+):(\d{1,2})$/);
+  if(p)return(+p[1])+(+p[2]/60);
+  return parseMins(str);
+}
+function fmtMinsSeconds(mins){
+  if(!mins)return'-';
+  var sec=Math.round(Number(mins)*60);
+  var h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  var parts=[];
+  if(h)parts.push(h+'h');
+  if(m)parts.push(m+'m');
+  if(s)parts.push(s+'s');
+  return parts.join(' ')||'0s';
+}
 function fmtDuration(s){
   if(!s)return '';
   if(typeof s==='number'){var h=Math.floor(s/60),m=s%60;return h?h+'h '+(m?m+'m':''):m+'m';}
@@ -3311,12 +3343,12 @@ function getDM(d,dateKey){
   if(dateKey){
     getActivities().filter(function(a){return a.date===dateKey;}).forEach(function(a){
       actMiles+=parseFloat(a.distance)||0;
-      actTime+=parseMins(a.duration);
+      actTime+=parseTimedMins(a.duration);
       if(parseFloat(a.power)){actWatts+=parseFloat(a.power);actWattsN++;}
       if(a.pace&&parsePace(a.pace)){actPace+=parsePace(a.pace);actPaceN++;}
     });
   }
-  const bp=parseBP(d.wBPVal);return{miles:actMiles,pace:actPaceN?actPace/actPaceN:0,watts:actWattsN?actWatts/actWattsN:0,time:actTime,steps:parseFloat(d.exSteps)||0,score:parseFloat(d.score)||0,weight:parseFloat(d.wWghtVal)||0,sleep:parseMins(d.wSleepVal),sleepScore:parseFloat(d.wSleepScore)||0,calories:parseFloat(d.nuCalVal)||0,water:parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),audiobook:parseMins(d.gaAudiobookTime),skill:parseMins(d.gaSkillTime),skillName:d.gaSkillText||'',skillDone:d.gaSkill==='green'?1:0,bpSys:bp.sys,bpDia:bp.dia,pulse:parseFloat(d.wPulseVal)||0,dogWalk:parseFloat(d.exDogWalkVal)||(d.exDogWalk==='green'?1:0),walk:parseFloat(d.exWalkVal)||(d.exWalk==='green'?1:0),headache:d.wHeadache==='green'?1:0,ctMM:d.ctMentalModels==='green'?1:0,ctAB:d.ctAssumption==='green'?1:0,ctSOT:d.ctSecondOrder==='green'?1:0,ctFin:d.ctFinancialModels==='green'?1:0,ctFrm:d.ctFrameworks==='green'?1:0};}
+  const bp=parseBP(d.wBPVal);return{miles:actMiles,pace:actPaceN?actPace/actPaceN:0,watts:actWattsN?actWatts/actWattsN:0,time:actTime,steps:parseFloat(d.exSteps)||0,score:parseFloat(d.score)||0,weight:parseFloat(d.wWghtVal)||0,sleep:parseMins(d.wSleepVal),sleepScore:parseFloat(d.wSleepScore)||0,calories:parseFloat(d.nuCalVal)||0,water:parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),audiobook:parseTimedMins(d.gaAudiobookTime),skill:parseMins(d.gaSkillTime),skillName:d.gaSkillText||'',skillDone:d.gaSkill==='green'?1:0,bpSys:bp.sys,bpDia:bp.dia,pulse:parseFloat(d.wPulseVal)||0,dogWalk:parseFloat(d.exDogWalkVal)||(d.exDogWalk==='green'?1:0),walk:parseFloat(d.exWalkVal)||(d.exWalk==='green'?1:0),headache:d.wHeadache==='green'?1:0,ctMM:d.ctMentalModels==='green'?1:0,ctAB:d.ctAssumption==='green'?1:0,ctSOT:d.ctSecondOrder==='green'?1:0,ctFin:d.ctFinancialModels==='green'?1:0,ctFrm:d.ctFrameworks==='green'?1:0};}
 function agg(arr){const t={miles:0,pace:0,watts:0,time:0,steps:0,score:0,weight:0,sleep:0,sleepScore:0,calories:0,water:0,audiobook:0,skill:0,skillDone:0,bpSys:0,bpDia:0,pulse:0,dogWalk:0,walk:0,headache:0,ctMM:0,ctAB:0,ctSOT:0,ctFin:0,ctFrm:0};const c={pace:0,watts:0,score:0,weight:0,sleep:0,sleepScore:0,bp:0,pulse:0};arr.forEach(m=>{t.miles+=m.miles;t.time+=m.time;t.steps+=m.steps;t.calories+=m.calories;t.water+=m.water;t.audiobook+=m.audiobook;t.skill+=m.skill||0;t.skillDone+=(m.skillDone||0);t.dogWalk+=(m.dogWalk||0);t.walk+=(m.walk||0);t.headache+=(m.headache||0);t.ctMM+=(m.ctMM||0);t.ctAB+=(m.ctAB||0);t.ctSOT+=(m.ctSOT||0);t.ctFin+=(m.ctFin||0);t.ctFrm+=(m.ctFrm||0);if(m.pace){t.pace+=m.pace;c.pace++;}if(m.watts){t.watts+=m.watts;c.watts++;}if(m.score){t.score+=m.score;c.score++;}if(m.weight){t.weight+=m.weight;c.weight++;}if(m.sleep){t.sleep+=m.sleep;c.sleep++;}if(m.sleepScore){t.sleepScore+=m.sleepScore;c.sleepScore++;}if(m.bpSys){t.bpSys+=m.bpSys;t.bpDia+=m.bpDia;c.bp++;}if(m.pulse){t.pulse+=m.pulse;c.pulse++;}});return{miles:t.miles,pace:c.pace?t.pace/c.pace:0,watts:c.watts?t.watts/c.watts:0,time:t.time,steps:t.steps,calories:t.calories,water:t.water,score:c.score?t.score/c.score:0,weight:c.weight?t.weight/c.weight:0,sleep:c.sleep?t.sleep/c.sleep:0,sleepScore:c.sleepScore?t.sleepScore/c.sleepScore:0,audiobook:t.audiobook,skill:t.skill,skillDone:t.skillDone,bpSys:c.bp?t.bpSys/c.bp:0,bpDia:c.bp?t.bpDia/c.bp:0,pulse:c.pulse?t.pulse/c.pulse:0,dogWalk:t.dogWalk,walk:t.walk,headache:t.headache,ctMM:t.ctMM,ctAB:t.ctAB,ctSOT:t.ctSOT,ctFin:t.ctFin,ctFrm:t.ctFrm};}
 function gRow(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';const skillCell=m.skillDone?(t?m.skillDone+'d':'✅'):'-';return`<tr style="${b}"><td>${l}</td><td>${fmtMins(m.audiobook)}</td><td>${skillCell}</td></tr>`;}
 function fRow(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';return`<tr style="${b}"><td>${l}</td><td>${m.miles?m.miles.toFixed(1):'-'}</td><td>${m.pace?fmtPace(m.pace):'-'}</td><td>${m.watts?Math.round(m.watts):'-'}</td><td>${fmtMins(m.time)}</td><td>${m.steps?Math.round(m.steps):'-'}</td><td>${m.dogWalk?(Math.round(m.dogWalk*10)/10)%1===0?Math.round(m.dogWalk):+(m.dogWalk.toFixed(1)):'-'}</td><td>${m.walk?(Math.round(m.walk*10)/10)%1===0?Math.round(m.walk):+(m.walk.toFixed(1)):'-'}</td></tr>`;}
@@ -3325,6 +3357,8 @@ const gH='<table class="summary-table"><thead><tr><th>Period</th><th>Audiobook</
 const ctH='<table class="summary-table"><thead><tr><th>Period</th><th>Mental Models</th><th>Assumption Buster</th><th>2nd-Order</th><th>Financial Models</th><th>Frameworks</th></tr></thead><tbody>';
 function ctRow(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';return`<tr style="${b}"><td>${l}</td><td>${m.ctMM||'-'}</td><td>${m.ctAB||'-'}</td><td>${m.ctSOT||'-'}</td><td>${m.ctFin||'-'}</td><td>${m.ctFrm||'-'}</td></tr>`;}
 const fH='<table class="summary-table"><thead><tr><th>Period</th><th>Miles</th><th>Pace</th><th>Watts</th><th>Time</th><th>Steps</th><th>Dog Walk</th><th>Walk</th></tr></thead><tbody>';
+gRow=function(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';const skillCell=m.skillDone?(t?m.skillDone+'d':'&#x2705;'):'-';return`<tr style="${b}"><td>${l}</td><td>${fmtMinsSeconds(m.audiobook)}</td><td>${skillCell}</td></tr>`;};
+fRow=function(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';return`<tr style="${b}"><td>${l}</td><td>${m.miles?m.miles.toFixed(1):'-'}</td><td>${m.pace?fmtPace(m.pace):'-'}</td><td>${m.watts?Math.round(m.watts):'-'}</td><td>${fmtMinsSeconds(m.time)}</td><td>${m.steps?Math.round(m.steps):'-'}</td><td>${m.dogWalk?(Math.round(m.dogWalk*10)/10)%1===0?Math.round(m.dogWalk):+(m.dogWalk.toFixed(1)):'-'}</td><td>${m.walk?(Math.round(m.walk*10)/10)%1===0?Math.round(m.walk):+(m.walk.toFixed(1)):'-'}</td></tr>`;};
 const wH='<table class="summary-table"><thead><tr><th>Period</th><th>Weight</th><th>Sleep</th><th>Sleep Score</th><th>Avg BP</th><th>Pulse</th><th>Headache</th></tr></thead><tbody>';
 const dsH='<table class="summary-table"><thead><tr><th>Period</th><th>Day Score</th></tr></thead><tbody>';
 function dsRow(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';return`<tr style="${b}"><td>${l}</td><td>${m.score?m.score.toFixed(1)+' / 5':'-'}</td></tr>`;}
@@ -6727,14 +6761,90 @@ function saveBookEdit(id){
 
 
 // ── Book Cover Functions ──────────────────────────────────────────────────────
+function toggleAudiobookFinishPlanner(forceOpen){
+  var panel=document.getElementById('audioPlanPanel'),arrow=document.getElementById('audioPlanArrow');
+  if(!panel)return;
+  var open=typeof forceOpen==='boolean'?forceOpen:(panel.style.display==='none'||!panel.style.display);
+  panel.style.display=open?'block':'none';
+  if(arrow)arrow.innerHTML=open?'&#x25BC;':'&#x25B6;';
+  var date=document.getElementById('audioPlanDate');
+  if(open&&date&&!date.value){var d=new Date();d.setDate(d.getDate()+30);date.value=dk(d);}
+}
+function audiobookCatalogSearch(title){
+  return fetch('https://itunes.apple.com/search?term='+encodeURIComponent(title)+'&media=audiobook&entity=audiobook&limit=20')
+    .then(function(r){if(!r.ok)throw new Error('Audiobook catalog is unavailable.');return r.json();})
+    .then(function(data){
+      var wanted=String(title||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+      function score(item){var found=String(item.collectionName||item.trackName||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(found===wanted)return 1000;if(found.indexOf(wanted)>=0||wanted.indexOf(found)>=0)return 500;return wanted.split(' ').reduce(function(n,w){return n+(w&&found.indexOf(w)>=0?10:0);},0);}
+      return(data.results||[]).filter(function(x){return Number(x.trackTimeMillis)>0;}).sort(function(a,b){return score(b)-score(a);})[0]||null;
+    });
+}
+function createAudiobookFinishPlan(){
+  var title=((document.getElementById('audioPlanBook')||{}).value||'').trim(),finish=(document.getElementById('audioPlanDate')||{}).value||'';
+  if(!title){alert('Enter the audiobook name first.');return;}
+  if(!finish){alert('Choose a finish date.');return;}
+  var startKey=dk(today),start=new Date(startKey+'T00:00:00'),end=new Date(finish+'T00:00:00'),days=Math.floor((end-start)/86400000)+1;
+  if(days<1){alert('The finish date must be today or later.');return;}
+  var btn=document.getElementById('audioPlanCreateBtn'),result=document.getElementById('audioPlanResult');
+  if(btn){btn.disabled=true;btn.textContent='Finding audiobook...';}
+  if(result){result.style.display='block';result.innerHTML='<div style="color:#667eea;font-size:0.8rem;">Looking up the audiobook edition and duration...</div>';}
+  audiobookCatalogSearch(title).then(function(book){
+    if(!book)throw new Error('No timed audiobook edition was found. Try adding the author name.');
+    var totalSec=Math.round(Number(book.trackTimeMillis)/1000);
+    var plan={query:title,title:book.collectionName||book.trackName||title,author:book.artistName||'',startDate:startKey,finishDate:finish,totalSeconds:totalSec,dailySeconds:Math.ceil(totalSec/days),days:days,artwork:(book.artworkUrl100||'').replace(/\/\d+x\d+bb\./,'/300x300bb.'),createdAt:new Date().toISOString()};
+    localStorage.setItem('audiobook_finish_plan',JSON.stringify(plan));renderAudiobookFinishPlan();
+    if(btn){btn.disabled=false;btn.textContent='Create Outline';}
+  }).catch(function(err){if(result)result.innerHTML='<div style="color:#c0392b;font-size:0.8rem;">'+escHtml(err.message)+'</div>';if(btn){btn.disabled=false;btn.textContent='Create Outline';}});
+}
+function formatSecondsLong(sec){
+  sec=Math.max(0,Math.round(Number(sec)||0));var h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60,parts=[];
+  if(h)parts.push(h+' hr');if(m)parts.push(m+' min');if(s)parts.push(s+' sec');return parts.join(' ')||'0 sec';
+}
+function renderAudiobookFinishPlan(){
+  var result=document.getElementById('audioPlanResult');if(!result)return;
+  var raw=localStorage.getItem('audiobook_finish_plan');if(!raw){result.style.display='none';return;}
+  var p;try{p=JSON.parse(raw);}catch(e){result.style.display='none';return;}
+  var start=new Date(p.startDate+'T00:00:00'),end=new Date(p.finishDate+'T00:00:00'),milestones=[],cursor=new Date(start),week=1;
+  while(cursor<=end){var weekEnd=new Date(cursor);weekEnd.setDate(weekEnd.getDate()+6);if(weekEnd>end)weekEnd=new Date(end);var through=Math.floor((weekEnd-start)/86400000)+1,pct=Math.min(100,Math.round(through/p.days*100));milestones.push('<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid #eceeff;"><span>Week '+week+': '+cursor.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'–'+weekEnd.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span><strong>'+pct+'%</strong></div>');cursor=new Date(weekEnd);cursor.setDate(cursor.getDate()+1);week++;}
+  result.style.display='block';
+  result.innerHTML='<div style="background:#fff;border:1px solid #dfe3ff;border-radius:8px;padding:10px;"><div style="display:flex;gap:10px;align-items:flex-start;">'
+    +(p.artwork?'<img src="'+p.artwork+'" style="width:54px;height:54px;object-fit:cover;border-radius:6px;flex-shrink:0;">':'')
+    +'<div style="flex:1;min-width:0;"><div style="font-weight:800;color:#37308f;">'+escHtml(p.title)+'</div>'+(p.author?'<div style="font-size:0.76rem;color:#666;">by '+escHtml(p.author)+'</div>':'')
+    +'<div style="font-size:0.76rem;color:#555;margin-top:4px;">Total: <strong>'+formatSecondsLong(p.totalSeconds)+'</strong> &bull; '+p.days+' day'+(p.days===1?'':'s')+'</div><div style="font-size:0.84rem;color:#4338ca;margin-top:3px;">Listen <strong>'+formatSecondsLong(p.dailySeconds)+'</strong> per day</div></div>'
+    +'<button onclick="deleteAudiobookFinishPlan()" title="Remove plan" style="background:none;border:1px solid #ddd;border-radius:5px;color:#999;cursor:pointer;">&#x2715;</button></div><div style="font-size:0.75rem;color:#555;margin-top:9px;">'+milestones.join('')+'</div><div style="font-size:0.69rem;color:#888;margin-top:7px;">Based on the closest timed edition in the Apple audiobook catalog.</div></div>';
+  var title=document.getElementById('audioPlanBook');if(title&&!title.value)title.value=p.query||p.title||'';
+  var date=document.getElementById('audioPlanDate');if(date&&!date.value)date.value=p.finishDate||'';
+}
+function deleteAudiobookFinishPlan(){if(!confirm('Remove this audiobook completion plan?'))return;localStorage.removeItem('audiobook_finish_plan');renderAudiobookFinishPlan();}
+
 function _findCover(title, author, onResults){
   var covers=[];
   var done=0;
-  function finish(){done++;if(done>=2)onResults(covers);}
+  function clean(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+  function score(candidateTitle){
+    var wanted=clean(title),found=clean(candidateTitle);
+    if(found===wanted)return 100;
+    if(found.indexOf(wanted)>=0||wanted.indexOf(found)>=0)return 70;
+    var words=wanted.split(' ').filter(Boolean);
+    return words.reduce(function(n,w){return n+(found.indexOf(w)>=0?5:0);},0);
+  }
+  function addCover(item){
+    if(!item||!item.url)return;
+    if(covers.some(function(c){return c.url===item.url;}))return;
+    item.score=score(item.title);
+    covers.push(item);
+  }
+  function finish(){
+    done++;
+    if(done>=3){
+      covers.sort(function(a,b){return(b.score||0)-(a.score||0);});
+      onResults(covers.slice(0,12));
+    }
+  }
 
   // Google Books
-  var gbQ=encodeURIComponent((title||'')+(author?' '+author:''));
-  fetch('https://www.googleapis.com/books/v1/volumes?q='+gbQ+'&maxResults=5')
+  var gbTerms='intitle:"'+(title||'')+'"'+(author?' inauthor:"'+author+'"':'');
+  fetch('https://www.googleapis.com/books/v1/volumes?q='+encodeURIComponent(gbTerms)+'&maxResults=10&printType=books')
     .then(function(r){return r.json();})
     .then(function(data){
       (data.items||[]).forEach(function(item){
@@ -6742,22 +6852,33 @@ function _findCover(title, author, onResults){
         var imgs=info.imageLinks||{};
         var url=imgs.extraLarge||imgs.large||imgs.medium||imgs.thumbnail||'';
         if(url){
-          url=url.replace('http://','https://');
-          covers.push({title:info.title||title,url:url,source:'Google Books'});
+          url=url.replace('http://','https://').replace('&edge=curl','');
+          addCover({title:info.title||title,url:url,source:'Google Books'});
         }
       });
     }).catch(function(){}).then(finish);
 
   // Open Library
-  var olQ=encodeURIComponent((title||'')+(author?' '+author:''));
-  fetch('https://openlibrary.org/search.json?q='+olQ+'&fields=title,author_name,cover_i&limit=5')
+  var olUrl='https://openlibrary.org/search.json?title='+encodeURIComponent(title||'')+(author?'&author='+encodeURIComponent(author):'')+'&fields=title,author_name,cover_i&limit=10';
+  fetch(olUrl)
     .then(function(r){return r.json();})
     .then(function(data){
       (data.docs||[]).forEach(function(doc){
         if(doc.cover_i){
           var url='https://covers.openlibrary.org/b/id/'+doc.cover_i+'-L.jpg';
-          covers.push({title:doc.title||title,url:url,source:'Open Library'});
+          addCover({title:doc.title||title,url:url,source:'Open Library'});
         }
+      });
+    }).catch(function(){}).then(finish);
+
+  // Apple Books / Audiobooks often has the most accurate popular-edition artwork.
+  fetch('https://itunes.apple.com/search?term='+encodeURIComponent((title||'')+(author?' '+author:''))+'&media=audiobook&entity=audiobook&limit=12')
+    .then(function(r){return r.json();})
+    .then(function(data){
+      (data.results||[]).forEach(function(item){
+        var url=item.artworkUrl600||item.artworkUrl100||item.artworkUrl60||'';
+        if(url)url=url.replace(/\/\d+x\d+bb\./,'/600x600bb.');
+        addCover({title:item.collectionName||item.trackName||title,url:url,source:'Apple Audiobooks'});
       });
     }).catch(function(){}).then(finish);
 }
@@ -7046,6 +7167,7 @@ function renderLibrary(){
   el.innerHTML=html2;
   if(editingBookId)buildEditStars();
   _loadLibraryCovers(getBooks());
+  renderAudiobookFinishPlan();
 }
 function _loadLibraryCovers(books){
   books.forEach(function(b){
