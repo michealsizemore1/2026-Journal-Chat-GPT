@@ -2302,10 +2302,10 @@ body.v26-compact .journal-col textarea{height:70px;}
     </div>
     <div class="meal-section" id="ms-snack" data-meal="snack">
       <div class="meal-header" onclick="toggleMealSection('snack')">
-        <span>🍎 Snacks</span><div class="meal-right"><span class="meal-subtotal" id="st-snack" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('snack')" style="background:none;border:none;color:#667eea;font-size:0.9rem;cursor:pointer;padding:0 2px;" title="Save snack as a meal">&#x1F4BE;</button><button onclick="event.stopPropagation();addFoodItem('snack')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-snack">▸</span></div>
+        <span>🍎 Snacks</span><div class="meal-right"><span class="meal-subtotal" id="st-snack" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('snack')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-snack">▸</span></div>
       </div>
       <div class="meal-body" id="mb-snack" style="display:none;"><div id="foodList-snack"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-snack" rows="1" placeholder="Snack notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-snack" rows="1" placeholder="Snack notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('snack')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('snack')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-liquids" data-meal="liquids">
@@ -2318,10 +2318,10 @@ body.v26-compact .journal-col textarea{height:70px;}
     </div>
     <div class="meal-section" id="ms-sports" data-meal="sports">
       <div class="meal-header" onclick="toggleMealSection('sports')" style="border-left-color:#27ae60;">
-        <span>💪 Sports Nutrition</span><div class="meal-right"><span class="meal-subtotal" id="st-sports" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('sports')" style="background:none;border:none;color:#667eea;font-size:0.9rem;cursor:pointer;padding:0 2px;" title="Save sports nutrition as a meal">&#x1F4BE;</button><button onclick="event.stopPropagation();addFoodItem('sports')" class="meal-add-btn" style="background:#27ae60;">+ Add</button><span class="meal-chevron" id="chev-sports">▸</span></div>
+        <span>💪 Sports Nutrition</span><div class="meal-right"><span class="meal-subtotal" id="st-sports" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('sports')" class="meal-add-btn" style="background:#27ae60;">+ Add</button><span class="meal-chevron" id="chev-sports">▸</span></div>
       </div>
       <div class="meal-body" id="mb-sports" style="display:none;"><div id="foodList-sports"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-sports" rows="1" placeholder="Sports nutrition notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-sports" rows="1" placeholder="Sports nutrition notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('sports')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('sports')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
       </div>
     </div>
   </div>
@@ -5759,10 +5759,10 @@ function aiTranscriptFill(){
       if(el&&fields[k])el.value=fields[k];
     });
     saveBibleEntry();
-    if(btn){btn.disabled=false;btn.textContent='&#x1F9E0; AI Fill All Fields';}
+    if(btn){btn.disabled=false;btn.innerHTML='&#x1F9E0; AI Fill All Fields';}
     if(status){status.textContent='&#x2713; Fields filled from transcript!';status.style.color='#27ae60';}
   }).catch(function(e){
-    if(btn){btn.disabled=false;btn.textContent='&#x1F9E0; AI Fill All Fields';}
+    if(btn){btn.disabled=false;btn.innerHTML='&#x1F9E0; AI Fill All Fields';}
     if(status){status.textContent='Error: '+e.message;status.style.color='#e74c3c';}
   });
 }
@@ -6808,13 +6808,19 @@ function toggleAudiobookFinishPlanner(forceOpen){
   if(open&&date&&!date.value){var d=new Date();d.setDate(d.getDate()+30);date.value=dk(d);}
 }
 function audiobookCatalogSearch(title){
-  return fetch('https://itunes.apple.com/search?term='+encodeURIComponent(title)+'&media=audiobook&entity=audiobook&limit=20')
-    .then(function(r){if(!r.ok)throw new Error('Audiobook catalog is unavailable.');return r.json();})
-    .then(function(data){
-      var wanted=String(title||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-      function score(item){var found=String(item.collectionName||item.trackName||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(found===wanted)return 1000;if(found.indexOf(wanted)>=0||wanted.indexOf(found)>=0)return 500;return wanted.split(' ').reduce(function(n,w){return n+(w&&found.indexOf(w)>=0?10:0);},0);}
-      return(data.results||[]).filter(function(x){return Number(x.trackTimeMillis)>0;}).sort(function(a,b){return score(b)-score(a);})[0]||null;
-    });
+  return journalProtectedFunction({action:'audible-search',title:title}).then(function(book){
+    return{title:book.title||title,author:book.author||'',narrator:book.narrator||'',totalSeconds:Number(book.totalSeconds)||0,artwork:book.artwork||'',source:'Audible'};
+  }).catch(function(){
+    return fetch('https://itunes.apple.com/search?term='+encodeURIComponent(title)+'&media=audiobook&entity=audiobook&limit=20')
+      .then(function(r){if(!r.ok)throw new Error('Audiobook catalogs are unavailable.');return r.json();})
+      .then(function(data){
+        var wanted=String(title||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+        function score(item){var found=String(item.collectionName||item.trackName||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();if(found===wanted)return 1000;if(found.indexOf(wanted)>=0||wanted.indexOf(found)>=0)return 500;return wanted.split(' ').reduce(function(n,w){return n+(w&&found.indexOf(w)>=0?10:0);},0);}
+        var item=(data.results||[]).filter(function(x){return Number(x.trackTimeMillis)>0;}).sort(function(a,b){return score(b)-score(a);})[0];
+        if(!item)throw new Error('No timed edition was found in Audible or Apple. Try adding the author name.');
+        return{title:item.collectionName||item.trackName||title,author:item.artistName||'',narrator:'',totalSeconds:Math.round(Number(item.trackTimeMillis)/1000),artwork:(item.artworkUrl100||'').replace(/\/\d+x\d+bb\./,'/300x300bb.'),source:'Apple Audiobooks'};
+      });
+  });
 }
 function createAudiobookFinishPlan(){
   var title=((document.getElementById('audioPlanBook')||{}).value||'').trim(),finish=(document.getElementById('audioPlanDate')||{}).value||'';
@@ -6827,8 +6833,8 @@ function createAudiobookFinishPlan(){
   if(result){result.style.display='block';result.innerHTML='<div style="color:#667eea;font-size:0.8rem;">Looking up the audiobook edition and duration...</div>';}
   audiobookCatalogSearch(title).then(function(book){
     if(!book)throw new Error('No timed audiobook edition was found. Try adding the author name.');
-    var totalSec=Math.round(Number(book.trackTimeMillis)/1000);
-    var plan={query:title,title:book.collectionName||book.trackName||title,author:book.artistName||'',startDate:startKey,finishDate:finish,totalSeconds:totalSec,dailySeconds:Math.ceil(totalSec/days),days:days,artwork:(book.artworkUrl100||'').replace(/\/\d+x\d+bb\./,'/300x300bb.'),createdAt:new Date().toISOString()};
+    var totalSec=Math.round(Number(book.totalSeconds)||0);
+    var plan={query:title,title:book.title||title,author:book.author||'',narrator:book.narrator||'',source:book.source||'Audiobook catalog',startDate:startKey,finishDate:finish,totalSeconds:totalSec,dailySeconds:Math.ceil(totalSec/days),days:days,artwork:book.artwork||'',createdAt:new Date().toISOString()};
     localStorage.setItem('audiobook_finish_plan',JSON.stringify(plan));renderAudiobookFinishPlan();
     if(btn){btn.disabled=false;btn.textContent='Create Outline';}
   }).catch(function(err){if(result)result.innerHTML='<div style="color:#c0392b;font-size:0.8rem;">'+escHtml(err.message)+'</div>';if(btn){btn.disabled=false;btn.textContent='Create Outline';}});
@@ -6848,7 +6854,7 @@ function renderAudiobookFinishPlan(){
     +(p.artwork?'<img src="'+p.artwork+'" style="width:54px;height:54px;object-fit:cover;border-radius:6px;flex-shrink:0;">':'')
     +'<div style="flex:1;min-width:0;"><div style="font-weight:800;color:#37308f;">'+escHtml(p.title)+'</div>'+(p.author?'<div style="font-size:0.76rem;color:#666;">by '+escHtml(p.author)+'</div>':'')
     +'<div style="font-size:0.76rem;color:#555;margin-top:4px;">Total: <strong>'+formatSecondsLong(p.totalSeconds)+'</strong> &bull; '+p.days+' day'+(p.days===1?'':'s')+'</div><div style="font-size:0.84rem;color:#4338ca;margin-top:3px;">Listen <strong>'+formatSecondsLong(p.dailySeconds)+'</strong> per day</div></div>'
-    +'<button onclick="deleteAudiobookFinishPlan()" title="Remove plan" style="background:none;border:1px solid #ddd;border-radius:5px;color:#999;cursor:pointer;">&#x2715;</button></div><div style="font-size:0.75rem;color:#555;margin-top:9px;">'+milestones.join('')+'</div><div style="font-size:0.69rem;color:#888;margin-top:7px;">Based on the closest timed edition in the Apple audiobook catalog.</div></div>';
+    +'<button onclick="deleteAudiobookFinishPlan()" title="Remove plan" style="background:none;border:1px solid #ddd;border-radius:5px;color:#999;cursor:pointer;">&#x2715;</button></div><div style="font-size:0.75rem;color:#555;margin-top:9px;">'+milestones.join('')+'</div><div style="font-size:0.69rem;color:#888;margin-top:7px;">Based on the closest timed edition found in '+escHtml(p.source||'the audiobook catalog')+'.</div></div>';
   var title=document.getElementById('audioPlanBook');if(title&&!title.value)title.value=p.query||p.title||'';
   var date=document.getElementById('audioPlanDate');if(date&&!date.value)date.value=p.finishDate||'';
 }
