@@ -317,6 +317,18 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 #habitLawsGrid > div{
   box-shadow:0 0 0 2px #4f766b,0 2px 8px rgba(38,67,59,.08)!important;
 }
+.tab-panel :is(
+  .compact-mini-bar,
+  .act-filter-shell,
+  .act-import-menu,
+  .review-stat,
+  .goals-wrap
+),
+.tab-panel .panel > :is(div,details)[style*="border:1px solid"][style*="border-radius"],
+.tab-panel .panel > div > :is(div,details)[style*="border:1px solid"][style*="border-radius"]{
+  outline:2px solid #4f766b;
+  outline-offset:-2px;
+}
 @media(max-width:768px){
   .tab-panel:not(#tab-daily) :is(
     .section,
@@ -705,7 +717,7 @@ body.v26-compact .journal-col textarea{height:70px;}
   .v26-toolbar .v26-label{display:none}
   .v26-toolbar .v26-spacer{display:block;flex:0 0 100%;height:0}
   .v26-toolbar .v26-save{font-size:.76rem;min-width:0}
-  .v26-toolbar #journalCloudSyncBtn{margin-right:auto}
+  .v26-toolbar #journalCloudSyncBtn{margin-right:0}
   .v26-toolbar .v26-spacer + .v26-quiet-btn{margin-left:auto}
   .v26-quiet-btn{padding:7px 9px}
   .tabs-wrapper{top:0}
@@ -746,6 +758,11 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-calendar-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-top:1px solid #e8ebf2;}
 .journal-calendar-controls button{border:1px solid #d0d5dd;background:#fff;color:#475467;border-radius:6px;padding:4px 9px;font-size:.74rem;font-weight:700;cursor:pointer;}
 .journal-calendar-title{font-size:.82rem;font-weight:800;color:#344054;text-align:center;}
+.google-calendar-readonly{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:7px 10px;border-top:1px solid #e8ebf2;background:#f7fbf9;font-size:.7rem;color:#47665d;}
+.google-calendar-readonly strong{color:#31564b;}
+.google-calendar-readonly button{margin-left:auto;border:1px solid #4f766b;background:#fff;color:#31564b;border-radius:6px;padding:4px 9px;font-size:.7rem;font-weight:800;cursor:pointer;}
+.google-calendar-readonly button:disabled{opacity:.6;cursor:wait;}
+.google-calendar-message{width:100%;font-size:.66rem;color:#667085;}
 .journal-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;padding:0 9px 10px;}
 .journal-calendar-weekday{text-align:center;font-size:.62rem;font-weight:800;color:#98a2b3;text-transform:uppercase;padding:3px 0;}
 .journal-calendar-day{position:relative;min-height:34px;border:1px solid transparent;background:#fff;border-radius:7px;color:#344054;font-size:.76rem;cursor:pointer;}
@@ -754,6 +771,13 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-calendar-day.real-today:not(.selected){border-color:#667eea;font-weight:800;color:#4338ca;}
 .journal-calendar-day .calendar-dot{position:absolute;bottom:3px;left:50%;width:5px;height:5px;border-radius:50%;transform:translateX(-50%);background:#98a2b3;}
 .journal-calendar-day .calendar-dot.complete{background:#22a06b}.journal-calendar-day .calendar-dot.partial{background:#8e44ad}.journal-calendar-day.selected .calendar-dot{background:#fff;}
+.journal-calendar-day .google-calendar-dot{position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:#4285f4;box-shadow:0 0 0 1px #fff;}
+.google-calendar-events{margin:0 10px 10px;border:1px solid #cfe0da;border-radius:8px;background:#fbfefd;overflow:hidden;}
+.google-calendar-events:empty{display:none;}
+.google-calendar-event{padding:7px 9px;border-bottom:1px solid #e3eeea;font-size:.72rem;color:#344054;line-height:1.35;}
+.google-calendar-event:last-child{border-bottom:0;}
+.google-calendar-event-time{font-weight:800;color:#31564b;margin-right:6px;}
+.google-calendar-empty{padding:7px 9px;font-size:.7rem;color:#667085;}
 .journal-calendar-legend{display:flex;gap:10px;flex-wrap:wrap;padding:0 11px 9px;font-size:.64rem;color:#667085;}
 .journal-calendar-legend span:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#98a2b3;margin-right:4px}.journal-calendar-legend .complete:before{background:#22a06b}.journal-calendar-legend .partial:before{background:#8e44ad}
 .nav-has-note:after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#22a06b;margin-left:6px;box-shadow:0 0 0 2px rgba(34,160,107,.13);}
@@ -767,13 +791,14 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-mobile-dock{display:none;}
 .section,.panel,.review-section,.journaling-section{scroll-margin-top:70px;}
 .container{overflow:visible;}
-.journal-sticky-shell{position:sticky;top:0;z-index:2200;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 5px 14px rgba(31,41,55,.09);}
+.journal-sticky-shell{position:fixed;top:16px;left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),960px);z-index:2200;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 5px 14px rgba(31,41,55,.09);}
+.journal-sticky-spacer{height:var(--journal-sticky-height,174px);}
 .journal-sticky-shell .header{border-radius:12px 12px 0 0;}
 html{scroll-padding-top:190px;}
 @media(max-width:800px){.journal-home-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-settings-grid{grid-template-columns:1fr;}}
 @media(max-width:700px){
   body{padding-bottom:64px;}
-  .journal-sticky-shell,.journal-sticky-shell .header{border-radius:0;}
+  .journal-sticky-shell{top:0;width:100%;}.journal-sticky-shell,.journal-sticky-shell .header{border-radius:0;}
   html{scroll-padding-top:285px;}
   .journal-mobile-dock{position:fixed;display:grid;grid-template-columns:repeat(4,1fr);left:0;right:0;bottom:0;z-index:2500;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e4e7ec;box-shadow:0 -4px 18px rgba(16,24,40,.08);}
   .journal-mobile-dock button{border:0;background:none;color:#475467;padding:8px 3px 7px;font-size:.68rem;font-weight:700;min-height:49px;}
@@ -879,10 +904,6 @@ html{scroll-padding-top:190px;}
 <div class="v26-toolbar" aria-label="Journal view controls">
   <span class="v26-save" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
   <button class="v26-quiet-btn" type="button" id="journalCloudSyncBtn" onclick="journalCloudSmartSync()" title="Check for newer information on this device and in the private cloud">&#x21BB; Sync</button>
-  <span class="v26-spacer"></span>
-  <span class="v26-label">Page spacing:</span>
-  <button class="v26-quiet-btn" type="button" onclick="v26GoToday()" title="Return to today (T)">Today</button>
-  <button class="v26-quiet-btn" type="button" onclick="v26ToggleDensity()" id="v26DensityBtn" title="Tight spacing fits more journal content on screen. Click for relaxed spacing." aria-label="Page spacing: Tight. Click for relaxed spacing." aria-pressed="true">Tight</button>
   <button class="v26-quiet-btn v26-focus-btn" type="button" onclick="v26ToggleFocus()" id="v26FocusBtn" title="Hide distractions (F)">Focus</button>
 </div>
 <div class="tabs-wrapper">
@@ -897,6 +918,7 @@ html{scroll-padding-top:190px;}
   </div>
 </div>
 </div>
+<div class="journal-sticky-spacer" id="journalStickySpacer" aria-hidden="true"></div>
 <div id="tabNotesBar" class="compact-mini-bar">
   <div class="compact-mini-head" id="tabNotesToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="tabNotesBody" onclick="toggleTabNotes()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTabNotes();}">
     <span id="tabNotesArrow">&#x25B6;</span><span id="tabNotesLabel">&#x1F4DD; Tab Notes</span><span id="tabNotesStatus">No notes</span>
@@ -959,8 +981,14 @@ html{scroll-padding-top:190px;}
     <div class="journal-calendar-title" id="journalCalendarTitle"></div>
     <button type="button" onclick="event.stopPropagation();shiftJournalCalendar(1)">Next &#x203A;</button>
   </div>
+  <div class="google-calendar-readonly">
+    <span>&#x1F4C6; <strong>Google Calendar</strong> &middot; Read only</span>
+    <button type="button" id="googleCalendarConnectBtn" onclick="connectGoogleCalendar()">Connect</button>
+    <span class="google-calendar-message" id="googleCalendarMessage">Google events can be viewed here, but never changed.</span>
+  </div>
   <div class="journal-calendar-grid" id="journalCalendarGrid"></div>
   <div class="journal-calendar-legend"><span>Information saved</span><span class="partial">Partly completed</span><span class="complete">Completed</span></div>
+  <div class="google-calendar-events" id="googleCalendarEvents"></div>
 </details>
 <div class="check-overview">
   <div class="check-overview-head" id="dailyCheckOverviewToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="dailyCheckOverviewBody" onclick="toggleDailyCheckOverview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDailyCheckOverview();}">
@@ -3453,6 +3481,102 @@ function clearHandwritingNotes(){
   var label=document.getElementById('handwritingSavedLabel');if(label)label.textContent='Stylus ready';
 }
 
+var googleCalendarAccessToken=sessionStorage.getItem('journal_google_calendar_token')||'';
+var googleCalendarEvents=[];
+var googleCalendarLoadedMonth='';
+function captureGoogleCalendarToken(session){
+  if(session&&session.provider_token){
+    googleCalendarAccessToken=session.provider_token;
+    sessionStorage.setItem('journal_google_calendar_token',googleCalendarAccessToken);
+    var message=document.getElementById('googleCalendarMessage');
+    if(message)message.textContent='Connected securely. Google events are view-only.';
+  }
+}
+async function connectGoogleCalendar(){
+  if(!journalCloudClient||!journalCloudUser){alert('Sign in to your private journal first.');return;}
+  var button=document.getElementById('googleCalendarConnectBtn');
+  if(button){button.disabled=true;button.textContent='Connecting...';}
+  var result=await journalCloudClient.auth.linkIdentity({
+    provider:'google',
+    options:{
+      scopes:'https://www.googleapis.com/auth/calendar.events.readonly',
+      redirectTo:location.origin+location.pathname
+    }
+  });
+  if(result.error){
+    if(button){button.disabled=false;button.textContent='Connect';}
+    alert('Google Calendar is not enabled yet in Supabase. Enable the Google provider, then try Connect again.');
+  }
+}
+function googleCalendarDateKey(event){
+  if(!event||!event.start)return'';
+  if(event.start.date)return event.start.date;
+  if(event.start.dateTime)return dk(new Date(event.start.dateTime));
+  return'';
+}
+function googleCalendarTimeLabel(event){
+  if(!event||!event.start)return'';
+  if(event.start.date)return'All day';
+  var start=new Date(event.start.dateTime);
+  return start.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+function decorateGoogleCalendar(){
+  var dates=new Set(googleCalendarEvents.map(googleCalendarDateKey));
+  document.querySelectorAll('#journalCalendarGrid .journal-calendar-day').forEach(function(button){
+    if(dates.has(button.getAttribute('data-date'))&&!button.querySelector('.google-calendar-dot')){
+      button.insertAdjacentHTML('beforeend','<span class="google-calendar-dot" title="Google Calendar event"></span>');
+    }
+  });
+  renderGoogleCalendarEventsForSelectedDay();
+}
+function renderGoogleCalendarEventsForSelectedDay(){
+  var wrap=document.getElementById('googleCalendarEvents');if(!wrap)return;
+  if(!googleCalendarAccessToken){wrap.innerHTML='';return;}
+  var selected=dk(today);
+  var events=googleCalendarEvents.filter(function(event){return googleCalendarDateKey(event)===selected;});
+  if(!events.length){
+    wrap.innerHTML='<div class="google-calendar-empty">No Google Calendar events for '+today.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'.</div>';
+    return;
+  }
+  wrap.innerHTML=events.map(function(event){
+    return'<div class="google-calendar-event"><span class="google-calendar-event-time">'+escHtml(googleCalendarTimeLabel(event))+'</span>'+escHtml(event.summary||'Untitled event')+(event.location?'<div style="color:#667085;margin-top:2px;">'+escHtml(event.location)+'</div>':'')+'</div>';
+  }).join('');
+}
+async function loadGoogleCalendarMonth(){
+  var button=document.getElementById('googleCalendarConnectBtn'),message=document.getElementById('googleCalendarMessage');
+  if(!googleCalendarAccessToken){
+    if(button){button.disabled=false;button.textContent='Connect';}
+    if(message)message.textContent='Google events can be viewed here, but never changed.';
+    return;
+  }
+  if(button){button.disabled=false;button.textContent='Connected';}
+  var year=journalCalendarMonth.getFullYear(),month=journalCalendarMonth.getMonth();
+  var monthKey=year+'-'+String(month+1).padStart(2,'0');
+  if(googleCalendarLoadedMonth===monthKey){decorateGoogleCalendar();return;}
+  if(message)message.textContent='Loading read-only Google events...';
+  var timeMin=new Date(year,month,1).toISOString();
+  var timeMax=new Date(year,month+1,1).toISOString();
+  var url='https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&timeMin='+encodeURIComponent(timeMin)+'&timeMax='+encodeURIComponent(timeMax)+'&maxResults=250';
+  try{
+    var response=await fetch(url,{headers:{Authorization:'Bearer '+googleCalendarAccessToken}});
+    if(response.status===401){
+      googleCalendarAccessToken='';sessionStorage.removeItem('journal_google_calendar_token');
+      googleCalendarEvents=[];googleCalendarLoadedMonth='';
+      if(button)button.textContent='Reconnect';
+      if(message)message.textContent='Google access expired. Reconnect to view events again.';
+      return;
+    }
+    if(!response.ok)throw new Error('Google Calendar request failed');
+    var data=await response.json();
+    googleCalendarEvents=Array.isArray(data.items)?data.items:[];
+    googleCalendarLoadedMonth=monthKey;
+    if(message)message.textContent='Connected securely. Google events are view-only.';
+    decorateGoogleCalendar();
+  }catch(error){
+    if(message)message.textContent='Google events could not be loaded. Your Journal calendar is unchanged.';
+  }
+}
+
 var journalCalendarMonth=null;
 function openJournalCalendar(){
   journalCalendarMonth=new Date(today.getFullYear(),today.getMonth(),1);
@@ -3489,9 +3613,10 @@ function renderJournalCalendar(){
   for(var day=1;day<=days;day++){
     var date=new Date(year,month,day),dateKey=dk(date),status=journalCalendarStatus(dateKey,activities);
     var classes='journal-calendar-day'+(dateKey===dk(today)?' selected':'')+(dateKey===dk(_realToday)?' real-today':'');
-    html+='<button type="button" class="'+classes+'" onclick="selectJournalCalendarDate(&quot;'+dateKey+'&quot;)" aria-label="'+date.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'">'+day+(status?'<span class="calendar-dot '+status+'"></span>':'')+'</button>';
+    html+='<button type="button" class="'+classes+'" data-date="'+dateKey+'" onclick="selectJournalCalendarDate(&quot;'+dateKey+'&quot;)" aria-label="'+date.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'">'+day+(status?'<span class="calendar-dot '+status+'"></span>':'')+'</button>';
   }
   grid.innerHTML=html;
+  loadGoogleCalendarMonth();
 }
 function selectJournalCalendarDate(dateKey){
   today=new Date(dateKey+'T00:00:00');
@@ -11495,6 +11620,7 @@ function journalCloudInit(){
   journalInstallAIProxy();
   document.getElementById('cloudLoginForm').addEventListener('submit',journalCloudSignIn);
   journalCloudClient.auth.onAuthStateChange(function(event,session){
+    captureGoogleCalendarToken(session);
     var next=session&&session.user||null,was=journalCloudUser;
     journalCloudUser=next;
     var gate=document.getElementById('cloudAuthGate');
@@ -11509,6 +11635,7 @@ function journalCloudInit(){
   });
   journalCloudClient.auth.getSession().then(function(r){
     var session=r.data&&r.data.session;
+    captureGoogleCalendarToken(session);
     if(session&&session.user){
       journalCloudUser=session.user;
       journalCloudApplying=true;localStorage.setItem('ai_key','supabase-managed');journalCloudApplying=false;
@@ -11523,6 +11650,24 @@ function journalCloudInit(){
 }
 
 /* v26 quality-of-life enhancements. Existing storage keys and data remain unchanged. */
+function journalSyncFixedHeaderHeight(){
+  var shell=document.querySelector('.journal-sticky-shell');if(!shell)return;
+  var height=Math.ceil(shell.getBoundingClientRect().height);
+  document.documentElement.style.setProperty('--journal-sticky-height',height+'px');
+  document.documentElement.style.scrollPaddingTop=(height+16)+'px';
+}
+function journalInitFixedHeader(){
+  var shell=document.querySelector('.journal-sticky-shell');if(!shell)return;
+  journalSyncFixedHeaderHeight();
+  if(window.ResizeObserver){
+    window._journalHeaderObserver=new ResizeObserver(journalSyncFixedHeaderHeight);
+    window._journalHeaderObserver.observe(shell);
+  }
+  window.addEventListener('resize',journalSyncFixedHeaderHeight);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',journalInitFixedHeader);
+else journalInitFixedHeader();
+
 function v26Toast(message){
   var el=document.getElementById('v26Toast');if(!el)return;
   el.textContent=message;el.classList.add('show');
