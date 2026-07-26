@@ -131,6 +131,14 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .book-edit{background:none;border:1px solid #667eea;color:#667eea;cursor:pointer;font-size:0.82rem;padding:3px 8px;border-radius:4px;flex-shrink:0;line-height:1.4;}
 .book-edit:hover{background:#667eea;color:white;}
 .lib-add-btn{background:#667eea;color:white;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;}
+.audio-library-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap;background:#f8f9ff;border:1px solid #e1e5ff;border-radius:10px;padding:9px 10px;}
+.audio-library-toolbar .audio-toolbar-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.audio-library-toolbar .lib-add-btn{padding:6px 11px;font-size:.78rem;border-radius:7px;}
+.audio-library-tools{position:relative;}
+.audio-library-tools summary{list-style:none;background:#fff;border:1px solid #cfd5ff;color:#4f46a5;border-radius:7px;padding:6px 11px;font-size:.78rem;font-weight:700;cursor:pointer;}
+.audio-library-tools summary::-webkit-details-marker{display:none;}
+.audio-library-tools[open] .audio-tools-menu{display:flex;}
+.audio-tools-menu{display:none;gap:6px;flex-wrap:wrap;margin-top:7px;width:100%;}
 .lib-sort{border:1px solid #e9ecef;border-radius:6px;padding:5px 10px;font-size:0.85rem;color:#555;outline:none;background:white;cursor:pointer;}
 .lib-edit-label{display:block;font-size:0.8rem;font-weight:600;color:#555;margin-bottom:3px;}
 .lib-edit-input{width:100%;border:1px solid #d0d8ff;border-radius:6px;padding:7px;font-size:0.95rem;outline:none;font-family:inherit;background:white;}
@@ -248,6 +256,22 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .check-overview-item.purple .check-overview-box{border-color:#8e44ad;color:#8e44ad;background:#f5eef8;}
 .check-overview-item.blank .check-overview-box{border-color:#c5c9d0;color:transparent;background:#fff;}
 .check-overview-item span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#tab-daily .daily-grid{gap:12px;padding:12px 16px 0;}
+#tab-daily .daily-grid .section,#tab-daily .journaling-section,#tab-daily .day-score-bar,#tab-daily .daily-prep-card{background:#fff;border:1px solid #dfe3ec;border-radius:12px;box-shadow:0 2px 7px rgba(31,41,55,.05);}
+#tab-daily .daily-grid .section{border-bottom:1px solid #dfe3ec;}
+#tab-daily .journaling-section{margin:12px 16px 16px;}
+#tab-daily .day-score-bar{margin:12px 16px 0;border-bottom:1px solid #dfe3ec;}
+#tab-daily .daily-prep-card{margin:10px 16px 0;padding:10px 12px;}
+#tab-daily .daily-prep-card .section-title{margin:0;padding:8px 5px;border-bottom:1px solid #eef0f4;}
+#tab-daily .daily-prep-card .section-title:last-child{border-bottom:0;}
+.handwriting-wrap{margin-top:12px;border:1px solid #d9c7ef;border-radius:10px;overflow:hidden;background:#fcfaff;}
+.handwriting-wrap summary{cursor:pointer;padding:9px 11px;font-size:.8rem;font-weight:800;color:#7c3aed;list-style:none;}
+.handwriting-wrap summary::-webkit-details-marker{display:none;}
+.handwriting-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 10px;border-top:1px solid #eadff6;border-bottom:1px solid #eadff6;background:#f8f3ff;}
+.handwriting-toolbar button,.handwriting-toolbar select{border:1px solid #d5c3e8;background:#fff;color:#5b347a;border-radius:6px;padding:5px 8px;font-size:.74rem;font-weight:700;cursor:pointer;}
+.handwriting-toolbar button.active{background:#7c3aed;color:#fff;border-color:#7c3aed;}
+#handwritingCanvas{display:block;width:100%;height:320px;background:#fff;touch-action:none;cursor:crosshair;}
+@media(max-width:600px){#handwritingCanvas{height:260px}.audio-library-toolbar{align-items:stretch}.audio-library-toolbar>.audio-toolbar-group{width:100%}}
 .compact-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
 .compact-toggle-count{margin-left:auto;font-size:.72rem;color:#667085;font-weight:700;white-space:nowrap;}
 .compact-toggle:focus-visible{outline:3px solid rgba(102,126,234,.22);outline-offset:2px;border-radius:5px;}
@@ -633,6 +657,24 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-home-card h3{margin:0 0 5px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#667085;}
 .journal-home-card .home-value{font-size:.86rem;color:#344054;line-height:1.4;}
 .journal-home-card .home-value strong{font-size:1rem;color:#172033;}
+.journal-calendar{margin:10px 16px;border:1px solid #d8def0;border-radius:12px;background:#fff;overflow:hidden;}
+.journal-calendar summary{list-style:none;display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.82rem;font-weight:800;color:#344054;background:#f8f9fc;}
+.journal-calendar summary::-webkit-details-marker{display:none;}
+.journal-calendar summary:after{content:'›';margin-left:auto;font-size:1.05rem;color:#98a2b3;transform:rotate(90deg);}
+.journal-calendar:not([open]) summary:after{transform:rotate(0);}
+.journal-calendar-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-top:1px solid #e8ebf2;}
+.journal-calendar-controls button{border:1px solid #d0d5dd;background:#fff;color:#475467;border-radius:6px;padding:4px 9px;font-size:.74rem;font-weight:700;cursor:pointer;}
+.journal-calendar-title{font-size:.82rem;font-weight:800;color:#344054;text-align:center;}
+.journal-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;padding:0 9px 10px;}
+.journal-calendar-weekday{text-align:center;font-size:.62rem;font-weight:800;color:#98a2b3;text-transform:uppercase;padding:3px 0;}
+.journal-calendar-day{position:relative;min-height:34px;border:1px solid transparent;background:#fff;border-radius:7px;color:#344054;font-size:.76rem;cursor:pointer;}
+.journal-calendar-day:hover{background:#f2f4ff;border-color:#c7d2fe;}
+.journal-calendar-day.selected{background:#4f46e5;color:#fff;border-color:#4f46e5;font-weight:800;}
+.journal-calendar-day.real-today:not(.selected){border-color:#667eea;font-weight:800;color:#4338ca;}
+.journal-calendar-day .calendar-dot{position:absolute;bottom:3px;left:50%;width:5px;height:5px;border-radius:50%;transform:translateX(-50%);background:#98a2b3;}
+.journal-calendar-day .calendar-dot.complete{background:#22a06b}.journal-calendar-day .calendar-dot.partial{background:#8e44ad}.journal-calendar-day.selected .calendar-dot{background:#fff;}
+.journal-calendar-legend{display:flex;gap:10px;flex-wrap:wrap;padding:0 11px 9px;font-size:.64rem;color:#667085;}
+.journal-calendar-legend span:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#98a2b3;margin-right:4px}.journal-calendar-legend .complete:before{background:#22a06b}.journal-calendar-legend .partial:before{background:#8e44ad}
 .nav-has-note:after{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#22a06b;margin-left:6px;box-shadow:0 0 0 2px rgba(34,160,107,.13);}
 .journal-settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:10px 0 14px;}
 .journal-settings-group{border:1px solid #e4e7ec;border-radius:9px;padding:10px;background:#fafbfc;}
@@ -821,6 +863,16 @@ body.v26-compact .journal-col textarea{height:70px;}
   <summary>&#x1F3E0; Today Home <span id="journalHomeDate" style="font-size:.72rem;font-weight:600;color:#98a2b3;"></span></summary>
   <div class="journal-home-grid" id="journalHomeGrid"></div>
 </details>
+<details class="journal-calendar" id="journalCalendar" ontoggle="if(this.open)openJournalCalendar()">
+  <summary>&#x1F4C5; Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
+  <div class="journal-calendar-controls">
+    <button type="button" onclick="event.stopPropagation();shiftJournalCalendar(-1)">&#x2039; Previous</button>
+    <div class="journal-calendar-title" id="journalCalendarTitle"></div>
+    <button type="button" onclick="event.stopPropagation();shiftJournalCalendar(1)">Next &#x203A;</button>
+  </div>
+  <div class="journal-calendar-grid" id="journalCalendarGrid"></div>
+  <div class="journal-calendar-legend"><span>Information saved</span><span class="partial">Partly completed</span><span class="complete">Completed</span></div>
+</details>
 <div class="check-overview">
   <div class="check-overview-head" id="dailyCheckOverviewToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="dailyCheckOverviewBody" onclick="toggleDailyCheckOverview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDailyCheckOverview();}">
     <span id="dailyCheckOverviewArrow">&#x25B6;</span>
@@ -856,7 +908,7 @@ body.v26-compact .journal-col textarea{height:70px;}
     <span><span style="display:inline-block;width:14px;height:14px;border:2px solid #e74c3c;background:#fff5f5;border-radius:3px;vertical-align:middle;margin-right:3px;font-size:10px;font-weight:900;color:#e74c3c;text-align:center;line-height:12px;">&#x2713;</span>Missed</span>
   </div>
 </details>
-<div style="padding:12px 16px 0;">
+<div class="daily-prep-card">
   <label class="section-title" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
     <input type="checkbox" id="reviewCheck" onchange="save();renderDailyCheckOverview()" style="width:16px;height:16px;cursor:pointer;accent-color:#667eea;flex-shrink:0;">
     &#x1F50D; Review Tasks, Goals &amp; Calendar
@@ -911,6 +963,18 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div class="journal-col"><label>&#x1F4D3; Accomplishments, Improvements, Gratitude &amp; Ideas</label><textarea id="jCombined" style="height:220px;" placeholder="&#x1F3C6; Accomplishments:&#10;&#10;&#x1F4A1; Improvements:&#10;&#10;&#x1F64F; Gratitude:&#10;1.&#10;2.&#10;3.&#10;&#10;&#x1F4DD; Ideas:&#10;"></textarea><button type="button" class="mic-btn" onclick="startVoice('jCombined',this)" title="Voice input">🎤 Mic</button><button id="undo_jCombined" onclick="fieldUndo('jCombined')" disabled style="background:none;border:1px solid #d1d5db;border-radius:4px;font-size:0.72rem;padding:2px 6px;cursor:pointer;color:#6b7280;" title="Undo">↩</button><button id="redo_jCombined" onclick="fieldRedo('jCombined')" disabled style="background:none;border:1px solid #d1d5db;border-radius:4px;font-size:0.72rem;padding:2px 6px;cursor:pointer;color:#6b7280;" title="Redo">↪</button></div>
     <div style="display:none;"><textarea id="jAccomplish"></textarea><textarea id="jImprov"></textarea><textarea id="jGratitude"></textarea><textarea id="jNotes"></textarea></div>
   </div>
+  <details class="handwriting-wrap" id="handwritingDetails" ontoggle="if(this.open)initHandwritingPad()">
+    <summary>&#x270D;&#xFE0F; Handwritten Notes <span id="handwritingSavedLabel" style="float:right;font-size:.68rem;font-weight:600;color:#8b74a6;">Stylus ready</span></summary>
+    <div class="handwriting-toolbar">
+      <button type="button" id="handwritingPenBtn" class="active" onclick="handwritingSetTool('pen')">&#x270F;&#xFE0F; Pen</button>
+      <button type="button" id="handwritingEraserBtn" onclick="handwritingSetTool('eraser')">&#x1F9F9; Eraser</button>
+      <label style="font-size:.72rem;font-weight:700;color:#5b347a;">Color <input type="color" id="handwritingColor" value="#1f2937" onchange="handwritingSetColor(this.value)" style="width:30px;height:25px;padding:0;border:0;vertical-align:middle;"></label>
+      <select id="handwritingWidth" onchange="handwritingSetWidth(this.value)" title="Pen thickness"><option value="2">Fine</option><option value="4" selected>Medium</option><option value="7">Bold</option></select>
+      <button type="button" onclick="saveHandwritingNotes(true)">&#x1F4BE; Save</button>
+      <button type="button" onclick="clearHandwritingNotes()" style="color:#b42318;">&#x1F5D1; Clear</button>
+    </div>
+    <canvas id="handwritingCanvas" width="1200" height="600" aria-label="Handwriting area for stylus notes"></canvas>
+  </details>
 
 </div>
 </div>
@@ -1235,8 +1299,8 @@ body.v26-compact .journal-col textarea{height:70px;}
       <div id="audioPlanResult" style="display:none;margin-top:10px;"></div>
     </div>
   </div>
-  <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  <div class="audio-library-toolbar">
+    <div class="audio-toolbar-group">
       <select class="lib-sort" onchange="sortOrder=this.value;renderLibrary()">
         <option value="newest">&#x1F4C5; Newest</option>
         <option value="oldest">&#x1F4C5; Oldest</option>
@@ -1245,12 +1309,19 @@ body.v26-compact .journal-col textarea{height:70px;}
         <option value="rating">&#x2B50; Rating</option>
       </select>
       <span id="bookCount" style="font-size:0.82rem;color:#888;"></span>
-      <button class="lib-add-btn" style="background:#27ae60;" onclick="exportLibrary()" title="Export library to file">&#x1F4BE; Export</button>
-      <label class="lib-add-btn" style="background:#e67e22;cursor:pointer;" title="Import library from file">&#x1F4C2; Import<input type="file" accept=".json" style="display:none" onchange="importLibrary(event)"></label>
-      <button class="lib-add-btn" style="background:#8e44ad;" onclick="openPasteLibrary()" title="Paste library JSON from console">&#x1F4CB; Paste</button>
-      <button class="lib-add-btn" style="background:#27ae60;" onclick="expandAllBooks()">&#x229E; All</button>
-      <button class="lib-add-btn" style="background:#888;" onclick="collapseAllBooks()">&#x229F; All</button>
+    </div>
+    <div class="audio-toolbar-group">
+      <button class="lib-add-btn" style="background:#27ae60;" onclick="expandAllBooks()">&#x229E; Expand</button>
+      <button class="lib-add-btn" style="background:#7b8190;" onclick="collapseAllBooks()">&#x229F; Collapse</button>
       <button class="lib-add-btn" onclick="toggleAddBook()">+ Add Book</button>
+      <details class="audio-library-tools">
+        <summary>&#x2699;&#xFE0F; Library Tools</summary>
+        <div class="audio-tools-menu">
+          <button class="lib-add-btn" style="background:#27ae60;" onclick="exportLibrary()">&#x1F4BE; Export</button>
+          <label class="lib-add-btn" style="background:#e67e22;cursor:pointer;">&#x1F4C2; Import<input type="file" accept=".json" style="display:none" onchange="importLibrary(event)"></label>
+          <button class="lib-add-btn" style="background:#8e44ad;" onclick="openPasteLibrary()">&#x1F4CB; Paste</button>
+        </div>
+      </details>
     </div>
   </div>
   <!-- Add form -->
@@ -3178,6 +3249,9 @@ function load(){
   })();
   renderJournalHome();
   refreshJournalNavStatus();
+  try{initHandwritingPad();}catch(e){console.error('handwriting pad:',e);}
+  var calendar=document.getElementById('journalCalendar');
+  if(calendar&&calendar.open){journalCalendarMonth=new Date(today.getFullYear(),today.getMonth(),1);renderJournalCalendar();}
 }
 
 function attachListeners(){
@@ -3225,6 +3299,124 @@ function syncJournalCombinedToFields(){
   });
   flush();
   JOURNAL_HEADERS.forEach(function(h){const el=document.getElementById(h.key);if(el)el.value=sections[h.key];});
+}
+
+var handwritingStrokes=[],handwritingCurrent=null,handwritingTool='pen',handwritingColor='#1f2937',handwritingWidth=4,handwritingReady=false;
+function handwritingStorageKey(){return'handwriting_'+dk(today);}
+function handwritingSetTool(tool){
+  handwritingTool=tool==='eraser'?'eraser':'pen';
+  var pen=document.getElementById('handwritingPenBtn'),eraser=document.getElementById('handwritingEraserBtn');
+  if(pen)pen.classList.toggle('active',handwritingTool==='pen');
+  if(eraser)eraser.classList.toggle('active',handwritingTool==='eraser');
+}
+function handwritingSetColor(color){handwritingColor=color||'#1f2937';handwritingSetTool('pen');}
+function handwritingSetWidth(width){handwritingWidth=Math.max(1,parseFloat(width)||4);}
+function handwritingPoint(canvas,event){
+  var r=canvas.getBoundingClientRect();
+  return{x:(event.clientX-r.left)/r.width,y:(event.clientY-r.top)/r.height,p:event.pressure&&event.pressure>0?event.pressure:.55};
+}
+function drawHandwritingStroke(ctx,stroke){
+  if(!stroke||!stroke.points||stroke.points.length<1)return;
+  ctx.save();
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.globalCompositeOperation=stroke.tool==='eraser'?'destination-out':'source-over';
+  ctx.strokeStyle=stroke.color||'#1f2937';
+  ctx.lineWidth=stroke.tool==='eraser'?Math.max(22,(stroke.width||4)*5):(stroke.width||4);
+  var first=stroke.points[0];ctx.beginPath();ctx.moveTo(first.x*ctx.canvas.width,first.y*ctx.canvas.height);
+  for(var i=1;i<stroke.points.length;i++){var point=stroke.points[i];ctx.lineTo(point.x*ctx.canvas.width,point.y*ctx.canvas.height);}
+  if(stroke.points.length===1)ctx.lineTo(first.x*ctx.canvas.width+.1,first.y*ctx.canvas.height+.1);
+  ctx.stroke();ctx.restore();
+}
+function redrawHandwriting(){
+  var canvas=document.getElementById('handwritingCanvas');if(!canvas)return;
+  var ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+  handwritingStrokes.forEach(function(stroke){drawHandwritingStroke(ctx,stroke);});
+}
+function initHandwritingPad(){
+  var canvas=document.getElementById('handwritingCanvas');if(!canvas)return;
+  if(!handwritingReady){
+    handwritingReady=true;
+    canvas.addEventListener('pointerdown',function(event){
+      event.preventDefault();canvas.setPointerCapture(event.pointerId);
+      handwritingCurrent={tool:handwritingTool,color:handwritingColor,width:handwritingWidth,points:[handwritingPoint(canvas,event)]};
+      handwritingStrokes.push(handwritingCurrent);redrawHandwriting();
+    });
+    canvas.addEventListener('pointermove',function(event){
+      if(!handwritingCurrent)return;event.preventDefault();
+      handwritingCurrent.points.push(handwritingPoint(canvas,event));redrawHandwriting();
+    });
+    function finish(event){
+      if(!handwritingCurrent)return;
+      if(event)event.preventDefault();handwritingCurrent=null;saveHandwritingNotes(false);
+    }
+    canvas.addEventListener('pointerup',finish);canvas.addEventListener('pointercancel',finish);
+  }
+  loadHandwritingNotes();
+}
+function loadHandwritingNotes(){
+  var raw=localStorage.getItem(handwritingStorageKey());
+  try{handwritingStrokes=raw?JSON.parse(raw):[];if(!Array.isArray(handwritingStrokes))handwritingStrokes=[];}catch(e){handwritingStrokes=[];}
+  redrawHandwriting();
+  var label=document.getElementById('handwritingSavedLabel');
+  if(label)label.textContent=handwritingStrokes.length?'Notes saved for this date':'Stylus ready';
+}
+function saveHandwritingNotes(showConfirmation){
+  localStorage.setItem(handwritingStorageKey(),JSON.stringify(handwritingStrokes));
+  var label=document.getElementById('handwritingSavedLabel');
+  if(label){label.textContent=showConfirmation?'Saved now':'Saved';setTimeout(function(){if(label)label.textContent='Notes saved for this date';},1300);}
+}
+function clearHandwritingNotes(){
+  if(handwritingStrokes.length&&!confirm('Clear the handwritten notes for '+fmtD(today)+'?'))return;
+  handwritingStrokes=[];localStorage.removeItem(handwritingStorageKey());redrawHandwriting();
+  var label=document.getElementById('handwritingSavedLabel');if(label)label.textContent='Stylus ready';
+}
+
+var journalCalendarMonth=null;
+function openJournalCalendar(){
+  journalCalendarMonth=new Date(today.getFullYear(),today.getMonth(),1);
+  renderJournalCalendar();
+}
+function shiftJournalCalendar(amount){
+  if(!journalCalendarMonth)journalCalendarMonth=new Date(today.getFullYear(),today.getMonth(),1);
+  journalCalendarMonth.setMonth(journalCalendarMonth.getMonth()+amount);
+  renderJournalCalendar();
+}
+function journalCalendarStatus(dateKey,activityDates){
+  var raw=localStorage.getItem('planner_'+dateKey);
+  var hasOther=!!localStorage.getItem('bible_'+dateKey)||!!localStorage.getItem('handwriting_'+dateKey)||activityDates.has(dateKey);
+  if(!raw)return hasOther?'saved':'';
+  var data={};try{data=JSON.parse(raw)||{};}catch(e){}
+  var states=Object.keys(data).map(function(key){return data[key];}).filter(function(value){return['green','red','purple','black'].indexOf(value)>=0;});
+  var hasMeaningful=Object.keys(data).some(function(key){var value=data[key];return value!==''&&value!==false&&value!==0&&value!=null;});
+  if(states.length&&states.every(function(value){return value==='green'||value==='black';})&&states.some(function(value){return value==='green';}))return'complete';
+  if(states.some(function(value){return value==='green'||value==='purple';}))return'partial';
+  return hasMeaningful||hasOther?'saved':'';
+}
+function renderJournalCalendar(){
+  var grid=document.getElementById('journalCalendarGrid'),title=document.getElementById('journalCalendarTitle');
+  if(!grid||!title)return;
+  if(!journalCalendarMonth)journalCalendarMonth=new Date(today.getFullYear(),today.getMonth(),1);
+  var year=journalCalendarMonth.getFullYear(),month=journalCalendarMonth.getMonth();
+  title.textContent=journalCalendarMonth.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  var summary=document.getElementById('journalCalendarSummary');if(summary)summary.textContent=title.textContent;
+  var weekdays=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var html=weekdays.map(function(day){return'<div class="journal-calendar-weekday">'+day+'</div>';}).join('');
+  var first=new Date(year,month,1),offset=(first.getDay()+6)%7,days=new Date(year,month+1,0).getDate();
+  var activities=new Set(getActivities().map(function(activity){return activity.date;}));
+  for(var blank=0;blank<offset;blank++)html+='<div aria-hidden="true"></div>';
+  for(var day=1;day<=days;day++){
+    var date=new Date(year,month,day),dateKey=dk(date),status=journalCalendarStatus(dateKey,activities);
+    var classes='journal-calendar-day'+(dateKey===dk(today)?' selected':'')+(dateKey===dk(_realToday)?' real-today':'');
+    html+='<button type="button" class="'+classes+'" onclick="selectJournalCalendarDate(&quot;'+dateKey+'&quot;)" aria-label="'+date.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})+'">'+day+(status?'<span class="calendar-dot '+status+'"></span>':'')+'</button>';
+  }
+  grid.innerHTML=html;
+}
+function selectJournalCalendarDate(dateKey){
+  today=new Date(dateKey+'T00:00:00');
+  journalCalendarMonth=new Date(today.getFullYear(),today.getMonth(),1);
+  load();
+  renderJournalCalendar();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 function changeDay(n){today.setDate(today.getDate()+n);load();}
@@ -10825,6 +11017,36 @@ function journalViewData(){
 function journalHomeCard(id,title,body){
   return'<div class="journal-home-card" data-home-card="'+id+'"><h3>'+title+'</h3><div class="home-value">'+body+'</div></div>';
 }
+function journalTodayTrainingSummary(){
+  var dateKey=dk(today);
+  var acts=getActivities().filter(function(a){return a.date===dateKey;});
+  if(acts.length)return acts[0].title||acts[0].type||'Activity logged';
+  var text=localStorage.getItem('workout_cache_'+dateKey)||'';
+  if(!text){
+    try{
+      var raw=localStorage.getItem('current_training_plan'),plan=raw?JSON.parse(raw):null;
+      if(plan&&plan.text&&plan.startDate){
+        var dayNum=Math.floor((new Date(dateKey+'T00:00:00')-new Date(plan.startDate+'T00:00:00'))/86400000)+1;
+        if(dayNum>0)text=extractWorkoutByPosition(plan.text,dayNum)||extractWorkoutSection(plan.text,today)||'';
+      }
+    }catch(e){}
+  }
+  if(!text)return'No workout scheduled';
+  var patterns=[
+    {re:/\blong\s+run\b/i,label:'Long Run'},{re:/\b(intervals?|repeats?|speed\s*work)\b/i,label:'Interval Run'},
+    {re:/\btempo\s+run\b|\bthreshold\b/i,label:'Tempo Run'},{re:/\beasy\s+run\b/i,label:'Easy Run'},
+    {re:/\brecovery\s+run\b/i,label:'Recovery Run'},{re:/\bprogression\s+run\b/i,label:'Progression Run'},
+    {re:/\brace\b/i,label:'Race'},{re:/\brest\s+day\b|\bno\s+scheduled\s+workout\b/i,label:'Rest Day'},
+    {re:/\bcross[- ]training\b/i,label:'Cross-Training'},{re:/\bstrength\b/i,label:'Strength Training'}
+  ];
+  var lines=String(text).split(/\r?\n/).map(function(line){return line.trim();}).filter(Boolean);
+  for(var p=0;p<patterns.length;p++){
+    var hit=lines.find(function(line){return patterns[p].re.test(line);});
+    if(hit){var distance=hit.match(/\b\d+(?:\.\d+)?\s*(?:miles?|mi)\b/i);return patterns[p].label+(distance?' â€” '+distance[0]:'');}
+  }
+  var useful=lines.find(function(line){return !/^(week|day)\s*\d*|^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(line);});
+  return useful||lines[0]||'Workout scheduled';
+}
 function renderJournalHome(){
   var grid=document.getElementById('journalHomeGrid');if(!grid)return;
   var prefs=journalPrefs(),visible=Array.isArray(prefs.homeCards)?prefs.homeCards:JOURNAL_UI_CONFIG.homeCards;
@@ -10834,9 +11056,7 @@ function renderJournalHome(){
   cards.priorities=journalHomeCard('priorities','Priorities & Goals','<strong>'+priorityText.length+'/3</strong> priorities set &nbsp;•&nbsp; <strong>'+goalText.length+'/3</strong> goals set');
   var checks=collectDailyChecks(),done=checks.filter(function(i){return i.status==='green';}).length,open=checks.filter(function(i){return i.status==='blank';}).length;
   cards.checkins=journalHomeCard('checkins','Daily Check-In','<strong>'+done+'</strong> complete &nbsp;•&nbsp; <strong>'+open+'</strong> still blank');
-  var acts=getActivities().filter(function(a){return a.date===dk(today);});
-  var workout=localStorage.getItem('workout_cache_'+dk(today))||'';
-  var training=acts.length?(acts[0].title||acts[0].type||'Activity logged'):(workout?workout.split(/\r?\n/)[0]:'No activity loaded');
+  var training=journalTodayTrainingSummary();
   cards.training=journalHomeCard('training','Today’s Training',escHtml(String(training).slice(0,150)));
   var wellness=[d.wBPVal?'BP '+d.wBPVal:'',d.wSleepVal?'Sleep '+d.wSleepVal+' hr':'',d.wWghtVal?'Weight '+d.wWghtVal:''].filter(Boolean);
   cards.wellness=journalHomeCard('wellness','Wellness',wellness.length?escHtml(wellness.join(' • ')):'No wellness metrics entered');
