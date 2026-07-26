@@ -703,7 +703,7 @@ body{background:radial-gradient(circle at 15% 0%,#eef0ff 0,transparent 34%),var(
 .header-aqi-label{font-weight:800;white-space:nowrap;}
 .header-aqi-track{position:relative;flex:1;min-width:70px;height:8px;border-radius:999px;background:linear-gradient(90deg,#22c55e 0 16.7%,#eab308 16.7% 33.3%,#f97316 33.3% 50%,#ef4444 50% 66.7%,#a855f7 66.7% 83.3%,#7f1d1d 83.3% 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);}
 .header-aqi-marker{position:absolute;top:50%;left:0;width:11px;height:11px;border:2px solid #fff;border-radius:50%;background:#172033;transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.35);transition:left .3s ease;}
-.header-aqi-value{font-weight:850;white-space:nowrap;min-width:72px;}
+.header-aqi-value{font-weight:850;white-space:nowrap;min-width:108px;}
 .header button,.tab-btn,#hmToggleBtn,.hm-nav-btn{transition:transform .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease;}
 .header button:hover{background:rgba(255,255,255,.28);transform:translateY(-1px);}
 .header button:focus-visible,.tab-btn:focus-visible,#hmToggleBtn:focus-visible,.hm-nav-btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus);}
@@ -758,6 +758,8 @@ body.v26-compact .journal-col textarea{height:70px;}
   body{padding:0;background:#fff}.container{border:0;border-radius:0;box-shadow:none}.header{padding:12px}
   .header-control-stack{flex:0 0 100%;width:100%}
   .header-actions{width:100%;gap:6px}
+  .header-status-row{gap:7px;flex-wrap:wrap}
+  .header-aqi{flex:1 0 100%;min-width:0}
   .v26-toolbar{padding:8px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:7px}
   .v26-toolbar .v26-label{display:none}
   .v26-toolbar .v26-spacer{display:block;flex:0 0 100%;height:0}
@@ -950,10 +952,10 @@ html{scroll-padding-top:190px;}
     </div>
     <div class="header-status-row">
       <span class="v26-save header-save-status" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
-      <div class="header-aqi" id="meridianAqi" role="meter" aria-label="Meridian air quality index" aria-valuemin="0" aria-valuemax="500" aria-valuenow="0">
-        <span class="header-aqi-label">Air Quality</span>
-        <span class="header-aqi-track" aria-hidden="true"><span class="header-aqi-marker" id="meridianAqiMarker"></span></span>
-        <span class="header-aqi-value" id="meridianAqiValue">&mdash; AQI</span>
+      <div class="header-aqi" id="boiseAqi" role="meter" aria-label="Boise, Idaho air quality index" aria-valuemin="0" aria-valuemax="500" aria-valuenow="0">
+        <span class="header-aqi-label">Boise AQI</span>
+        <span class="header-aqi-track" aria-hidden="true"><span class="header-aqi-marker" id="boiseAqiMarker"></span></span>
+        <span class="header-aqi-value" id="boiseAqiValue">AQI &mdash;</span>
       </div>
     </div>
   </div>
@@ -11730,7 +11732,7 @@ async function updateMeridianWeather(){
     display.title='Current Meridian temperature is temporarily unavailable';
   }
 }
-function meridianAqiCategory(value){
+function boiseAqiCategory(value){
   if(value<=50)return{label:'Good',color:'#22c55e'};
   if(value<=100)return{label:'Moderate',color:'#eab308'};
   if(value<=150)return{label:'Sensitive',color:'#f97316'};
@@ -11738,27 +11740,27 @@ function meridianAqiCategory(value){
   if(value<=300)return{label:'Very unhealthy',color:'#a855f7'};
   return{label:'Hazardous',color:'#7f1d1d'};
 }
-async function updateMeridianAirQuality(){
-  var meter=document.getElementById('meridianAqi'),marker=document.getElementById('meridianAqiMarker'),valueLabel=document.getElementById('meridianAqiValue');
+async function updateBoiseAirQuality(){
+  var meter=document.getElementById('boiseAqi'),marker=document.getElementById('boiseAqiMarker'),valueLabel=document.getElementById('boiseAqiValue');
   if(!meter||!marker||!valueLabel)return;
   try{
-    var response=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=43.6121&longitude=-116.3915&current=us_aqi&timezone=America%2FBoise',{cache:'no-store'});
+    var response=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=43.6150&longitude=-116.2023&current=us_aqi&timezone=America%2FBoise',{cache:'no-store'});
     if(!response.ok)throw new Error('Air quality unavailable');
     var data=await response.json(),current=data&&data.current,aqi=Math.round(Number(current&&current.us_aqi));
     if(!Number.isFinite(aqi))throw new Error('Air quality unavailable');
-    var category=meridianAqiCategory(aqi);
+    var category=boiseAqiCategory(aqi);
     marker.style.left=Math.min(Math.max(aqi,0),300)/300*100+'%';
     marker.style.background=category.color;
-    valueLabel.textContent=aqi+' '+category.label;
+    valueLabel.textContent='AQI '+aqi+' \u00B7 '+category.label;
     meter.setAttribute('aria-valuenow',String(aqi));
     meter.setAttribute('aria-valuetext',aqi+' AQI, '+category.label);
-    meter.title='Current Meridian U.S. AQI: '+aqi+' ('+category.label+')'+(current.time?' \u2022 Updated '+current.time.replace('T',' '):'')+' \u2022 Air quality: Open-Meteo / CAMS';
+    meter.title='Current Boise, Idaho U.S. AQI: '+aqi+' ('+category.label+')'+(current.time?' \u2022 Updated '+current.time.replace('T',' '):'')+' \u2022 Air quality: Open-Meteo / CAMS';
   }catch(error){
     marker.style.left='0%';marker.style.background='#94a3b8';
-    valueLabel.innerHTML='&mdash; AQI';
+    valueLabel.innerHTML='AQI &mdash;';
     meter.setAttribute('aria-valuenow','0');
     meter.setAttribute('aria-valuetext','Air quality temporarily unavailable');
-    meter.title='Current Meridian air quality is temporarily unavailable';
+    meter.title='Current Boise air quality is temporarily unavailable';
   }
 }
 function journalSyncFixedHeaderHeight(){
@@ -11781,9 +11783,9 @@ else journalInitFixedHeader();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateMeridianWeather);
 else updateMeridianWeather();
 setInterval(updateMeridianWeather,15*60*1000);
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateMeridianAirQuality);
-else updateMeridianAirQuality();
-setInterval(updateMeridianAirQuality,15*60*1000);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateBoiseAirQuality);
+else updateBoiseAirQuality();
+setInterval(updateBoiseAirQuality,15*60*1000);
 
 function v26Toast(message){
   var el=document.getElementById('v26Toast');if(!el)return;
