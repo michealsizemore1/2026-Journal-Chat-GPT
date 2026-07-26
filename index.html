@@ -3615,16 +3615,24 @@ async function connectGoogleCalendar(){
   if(!journalCloudClient||!journalCloudUser){alert('Sign in to your private journal first.');return;}
   var button=document.getElementById('googleCalendarConnectBtn');
   if(button){button.disabled=true;button.textContent='Connecting...';}
-  var result=await journalCloudClient.auth.linkIdentity({
-    provider:'google',
-    options:{
-      scopes:'https://www.googleapis.com/auth/calendar.events.readonly',
-      redirectTo:location.origin+location.pathname
-    }
-  });
+  var oauthOptions={
+    scopes:'https://www.googleapis.com/auth/calendar.events.readonly',
+    redirectTo:location.origin+location.pathname,
+    queryParams:{access_type:'offline',prompt:'consent'}
+  };
+  var identitiesResult=await journalCloudClient.auth.getUserIdentities();
+  var identities=identitiesResult.data&&Array.isArray(identitiesResult.data.identities)?identitiesResult.data.identities:[];
+  var googleAlreadyLinked=identities.some(function(identity){return identity.provider==='google';});
+  googleCalendarAccessToken='';
+  googleCalendarEvents=[];
+  googleCalendarLoadedMonth='';
+  sessionStorage.removeItem('journal_google_calendar_token');
+  var result=googleAlreadyLinked
+    ?await journalCloudClient.auth.signInWithOAuth({provider:'google',options:oauthOptions})
+    :await journalCloudClient.auth.linkIdentity({provider:'google',options:oauthOptions});
   if(result.error){
     if(button){button.disabled=false;button.textContent='Connect';}
-    alert('Google Calendar is not enabled yet in Supabase. Enable the Google provider, then try Connect again.');
+    alert('Google Calendar could not connect: '+(result.error.message||'Authorization was not completed.'));
   }
 }
 function googleCalendarDateKey(event){
@@ -3685,14 +3693,22 @@ async function loadGoogleCalendarMonth(){
       if(message)message.textContent='Google access expired. Reconnect to view events again.';
       return;
     }
-    if(!response.ok)throw new Error('Google Calendar request failed');
-    var data=await response.json();
+    var data=await response.json().catch(function(){return{};});
+    if(!response.ok){
+      var googleMessage=data&&data.error&&data.error.message?data.error.message:'Google Calendar returned HTTP '+response.status+'.';
+      var googleError=new Error(googleMessage);
+      googleError.status=response.status;
+      throw googleError;
+    }
     googleCalendarEvents=Array.isArray(data.items)?data.items:[];
     googleCalendarLoadedMonth=monthKey;
     if(message)message.textContent='Connected securely. Google events are view-only.';
     decorateGoogleCalendar();
   }catch(error){
-    if(message)message.textContent='Google events could not be loaded. Your Journal calendar is unchanged.';
+    var detail=error&&error.message?String(error.message):'Unknown Calendar error';
+    if(detail==='Failed to fetch')detail='The browser could not reach Google Calendar. Check the connection or any privacy blocker.';
+    if(message)message.textContent='Google Calendar error'+(error&&error.status?' '+error.status:'')+': '+detail+' Your Journal calendar is unchanged.';
+    if(button){button.disabled=false;button.textContent='Reconnect';}
   }
 }
 
