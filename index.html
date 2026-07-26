@@ -285,6 +285,64 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
   #tab-daily .daily-key-card{border-width:2px!important;border-color:#4f766b!important;}
   #tab-daily .journal-home-card{border:1.5px solid #8ca89f;}
 }
+/* Consistent card separation throughout every non-Daily Journal screen. */
+.tab-panel:not(#tab-daily) :is(
+  .section,
+  .dash-card,
+  .book-card,
+  .book-rn-entry,
+  .act-card,
+  .act-pr-card,
+  .act-header-clean,
+  .act-import-info,
+  .act-section-toggle,
+  .audio-library-toolbar,
+  .lib-form,
+  .meal-section,
+  .ai-box,
+  .journal-settings-group,
+  .bp-chart-wrap,
+  .tp-adjust-box,
+  .sb-item,
+  .handwriting-wrap,
+  .heatmap-wrap
+){
+  box-shadow:0 0 0 2px #4f766b,0 2px 8px rgba(38,67,59,.08);
+}
+.tab-panel:not(#tab-daily) .summary-table{
+  border-radius:10px;
+  box-shadow:0 0 0 2px #4f766b,0 2px 8px rgba(38,67,59,.08);
+}
+.tab-panel:not(#tab-daily) .panel > :is(div,details)[style*="border:1px solid"][style*="border-radius"],
+#habitLawsGrid > div{
+  box-shadow:0 0 0 2px #4f766b,0 2px 8px rgba(38,67,59,.08)!important;
+}
+@media(max-width:768px){
+  .tab-panel:not(#tab-daily) :is(
+    .section,
+    .dash-card,
+    .book-card,
+    .book-rn-entry,
+    .act-card,
+    .act-pr-card,
+    .act-header-clean,
+    .act-import-info,
+    .act-section-toggle,
+    .audio-library-toolbar,
+    .lib-form,
+    .meal-section,
+    .ai-box,
+    .journal-settings-group,
+    .bp-chart-wrap,
+    .tp-adjust-box,
+    .sb-item,
+    .handwriting-wrap,
+    .heatmap-wrap,
+    .summary-table
+  ){
+    box-shadow:0 0 0 2px #4f766b,0 2px 7px rgba(38,67,59,.08);
+  }
+}
 #tab-daily .daily-prep-card .section-title{margin:0;padding:8px 5px;border-bottom:1px solid #eef0f4;}
 #tab-daily .daily-prep-card .section-title:last-child{border-bottom:0;}
 .handwriting-wrap{margin-top:12px;border:1px solid #d9c7ef;border-radius:10px;overflow:hidden;background:#fcfaff;}
@@ -708,9 +766,15 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-float-top{position:fixed;right:18px;bottom:18px;z-index:1200;border:1px solid #d0d5dd;background:#fff;color:#475467;border-radius:999px;padding:8px 11px;box-shadow:0 4px 16px rgba(16,24,40,.14);cursor:pointer;display:none;}
 .journal-mobile-dock{display:none;}
 .section,.panel,.review-section,.journaling-section{scroll-margin-top:70px;}
+.container{overflow:visible;}
+.journal-sticky-shell{position:sticky;top:0;z-index:2200;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 5px 14px rgba(31,41,55,.09);}
+.journal-sticky-shell .header{border-radius:12px 12px 0 0;}
+html{scroll-padding-top:190px;}
 @media(max-width:800px){.journal-home-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-settings-grid{grid-template-columns:1fr;}}
 @media(max-width:700px){
   body{padding-bottom:64px;}
+  .journal-sticky-shell,.journal-sticky-shell .header{border-radius:0;}
+  html{scroll-padding-top:285px;}
   .journal-mobile-dock{position:fixed;display:grid;grid-template-columns:repeat(4,1fr);left:0;right:0;bottom:0;z-index:2500;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e4e7ec;box-shadow:0 -4px 18px rgba(16,24,40,.08);}
   .journal-mobile-dock button{border:0;background:none;color:#475467;padding:8px 3px 7px;font-size:.68rem;font-weight:700;min-height:49px;}
   .journal-mobile-dock button span{display:block;font-size:1rem;line-height:1.1;margin-bottom:2px;}
@@ -783,6 +847,7 @@ body.v26-compact .journal-col textarea{height:70px;}
     <div class="cloud-choice-grid" id="cloudFirstSyncActions"></div>
   </div>
 </div>
+<div class="journal-sticky-shell">
 <div id="backupReminderBar" style="display:none;background:linear-gradient(135deg,#fff7ed,#ffedd5);border-bottom:1px solid #fdba74;padding:8px 16px;align-items:center;gap:10px;flex-wrap:wrap;font-size:0.82rem;color:#7c2d12;">
   <span>&#x1F4BE; <span id="backupReminderText">You haven't backed up your journal in a while.</span></span>
   <button onclick="exportBackup();dismissBackupReminder()" style="background:#c2410c;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:0.78rem;font-weight:600;cursor:pointer;">Backup Now</button>
@@ -830,6 +895,7 @@ body.v26-compact .journal-col textarea{height:70px;}
     <button class="tab-btn" onclick="switchTab('dashboard',event)">Dashboard</button>
     <button class="tab-btn" onclick="switchTab('review',event)">Review</button>
   </div>
+</div>
 </div>
 <div id="tabNotesBar" class="compact-mini-bar">
   <div class="compact-mini-head" id="tabNotesToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="tabNotesBody" onclick="toggleTabNotes()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleTabNotes();}">
