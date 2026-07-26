@@ -697,6 +697,13 @@ body{background:radial-gradient(circle at 15% 0%,#eef0ff 0,transparent 34%),var(
 .header .v26-quiet-btn:hover,.header .v26-weather:hover{background:rgba(255,255,255,.27);border-color:rgba(255,255,255,.45);color:#fff;}
 .header-save-status{color:rgba(255,255,255,.88);font-size:.72rem;padding-left:3px;}
 .header-save-status .v26-save-dot{background:#86efac;box-shadow:0 0 0 3px rgba(134,239,172,.16);}
+.header-status-row{display:flex;align-items:center;gap:12px;width:100%;min-width:0;}
+.header-save-status{flex:0 0 auto;}
+.header-aqi{display:flex;align-items:center;gap:7px;flex:1 1 220px;min-width:150px;color:#fff;font-size:.68rem;}
+.header-aqi-label{font-weight:800;white-space:nowrap;}
+.header-aqi-track{position:relative;flex:1;min-width:70px;height:8px;border-radius:999px;background:linear-gradient(90deg,#22c55e 0 16.7%,#eab308 16.7% 33.3%,#f97316 33.3% 50%,#ef4444 50% 66.7%,#a855f7 66.7% 83.3%,#7f1d1d 83.3% 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);}
+.header-aqi-marker{position:absolute;top:50%;left:0;width:11px;height:11px;border:2px solid #fff;border-radius:50%;background:#172033;transform:translate(-50%,-50%);box-shadow:0 1px 4px rgba(0,0,0,.35);transition:left .3s ease;}
+.header-aqi-value{font-weight:850;white-space:nowrap;min-width:72px;}
 .header button,.tab-btn,#hmToggleBtn,.hm-nav-btn{transition:transform .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease;}
 .header button:hover{background:rgba(255,255,255,.28);transform:translateY(-1px);}
 .header button:focus-visible,.tab-btn:focus-visible,#hmToggleBtn:focus-visible,.hm-nav-btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus);}
@@ -726,7 +733,7 @@ textarea{line-height:1.55;}
 .v26-save-dot{width:7px;height:7px;border-radius:50%;background:#22a06b;box-shadow:0 0 0 3px rgba(34,160,107,.12);}
 .v26-toast{position:fixed;right:22px;bottom:22px;z-index:3000;background:#172033;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);font-size:.84rem;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s;}
 .v26-toast.show{opacity:1;transform:translateY(0);}
-body.v26-focus .tabs-wrapper,body.v26-focus #tabNotesBar,body.v26-focus #aiToolbar,body.v26-focus #streakBar,body.v26-focus #todayWorkoutCard,body.v26-focus .header>:not(h1):not(.date-nav):not(.header-control-stack),body.v26-focus .header-actions>:not(.v26-focus-btn):not(.v26-weather),body.v26-focus .header-save-status{display:none!important;}
+body.v26-focus .tabs-wrapper,body.v26-focus #tabNotesBar,body.v26-focus #aiToolbar,body.v26-focus #streakBar,body.v26-focus #todayWorkoutCard,body.v26-focus .header>:not(h1):not(.date-nav):not(.header-control-stack),body.v26-focus .header-actions>:not(.v26-focus-btn):not(.v26-weather),body.v26-focus .header-status-row{display:none!important;}
 body.v26-focus .container{max-width:820px;}
 body.v26-focus .v26-toolbar{justify-content:flex-end;}
 body.v26-focus .v26-focus-btn{background:#ededff;color:var(--brand);border-color:#c9c9f5;}
@@ -929,7 +936,14 @@ html{scroll-padding-top:190px;}
       <button class="v26-quiet-btn v26-focus-btn" type="button" onclick="v26ToggleFocus()" id="v26FocusBtn" title="Hide distractions (F)">Focus</button>
       <span class="v26-weather" id="meridianWeather" title="Current temperature for Meridian, Idaho">&#x1F321;&#xFE0F; Meridian &mdash;&deg;</span>
     </div>
-    <span class="v26-save header-save-status" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
+    <div class="header-status-row">
+      <span class="v26-save header-save-status" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
+      <div class="header-aqi" id="meridianAqi" role="meter" aria-label="Meridian air quality index" aria-valuemin="0" aria-valuemax="500" aria-valuenow="0">
+        <span class="header-aqi-label">Air Quality</span>
+        <span class="header-aqi-track" aria-hidden="true"><span class="header-aqi-marker" id="meridianAqiMarker"></span></span>
+        <span class="header-aqi-value" id="meridianAqiValue">&mdash; AQI</span>
+      </div>
+    </div>
   </div>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
 </div>
@@ -11704,6 +11718,37 @@ async function updateMeridianWeather(){
     display.title='Current Meridian temperature is temporarily unavailable';
   }
 }
+function meridianAqiCategory(value){
+  if(value<=50)return{label:'Good',color:'#22c55e'};
+  if(value<=100)return{label:'Moderate',color:'#eab308'};
+  if(value<=150)return{label:'Sensitive',color:'#f97316'};
+  if(value<=200)return{label:'Unhealthy',color:'#ef4444'};
+  if(value<=300)return{label:'Very unhealthy',color:'#a855f7'};
+  return{label:'Hazardous',color:'#7f1d1d'};
+}
+async function updateMeridianAirQuality(){
+  var meter=document.getElementById('meridianAqi'),marker=document.getElementById('meridianAqiMarker'),valueLabel=document.getElementById('meridianAqiValue');
+  if(!meter||!marker||!valueLabel)return;
+  try{
+    var response=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=43.6121&longitude=-116.3915&current=us_aqi&timezone=America%2FBoise',{cache:'no-store'});
+    if(!response.ok)throw new Error('Air quality unavailable');
+    var data=await response.json(),current=data&&data.current,aqi=Math.round(Number(current&&current.us_aqi));
+    if(!Number.isFinite(aqi))throw new Error('Air quality unavailable');
+    var category=meridianAqiCategory(aqi);
+    marker.style.left=Math.min(Math.max(aqi,0),300)/300*100+'%';
+    marker.style.background=category.color;
+    valueLabel.textContent=aqi+' '+category.label;
+    meter.setAttribute('aria-valuenow',String(aqi));
+    meter.setAttribute('aria-valuetext',aqi+' AQI, '+category.label);
+    meter.title='Current Meridian U.S. AQI: '+aqi+' ('+category.label+')'+(current.time?' \u2022 Updated '+current.time.replace('T',' '):'')+' \u2022 Air quality: Open-Meteo / CAMS';
+  }catch(error){
+    marker.style.left='0%';marker.style.background='#94a3b8';
+    valueLabel.innerHTML='&mdash; AQI';
+    meter.setAttribute('aria-valuenow','0');
+    meter.setAttribute('aria-valuetext','Air quality temporarily unavailable');
+    meter.title='Current Meridian air quality is temporarily unavailable';
+  }
+}
 function journalSyncFixedHeaderHeight(){
   var shell=document.querySelector('.journal-sticky-shell');if(!shell)return;
   var height=Math.ceil(shell.getBoundingClientRect().height);
@@ -11724,6 +11769,9 @@ else journalInitFixedHeader();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateMeridianWeather);
 else updateMeridianWeather();
 setInterval(updateMeridianWeather,15*60*1000);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateMeridianAirQuality);
+else updateMeridianAirQuality();
+setInterval(updateMeridianAirQuality,15*60*1000);
 
 function v26Toast(message){
   var el=document.getElementById('v26Toast');if(!el)return;
