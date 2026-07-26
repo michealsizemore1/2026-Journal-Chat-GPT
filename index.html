@@ -712,6 +712,18 @@ body{background:radial-gradient(circle at 15% 0%,#eef0ff 0,transparent 34%),var(
 .tab-btn:hover,#hmToggleBtn:hover{background:#f3f4ff;color:var(--brand);}
 .tab-btn.active{color:var(--brand);border-bottom-color:var(--brand);background:#f7f7ff;}
 #tabNotesBar{padding:10px 16px 2px!important;background:#fff;}
+#tabNotesBar{
+  border:2px solid #4f766b!important;
+  border-radius:12px!important;
+  box-shadow:0 2px 8px rgba(38,67,59,.08);
+}
+#tab-bible > div > div[style*="border:1px solid"][style*="border-radius"],
+.tab-panel > div:not(.panel) > div[style*="border:1px solid"][style*="border-radius"]{
+  outline:2px solid #4f766b;
+  outline-offset:-2px;
+  border-radius:12px!important;
+  box-shadow:0 2px 8px rgba(38,67,59,.08);
+}
 #tabNoteTA{border-color:var(--line)!important;background:#fafbfe!important;transition:min-height .2s,border-color .2s,box-shadow .2s;}
 #tabNoteTA:focus{min-height:82px;border-color:var(--brand)!important;box-shadow:var(--focus);background:#fff!important;}
 .section,.journaling-section,.panel,.review-section{padding-top:18px;padding-bottom:18px;}
