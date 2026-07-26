@@ -71,6 +71,12 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .journal-col label{display:block;font-size:0.82rem;font-weight:600;color:#667eea;margin-bottom:4px;}
 .journal-col textarea{width:100%;height:90px;border:1px solid #e9ecef;border-radius:6px;padding:8px;font-size:0.95rem;resize:vertical;outline:none;font-family:inherit;}
 .backup-wrap,.pdf-wrap{position:relative;}
+.header-tools-menu{position:relative;}
+.header-tools-menu summary{list-style:none;}
+.header-tools-menu summary::-webkit-details-marker{display:none;}
+.header-tools-dropdown{position:absolute;right:0;top:calc(100% + 6px);z-index:2600;min-width:190px;padding:6px;background:#fff;border:1px solid #d8dee9;border-radius:10px;box-shadow:0 10px 28px rgba(31,41,55,.2);display:grid;gap:3px;}
+.header-tools-dropdown button{width:100%;border:0;background:#fff;color:#344054;text-align:left;padding:8px 10px;border-radius:7px;font-size:.8rem;font-weight:650;cursor:pointer;}
+.header-tools-dropdown button:hover{background:#f1f4ff;color:#4f46e5;}
 .pdf-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:white;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:100;min-width:150px;display:none;}
 .pdf-dropdown.open{display:block;}
 .pdf-dropdown button{display:block;width:100%;padding:9px 14px;border:none;background:none;text-align:left;cursor:pointer;font-size:0.92rem;color:#333;}
@@ -328,6 +334,17 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .tab-panel .panel > div > :is(div,details)[style*="border:1px solid"][style*="border-radius"]{
   outline:2px solid #4f766b;
   outline-offset:-2px;
+}
+.tab-panel :is(
+  .section,.dash-card,.book-card,.book-rn-entry,.act-card,.act-pr-card,
+  .act-header-clean,.act-import-info,.act-section-toggle,.audio-library-toolbar,
+  .lib-form,.meal-section,.ai-box,.journal-settings-group,.bp-chart-wrap,
+  .tp-adjust-box,.sb-item,.handwriting-wrap,.heatmap-wrap,.summary-table,
+  .compact-mini-bar,.act-filter-shell,.act-import-menu,.review-stat,.goals-wrap
+),
+.tab-panel .panel > :is(div,details)[style*="border:1px solid"][style*="border-radius"],
+.tab-panel .panel > div > :is(div,details)[style*="border:1px solid"][style*="border-radius"]{
+  border-radius:12px!important;
 }
 @media(max-width:768px){
   .tab-panel:not(#tab-daily) :is(
@@ -698,11 +715,12 @@ textarea{line-height:1.55;}
 .v26-toolbar .v26-spacer{flex:1;}
 .v26-quiet-btn{border:1px solid var(--line);background:#fff;color:#465066;border-radius:9px;padding:7px 10px;cursor:pointer;font:600 .8rem inherit;}
 .v26-quiet-btn:hover{border-color:#c9c9f5;background:#f7f7ff;color:var(--brand);}
+.v26-weather{display:inline-flex;align-items:center;gap:4px;border:1px solid #cfe0da;background:#f7fbf9;color:#31564b;border-radius:9px;padding:7px 9px;font-size:.76rem;font-weight:750;white-space:nowrap;}
 .v26-save{display:flex;align-items:center;gap:6px;white-space:nowrap;}
 .v26-save-dot{width:7px;height:7px;border-radius:50%;background:#22a06b;box-shadow:0 0 0 3px rgba(34,160,107,.12);}
 .v26-toast{position:fixed;right:22px;bottom:22px;z-index:3000;background:#172033;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.22);font-size:.84rem;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s;}
 .v26-toast.show{opacity:1;transform:translateY(0);}
-body.v26-focus .tabs-wrapper,body.v26-focus #tabNotesBar,body.v26-focus #aiToolbar,body.v26-focus #streakBar,body.v26-focus #todayWorkoutCard,body.v26-focus .header>:not(h1):not(.date-nav),body.v26-focus .v26-toolbar>:not(.v26-focus-btn):not(.v26-spacer){display:none!important;}
+body.v26-focus .tabs-wrapper,body.v26-focus #tabNotesBar,body.v26-focus #aiToolbar,body.v26-focus #streakBar,body.v26-focus #todayWorkoutCard,body.v26-focus .header>:not(h1):not(.date-nav),body.v26-focus .v26-toolbar>:not(.v26-focus-btn):not(.v26-weather):not(.v26-spacer){display:none!important;}
 body.v26-focus .container{max-width:820px;}
 body.v26-focus .v26-toolbar{justify-content:flex-end;}
 body.v26-focus .v26-focus-btn{background:#ededff;color:var(--brand);border-color:#c9c9f5;}
@@ -886,25 +904,24 @@ html{scroll-padding-top:190px;}
     <span id="currentDate"></span>
     <button onclick="changeDay(1)">&#8250;</button>
   </div>
-  <div class="backup-wrap">
-    <button class="hdr-btn" onclick="exportBackup()">&#x1F4BE; Backup</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
-    <button class="hdr-btn" onclick="document.getElementById('importFile').click()">&#x1F4C2; Restore</button>
-  </div>
-  <div class="pdf-wrap">
-    <button class="hdr-btn" onclick="togglePdfMenu()">&#x1F5A8; PDF &#9660;</button>
-    <div class="pdf-dropdown" id="pdfMenu">
-      <button onclick="printView('daily')">Daily</button>
-      <button onclick="printView('weekly')">Weekly</button>
-      <button onclick="printView('monthly')">Monthly</button>
+  <details class="header-tools-menu" id="headerToolsMenu">
+    <summary class="hdr-btn">&#x2630; Tools</summary>
+    <div class="header-tools-dropdown">
+      <button type="button" onclick="exportBackup();closeHeaderTools()">&#x1F4BE; Backup</button>
+      <button type="button" onclick="document.getElementById('importFile').click();closeHeaderTools()">&#x1F4C2; Restore</button>
+      <button type="button" onclick="printView('daily');closeHeaderTools()">&#x1F5A8; PDF &mdash; Daily</button>
+      <button type="button" onclick="printView('weekly');closeHeaderTools()">&#x1F5A8; PDF &mdash; Weekly</button>
+      <button type="button" onclick="printView('monthly');closeHeaderTools()">&#x1F5A8; PDF &mdash; Monthly</button>
+      <button type="button" onclick="openSettings();closeHeaderTools()">&#x2699;&#xFE0F; Settings</button>
     </div>
-  </div>
-  <button class="hdr-btn" onclick="openSettings()">&#x2699;&#xFE0F; Settings</button>
+  </details>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
 </div>
 <div class="v26-toolbar" aria-label="Journal view controls">
   <span class="v26-save" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
   <button class="v26-quiet-btn" type="button" id="journalCloudSyncBtn" onclick="journalCloudSmartSync()" title="Check for newer information on this device and in the private cloud">&#x21BB; Sync</button>
   <button class="v26-quiet-btn v26-focus-btn" type="button" onclick="v26ToggleFocus()" id="v26FocusBtn" title="Hide distractions (F)">Focus</button>
+  <span class="v26-weather" id="meridianWeather" title="Current temperature for Meridian, Idaho">&#x1F321;&#xFE0F; Meridian &mdash;&deg;</span>
 </div>
 <div class="tabs-wrapper">
   <button id="hmToggleBtn" onclick="toggleHamburger(event)" title="More tabs">&#x2630; More</button>
@@ -9885,7 +9902,8 @@ function copyItemsToDay(ids,confirmId){
   var conf=document.getElementById(confirmId);if(conf){conf.textContent='Copied to '+dateKey+'!';conf.style.display='inline';setTimeout(function(){conf.style.display='none';},3000);}
 }
 function togglePdfMenu(){document.getElementById('pdfMenu').classList.toggle('open');}
-document.addEventListener('click',e=>{if(!e.target.closest('.pdf-wrap'))document.getElementById('pdfMenu').classList.remove('open');});
+document.addEventListener('click',e=>{var menu=document.getElementById('pdfMenu');if(menu&&!e.target.closest('.pdf-wrap'))menu.classList.remove('open');});
+document.addEventListener('click',e=>{if(!e.target.closest('.header-tools-menu'))closeHeaderTools();});
 function printView(tab){document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));if(tab==='weekly')renderWeekly();if(tab==='monthly')renderMonthly();document.getElementById('tab-'+tab).classList.add('active');setTimeout(window.print,200);}
 function exportBackup(){
   const d={};
@@ -11650,6 +11668,32 @@ function journalCloudInit(){
 }
 
 /* v26 quality-of-life enhancements. Existing storage keys and data remain unchanged. */
+function closeHeaderTools(){
+  var menu=document.getElementById('headerToolsMenu');if(menu)menu.open=false;
+}
+function meridianWeatherIcon(code){
+  if(code===0)return'&#x2600;&#xFE0F;';
+  if(code<=3)return'&#x26C5;';
+  if(code===45||code===48)return'&#x1F32B;&#xFE0F;';
+  if((code>=51&&code<=67)||(code>=80&&code<=82))return'&#x1F327;&#xFE0F;';
+  if(code>=71&&code<=77)return'&#x1F328;&#xFE0F;';
+  if(code>=95)return'&#x26C8;&#xFE0F;';
+  return'&#x1F321;&#xFE0F;';
+}
+async function updateMeridianWeather(){
+  var display=document.getElementById('meridianWeather');if(!display)return;
+  try{
+    var response=await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.6121&longitude=-116.3915&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=America%2FBoise',{cache:'no-store'});
+    if(!response.ok)throw new Error('Weather unavailable');
+    var data=await response.json(),current=data&&data.current;
+    if(!current||!Number.isFinite(Number(current.temperature_2m)))throw new Error('Weather unavailable');
+    display.innerHTML=meridianWeatherIcon(Number(current.weather_code))+' Meridian '+Math.round(Number(current.temperature_2m))+'&deg;';
+    display.title='Current temperature for Meridian, Idaho'+(current.time?' \u2022 Updated '+current.time.replace('T',' '):'')+' \u2022 Weather: Open-Meteo';
+  }catch(error){
+    display.innerHTML='&#x1F321;&#xFE0F; Meridian &mdash;&deg;';
+    display.title='Current Meridian temperature is temporarily unavailable';
+  }
+}
 function journalSyncFixedHeaderHeight(){
   var shell=document.querySelector('.journal-sticky-shell');if(!shell)return;
   var height=Math.ceil(shell.getBoundingClientRect().height);
@@ -11667,6 +11711,9 @@ function journalInitFixedHeader(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',journalInitFixedHeader);
 else journalInitFixedHeader();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateMeridianWeather);
+else updateMeridianWeather();
+setInterval(updateMeridianWeather,15*60*1000);
 
 function v26Toast(message){
   var el=document.getElementById('v26Toast');if(!el)return;
