@@ -8736,17 +8736,72 @@ function audibleSummarize(){
   },function(err){res.textContent='Error: '+err;});
 }
 
+function readBibleReadingArchive(){
+  var merged=[],seen={};
+  function add(entry){
+    if(!entry||!entry.text)return;
+    var id=entry.id||entry.ts||[entry.journalDate||'',entry.day||'',entry.passages||'',entry.text.slice(0,80)].join('|');
+    if(seen[id])return;
+    entry.id=id;seen[id]=true;merged.push(entry);
+  }
+  try{(JSON.parse(localStorage.getItem('bible_reading_archive')||'[]')||[]).forEach(add);}catch(e){}
+  for(var i=0;i<localStorage.length;i++){
+    var key=localStorage.key(i)||'';
+    if(key.indexOf('planner_')!==0)continue;
+    try{
+      var dayData=JSON.parse(localStorage.getItem(key)||'{}');
+      (dayData.bibleReadingArchiveEntries||[]).forEach(add);
+    }catch(e){}
+  }
+  merged.sort(function(a,b){return String(b.ts||'').localeCompare(String(a.ts||''));});
+  if(merged.length>365)merged.length=365;
+  return merged;
+}
+
+function writeBibleReadingArchive(arch){
+  localStorage.setItem('bible_reading_archive',JSON.stringify(arch||[]));
+}
+
+function mirrorBibleReadingArchive(arch){
+  (arch||[]).forEach(function(entry){
+    var journalDate=entry.journalDate||'';
+    if(!journalDate&&entry.ts){
+      var savedAt=new Date(entry.ts);
+      if(!isNaN(savedAt.getTime()))journalDate=dk(savedAt);
+    }
+    if(!journalDate)return;
+    entry.journalDate=journalDate;
+    var plannerKey='planner_'+journalDate,dayData={};
+    try{dayData=JSON.parse(localStorage.getItem(plannerKey)||'{}');}catch(e){dayData={};}
+    var datedEntries=Array.isArray(dayData.bibleReadingArchiveEntries)?dayData.bibleReadingArchiveEntries:[];
+    var entryId=entry.id||entry.ts;
+    if(datedEntries.some(function(saved){return (saved.id||saved.ts)===entryId;}))return;
+    datedEntries.unshift(entry);
+    dayData.bibleReadingArchiveEntries=datedEntries.slice(0,25);
+    localStorage.setItem(plannerKey,JSON.stringify(dayData));
+  });
+}
+
 function saveBibleReadingToArchive(btn){
   var p=_audiblePending||{};
   if(!p.text){if(btn){btn.textContent='Nothing to save';setTimeout(function(){btn.textContent='📁 Save to Bible Archive';},2000);}return;}
-  var arch=JSON.parse(localStorage.getItem('bible_reading_archive')||'[]');
-  arch.unshift({
+  var journalDate=dk(today),entry={
+    id:'bible-'+journalDate+'-'+Date.now(),
     label:p.label||'',text:p.text,passages:p.passages||'',day:p.day||'',book:p.book||'',
-    date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    journalDate:journalDate,
+    date:today.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
     ts:new Date().toISOString()
-  });
+  };
+  var arch=readBibleReadingArchive();
+  arch.unshift(entry);
   while(arch.length>365)arch.pop();
-  localStorage.setItem('bible_reading_archive',JSON.stringify(arch));
+  writeBibleReadingArchive(arch);
+  var plannerKey='planner_'+journalDate,dayData={};
+  try{dayData=JSON.parse(localStorage.getItem(plannerKey)||'{}');}catch(e){dayData={};}
+  var datedEntries=Array.isArray(dayData.bibleReadingArchiveEntries)?dayData.bibleReadingArchiveEntries:[];
+  datedEntries.unshift(entry);
+  dayData.bibleReadingArchiveEntries=datedEntries.slice(0,25);
+  localStorage.setItem(plannerKey,JSON.stringify(dayData));
   if(btn){btn.textContent='✓ Saved!';btn.disabled=true;btn.style.background='#27ae60';}
   // Refresh archive panel if open
   if(document.getElementById('bibleArchivePanel')&&document.getElementById('bibleArchivePanel').style.display!=='none'){
@@ -8765,7 +8820,8 @@ function toggleBibleArchive(){
 }
 
 function renderBibleArchive(){
-  var arch=JSON.parse(localStorage.getItem('bible_reading_archive')||'[]');
+  var arch=readBibleReadingArchive();
+  mirrorBibleReadingArchive(arch);
   var list=document.getElementById('bibleArchiveList');
   var empty=document.getElementById('bibleArchiveEmpty');
   if(!list)return;
@@ -8799,9 +8855,21 @@ function toggleBibleArchiveItem(btn,idx){
 
 function deleteBibleArchiveEntry(idx){
   if(!confirm('Delete this entry?'))return;
-  var arch=JSON.parse(localStorage.getItem('bible_reading_archive')||'[]');
+  var arch=readBibleReadingArchive(),removed=arch[idx];
+  if(!removed)return;
   arch.splice(idx,1);
-  localStorage.setItem('bible_reading_archive',JSON.stringify(arch));
+  writeBibleReadingArchive(arch);
+  for(var i=0;i<localStorage.length;i++){
+    var key=localStorage.key(i)||'';
+    if(key.indexOf('planner_')!==0)continue;
+    try{
+      var dayData=JSON.parse(localStorage.getItem(key)||'{}');
+      if(!Array.isArray(dayData.bibleReadingArchiveEntries))continue;
+      var before=dayData.bibleReadingArchiveEntries.length;
+      dayData.bibleReadingArchiveEntries=dayData.bibleReadingArchiveEntries.filter(function(e){return (e.id||e.ts)!==(removed.id||removed.ts);});
+      if(dayData.bibleReadingArchiveEntries.length!==before)localStorage.setItem(key,JSON.stringify(dayData));
+    }catch(e){}
+  }
   renderBibleArchive();
 }
 
