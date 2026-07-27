@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Planner">
-<title>My Life Application</title>
+<title>My Life Command Center</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1001,7 +1001,7 @@ body{
   <button onclick="document.getElementById('backupReminderBar').style.display='none'" style="background:none;border:none;color:#a16207;font-size:0.9rem;cursor:pointer;margin-left:auto;padding:0 4px;" title="Dismiss">&#x2715;</button>
 </div>
 <div class="header">
-  <h1>&#x1F4C5; My Life Application</h1>
+  <h1>&#x1F4C5; My Life Command Center</h1>
   <div class="date-nav">
     <button onclick="changeDay(-1)">&#8249;</button>
     <span id="currentDate"></span>
@@ -2377,6 +2377,7 @@ body{
           <option value="Writing">&#x270F;&#xFE0F; Writing</option>
           <option value="Music">&#x1F3B5; Music</option>
           <option value="Health">&#x1FA7A; Health / Fitness</option>
+          <option value="Gun Range">&#x1F3AF; Gun Range</option>
           <option value="Leadership">&#x1F91D; Leadership</option>
           <option value="Other">&#x1F4A1; Other</option>
         </select>
@@ -6534,7 +6535,8 @@ function importSkillLog(ev){
 
 var SKILL_CAT_COLORS={
   'Coding':'#2980b9','Finance':'#27ae60','Language':'#8e44ad','Design':'#e67e22',
-  'Writing':'#16a085','Music':'#d35400','Health':'#c0392b','Leadership':'#2c3e50','Other':'#7f8c8d'
+  'Writing':'#16a085','Music':'#d35400','Health':'#c0392b','Gun Range':'#8b5e3c',
+  'Leadership':'#2c3e50','Other':'#7f8c8d'
 };
 
 function toggleSkillNotes(id){
@@ -11405,7 +11407,11 @@ function renderJournalHome(){
   cards.wellness=journalHomeCard('wellness','Wellness',wellness.length?escHtml(wellness.join(' • ')):'No wellness metrics entered');
   var foods=Array.isArray(d.foodLog)?d.foodLog:[],water=parseFloat(d.waterOz)||0;
   cards.nutrition=journalHomeCard('nutrition','Nutrition','<strong>'+foods.length+'</strong> food item'+(foods.length===1?'':'s')+' &nbsp;•&nbsp; <strong>'+water+'</strong> oz water');
-  var dailyNotes=[d.jAccomplish,d.jImprov,d.jGratitude,d.jNotes,localStorage.getItem('tabNote_daily')].filter(function(v){return v&&String(v).trim();}).length;
+  var hasReflection=[d.jAccomplish,d.jImprov,d.jGratitude,d.jNotes].some(function(v){return v&&String(v).trim();});
+  var handwritingRaw=localStorage.getItem('handwriting_'+dk(today)),hasHandwriting=false;
+  try{hasHandwriting=Array.isArray(JSON.parse(handwritingRaw||'[]'))&&JSON.parse(handwritingRaw||'[]').length>0;}catch(error){}
+  var hasTabNotes=!!String(localStorage.getItem('tabNote_daily')||'').trim();
+  var dailyNotes=[hasReflection,hasHandwriting,hasTabNotes].filter(Boolean).length;
   cards.notes=journalHomeCard('notes','Notes & Review','<strong>'+dailyNotes+'</strong> note area'+(dailyNotes===1?'':'s')+' with content');
   grid.innerHTML=visible.map(function(id){return cards[id]||'';}).join('')||'<div class="home-value" style="padding:8px;color:#667085;">Choose Home cards in Settings.</div>';
   var date=document.getElementById('journalHomeDate');if(date)date.textContent=fmtD(today);
@@ -11801,12 +11807,14 @@ function meridianWeatherIcon(code){
 async function updateMeridianWeather(){
   var display=document.getElementById('meridianWeather');if(!display)return;
   try{
-    var response=await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.6121&longitude=-116.3915&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=America%2FBoise',{cache:'no-store'});
+    var response=await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.6121&longitude=-116.3915&current=temperature_2m,weather_code&daily=precipitation_probability_max&forecast_days=1&temperature_unit=fahrenheit&timezone=America%2FBoise',{cache:'no-store'});
     if(!response.ok)throw new Error('Weather unavailable');
     var data=await response.json(),current=data&&data.current;
     if(!current||!Number.isFinite(Number(current.temperature_2m)))throw new Error('Weather unavailable');
-    display.innerHTML=meridianWeatherIcon(Number(current.weather_code))+' Meridian '+Math.round(Number(current.temperature_2m))+'&deg;';
-    display.title='Current temperature for Meridian, Idaho'+(current.time?' \u2022 Updated '+current.time.replace('T',' '):'')+' \u2022 Weather: Open-Meteo';
+    var rainChance=data&&data.daily&&Array.isArray(data.daily.precipitation_probability_max)?Number(data.daily.precipitation_probability_max[0]):NaN;
+    var rainLabel=Number.isFinite(rainChance)?' \u2022 \u2614 '+Math.round(rainChance)+'%':'';
+    display.innerHTML=meridianWeatherIcon(Number(current.weather_code))+' Meridian '+Math.round(Number(current.temperature_2m))+'&deg;'+rainLabel;
+    display.title='Current temperature for Meridian, Idaho'+(Number.isFinite(rainChance)?' \u2022 Today\u2019s chance of precipitation: '+Math.round(rainChance)+'%':'')+(current.time?' \u2022 Updated '+current.time.replace('T',' '):'')+' \u2022 Weather: Open-Meteo';
   }catch(error){
     display.innerHTML='&#x1F321;&#xFE0F; Meridian &mdash;&deg;';
     display.title='Current Meridian temperature is temporarily unavailable';
