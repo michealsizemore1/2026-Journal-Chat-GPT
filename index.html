@@ -18,6 +18,7 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .date-nav{display:flex;align-items:center;gap:8px;}
 .date-nav button{background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1.1rem;}
 #currentDate{font-size:0.95rem;min-width:130px;text-align:center;}
+.mobile-date-context{display:none;}
 .hdr-btn{background:rgba(255,255,255,0.2);border:none;color:white;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:0.88rem;white-space:nowrap;}
 .tabs-wrapper{display:flex;background:#f8f9fa;border-bottom:1px solid #e9ecef;}
 .tabs{display:flex;flex-wrap:wrap;overflow-x:auto;scrollbar-width:none;flex:1;}
@@ -757,7 +758,11 @@ body.v26-compact .journal-col textarea{height:70px;}
 @media(max-width:700px){
   body{padding:0;background:#fff}.container{border:0;border-radius:0;box-shadow:none}.header{padding:12px}
   .header h1{flex:0 0 100%;width:100%;margin:0;text-align:center;font-size:1rem;white-space:nowrap;}
-  .header .date-nav{flex:0 0 100%;width:100%;justify-content:center;}
+  .header .date-nav{flex:0 0 100%;width:100%;justify-content:center;gap:4px;}
+  .header .date-nav .mobile-date-context{display:inline-flex;align-items:center;justify-content:center;}
+  .header .date-nav button.mobile-date-context{width:auto;min-width:42px;padding:0 7px;border-radius:999px;font-size:.66rem;font-weight:800;}
+  .header .date-nav .mobile-race-countdown{min-width:58px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.14);border-radius:999px;padding:5px 7px;font-size:.64rem;font-weight:800;white-space:nowrap;}
+  .header #currentDate{min-width:0;flex:1;font-size:.78rem;white-space:nowrap;}
   .header-control-stack{flex:0 0 100%;width:100%}
   .header-actions{width:100%;gap:6px}
   .header-status-row{gap:7px;flex-wrap:wrap}
@@ -1006,7 +1011,9 @@ body{
   <h1>&#x1F9ED; My Life Command Center</h1>
   <div class="date-nav">
     <button onclick="changeDay(-1)">&#8249;</button>
+    <button class="mobile-date-context" type="button" onclick="goToToday()">Today</button>
     <span id="currentDate"></span>
+    <span class="mobile-date-context mobile-race-countdown" id="mobileRaceCountdown" hidden></span>
     <button onclick="changeDay(1)">&#8250;</button>
   </div>
   <div class="header-control-stack">
@@ -3421,6 +3428,7 @@ function load(){
   // Update date display FIRST so navigation always feels responsive
   const _cdEl=document.getElementById('currentDate');
   if(_cdEl)_cdEl.textContent=fmtD(today);
+  updateMobileRaceCountdown();
   try{initTodayWorkoutCard();}catch(e){console.error('initTodayWorkoutCard:',e);}
   try{
     // Tri-state checkboxes
@@ -3765,6 +3773,35 @@ function selectJournalCalendarDate(dateKey){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+function activeRaceDate(){
+  var raw=localStorage.getItem('current_training_plan');
+  if(!raw)return null;
+  try{
+    var plan=JSON.parse(raw),raceDate='';
+    if(plan.raceDate&&plan.raceDateConfirmed)raceDate=plan.raceDate;
+    if(!raceDate&&plan.text)raceDate=detectRaceDateFromPlan(String(plan.text||''))||'';
+    if(!raceDate&&plan.raceDate)raceDate=plan.raceDate;
+    if(raceDate)return new Date(raceDate+'T00:00:00');
+    if(plan.startDate&&plan.weeks){
+      var calculated=new Date(plan.startDate+'T00:00:00');
+      calculated.setDate(calculated.getDate()+(Number(plan.weeks)*7));
+      return calculated;
+    }
+  }catch(error){}
+  return null;
+}
+function updateMobileRaceCountdown(){
+  var display=document.getElementById('mobileRaceCountdown');if(!display)return;
+  var raceDate=activeRaceDate();
+  if(!raceDate||isNaN(raceDate.getTime())){display.hidden=true;return;}
+  var realDate=new Date(dk(_realToday)+'T00:00:00');
+  var days=Math.ceil((raceDate-realDate)/86400000);
+  if(days<0){display.hidden=true;return;}
+  display.textContent=days===0?'🏁 Race day':'🏁 '+days+'d to race';
+  display.title=days===0?'Race day':'Race in '+days+' day'+(days===1?'':'s')+' — '+raceDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  display.hidden=false;
+}
+function goToToday(){today=new Date();load();}
 function changeDay(n){today.setDate(today.getDate()+n);load();}
 
 // Streak: counts consecutive qualifying days going backward.
