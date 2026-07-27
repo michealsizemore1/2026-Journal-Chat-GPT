@@ -760,7 +760,7 @@ body.v26-compact .journal-col textarea{height:70px;}
   .header h1{flex:0 0 100%;width:100%;margin:0;text-align:center;font-size:1rem;white-space:nowrap;}
   .header .date-nav{flex:0 0 100%;width:100%;justify-content:center;gap:4px;}
   .header .date-nav .mobile-date-context{display:inline-flex;align-items:center;justify-content:center;}
-  .header .date-nav button.mobile-date-context{width:auto;min-width:42px;padding:0 7px;border-radius:999px;font-size:.66rem;font-weight:800;}
+  .header .date-nav .mobile-week-indicator{min-width:48px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.14);border-radius:999px;padding:5px 7px;font-size:.64rem;font-weight:800;white-space:nowrap;}
   .header .date-nav .mobile-race-countdown{min-width:58px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.14);border-radius:999px;padding:5px 7px;font-size:.64rem;font-weight:800;white-space:nowrap;}
   .header #currentDate{min-width:0;flex:1;font-size:.78rem;white-space:nowrap;}
   .header-control-stack{flex:0 0 100%;width:100%}
@@ -1011,7 +1011,7 @@ body{
   <h1>&#x1F9ED; My Life Command Center</h1>
   <div class="date-nav">
     <button onclick="changeDay(-1)">&#8249;</button>
-    <button class="mobile-date-context" type="button" onclick="goToToday()">Today</button>
+    <span class="mobile-date-context mobile-week-indicator" id="mobileWeekIndicator"></span>
     <span id="currentDate"></span>
     <span class="mobile-date-context mobile-race-countdown" id="mobileRaceCountdown" hidden></span>
     <button onclick="changeDay(1)">&#8250;</button>
@@ -3428,6 +3428,7 @@ function load(){
   // Update date display FIRST so navigation always feels responsive
   const _cdEl=document.getElementById('currentDate');
   if(_cdEl)_cdEl.textContent=fmtD(today);
+  updateMobileWeekIndicator();
   updateMobileRaceCountdown();
   try{initTodayWorkoutCard();}catch(e){console.error('initTodayWorkoutCard:',e);}
   try{
@@ -3790,6 +3791,18 @@ function activeRaceDate(){
   }catch(error){}
   return null;
 }
+function updateMobileWeekIndicator(){
+  var display=document.getElementById('mobileWeekIndicator');if(!display)return;
+  var date=new Date(today);date.setHours(0,0,0,0);
+  var thursday=new Date(date);
+  thursday.setDate(date.getDate()+3-((date.getDay()+6)%7));
+  var firstThursday=new Date(thursday.getFullYear(),0,4);
+  var week=1+Math.round(((thursday-firstThursday)/86400000-3+((firstThursday.getDay()+6)%7))/7);
+  display.textContent='Week '+week;
+  var monday=new Date(date);monday.setDate(date.getDate()-((date.getDay()+6)%7));
+  var sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
+  display.title='Week '+week+': '+monday.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'–'+sunday.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
 function updateMobileRaceCountdown(){
   var display=document.getElementById('mobileRaceCountdown');if(!display)return;
   var raceDate=activeRaceDate();
@@ -3801,7 +3814,6 @@ function updateMobileRaceCountdown(){
   display.title=days===0?'Race day':'Race in '+days+' day'+(days===1?'':'s')+' — '+raceDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   display.hidden=false;
 }
-function goToToday(){today=new Date();load();}
 function changeDay(n){today.setDate(today.getDate()+n);load();}
 
 // Streak: counts consecutive qualifying days going backward.
