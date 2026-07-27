@@ -2543,6 +2543,10 @@ body{
       <button id="aiMealPlanBtn" onclick="aiMealPlanForNextRun(this)" style="background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x2728; AI Plan for Tomorrow&#39;s Run</button>
       <span style="font-size:0.7rem;color:#92400e;">Uses your active training plan or tomorrow&#39;s scheduled activity.</span>
     </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+      <button id="aiRecoveryMealBtn" onclick="aiRecoveryMealPlan(this)" style="background:linear-gradient(135deg,#16a085,#0f766e);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x1F3C3; AI Recovery Meals for Today&#39;s Run</button>
+      <span style="font-size:0.7rem;color:#0f766e;">Uses the selected day&#39;s logged run or scheduled training details.</span>
+    </div>
     <div id="aiMealPlanResult" style="display:none;background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:0.8rem;color:#7c2d12;line-height:1.5;white-space:pre-wrap;"></div>
     <div style="display:flex;flex-direction:column;gap:9px;">
       <div>
@@ -4473,6 +4477,86 @@ function nextDayRunContext(){
     }catch(e){}
   }
   return{date:nextDate,key:nextKey,text:lines.join('\n\n')};
+}
+function selectedDayRunContext(){
+  var runDate=new Date(today),runKey=dk(runDate),lines=[];
+  var runs=getActivities().filter(function(a){
+    return a.date===runKey&&String(a.type||'Run').toLowerCase().indexOf('run')!==-1;
+  });
+  runs.forEach(function(a){
+    lines.push('Run activity: '+[
+      a.title||'Run',
+      a.distance?Number(a.distance).toFixed(2)+' miles':'',
+      a.duration||'',
+      a.pace?a.pace+'/mi':'',
+      a.power?a.power+' W':'',
+      a.calories?a.calories+' calories':'',
+      a.elevation?a.elevation+' ft elevation gain':'',
+      a.notes||''
+    ].filter(Boolean).join(' | '));
+  });
+  var cached=localStorage.getItem('workout_cache_'+runKey);
+  if(cached)lines.push('Scheduled workout details: '+cached);
+  var raw=localStorage.getItem('current_training_plan');
+  if(raw){
+    try{
+      var plan=JSON.parse(raw),text=String(plan.text||''),dayNum=0;
+      if(plan.startDate){
+        dayNum=Math.floor((new Date(runKey+'T00:00:00')-new Date(plan.startDate+'T00:00:00'))/86400000)+1;
+      }
+      var planLines=text.split(/\r?\n/),hit=-1;
+      var dateWords=runDate.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}).toLowerCase();
+      for(var i=0;i<planLines.length;i++){
+        var lower=planLines[i].toLowerCase();
+        if(lower.indexOf(dateWords)>=0||lower.indexOf(runKey)>=0||(dayNum>0&&new RegExp('\\bday\\s*'+dayNum+'\\b','i').test(planLines[i]))){hit=i;break;}
+      }
+      if(hit>=0){
+        var excerpt=planLines.slice(Math.max(0,hit-2),Math.min(planLines.length,hit+7)).join('\n');
+        if(excerpt.trim())lines.push('Active training plan context'+(dayNum>0?' (plan day '+dayNum+')':'')+':\n'+excerpt);
+      }
+    }catch(e){}
+  }
+  return{date:runDate,key:runKey,text:lines.join('\n\n')};
+}
+function aiRecoveryMealPlan(btn){
+  if(!localStorage.getItem('ai_key')){
+    alert('Sign in to your private journal before using AI.');
+    return;
+  }
+  var context=selectedDayRunContext();
+  if(!context.text.trim()){
+    alert('No logged run or scheduled training information was found for the selected day.');
+    return;
+  }
+  var result=document.getElementById('aiMealPlanResult');
+  if(result){result.style.display='block';result.textContent='Creating recovery-focused meals for the selected run day...';}
+  aiBtnState(btn,true);
+  var dateLabel=context.date.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  var prompt='Create a practical same-day meal plan that supports RECOVERY from the athlete’s run on '+dateLabel+'. Use only the run information supplied below and do not invent workout facts. Emphasize ordinary foods, post-run carbohydrate and protein intake, hydration, and balanced meals appropriate to the run’s duration and difficulty. Avoid medical claims, supplements, extreme quantities, and precise calorie or macro targets unless supplied. Return ONLY valid JSON with these string fields: breakfast, lunch, dinner, snacks, sportsNutrition, rationale. Keep each meal field concise. Make sportsNutrition focus on immediate post-run recovery, fluids, and electrolytes when appropriate.\n\nRUN INFORMATION\n'+context.text;
+  aiCall(prompt,1800,function(text){
+    aiBtnState(btn,false);
+    try{
+      var clean=text.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+      var first=clean.indexOf('{'),last=clean.lastIndexOf('}');
+      if(first>=0&&last>first)clean=clean.slice(first,last+1);
+      var plan=JSON.parse(clean);
+      var fields={mpBreakfast:plan.breakfast,mpLunch:plan.lunch,mpDinner:plan.dinner,mpSnack:plan.snacks,mpSports:plan.sportsNutrition};
+      Object.keys(fields).forEach(function(id){
+        var el=document.getElementById(id);
+        if(el&&fields[id]!=null){el.value=String(fields[id]);el.dispatchEvent(new Event('input',{bubbles:true}));}
+      });
+      save();
+      if(result){
+        result.textContent='Recovery meal plan prepared for '+dateLabel+'.'+(plan.rationale?'\n\nWhy this supports recovery:\n'+plan.rationale:'');
+        result.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
+    }catch(e){
+      if(result)result.textContent='The AI response could not be placed into the meal fields automatically. Response:\n\n'+text;
+    }
+  },function(message){
+    aiBtnState(btn,false);
+    if(result)result.textContent='Recovery meal plan could not be created: '+message;
+  });
 }
 function aiMealPlanForNextRun(btn){
   if(!localStorage.getItem('ai_key')){
