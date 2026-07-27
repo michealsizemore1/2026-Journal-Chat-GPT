@@ -2539,14 +2539,11 @@ body{
   <div class="section-title orange" style="margin-bottom:10px;">&#x1F4CB; Meal Planning</div>
   <div style="background:#fffdf5;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
     <div style="font-size:0.75rem;color:#92400e;margin-bottom:10px;">Plan what you intend to eat today. Log actual food &amp; macros in Nutrition below.</div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-      <button id="aiMealPlanBtn" onclick="aiMealPlanForNextRun(this)" style="background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x2728; AI Plan for Tomorrow&#39;s Run</button>
-      <span style="font-size:0.7rem;color:#92400e;">Uses your active training plan or tomorrow&#39;s scheduled activity.</span>
+    <div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin-bottom:5px;">
+      <button id="aiMealPlanBtn" onclick="aiMealPlanForNextRun(this)" style="flex:1 1 220px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;border-radius:7px;padding:8px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x2728; AI Plan for Tomorrow&#39;s Run</button>
+      <button id="aiRecoveryMealBtn" onclick="aiRecoveryMealPlan(this)" style="flex:1 1 220px;background:linear-gradient(135deg,#16a085,#0f766e);color:#fff;border:none;border-radius:7px;padding:8px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x1F3C3; AI Recovery Meals for Today&#39;s Run</button>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-      <button id="aiRecoveryMealBtn" onclick="aiRecoveryMealPlan(this)" style="background:linear-gradient(135deg,#16a085,#0f766e);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x1F3C3; AI Recovery Meals for Today&#39;s Run</button>
-      <span style="font-size:0.7rem;color:#0f766e;">Uses the selected day&#39;s logged run or scheduled training details.</span>
-    </div>
+    <div style="font-size:0.7rem;color:#7c5a16;margin-bottom:10px;">Choose tomorrow&#39;s run preparation or same-day recovery based on the selected date&#39;s training information.</div>
     <div id="aiMealPlanResult" style="display:none;background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:0.8rem;color:#7c2d12;line-height:1.5;white-space:pre-wrap;"></div>
     <div style="display:flex;flex-direction:column;gap:9px;">
       <div>
