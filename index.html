@@ -761,7 +761,7 @@ body.v26-compact .journal-col textarea{height:70px;}
   .header .date-nav{flex:0 0 100%;width:100%;justify-content:center;gap:4px;}
   .header .date-nav .mobile-date-context{display:inline-flex;align-items:center;justify-content:center;}
   .header .date-nav .mobile-week-indicator{min-width:48px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.14);border-radius:999px;padding:5px 7px;font-size:.64rem;font-weight:800;white-space:nowrap;}
-  .header .date-nav .mobile-race-countdown{min-width:58px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.14);border-radius:999px;padding:5px 7px;font-size:.64rem;font-weight:800;white-space:nowrap;}
+  .header .date-nav .mobile-year-progress{min-width:68px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.14);border-radius:999px;padding:5px 7px;font-size:.64rem;font-weight:800;white-space:nowrap;}
   .header #currentDate{min-width:0;flex:1;font-size:.78rem;white-space:nowrap;}
   .header-control-stack{flex:0 0 100%;width:100%}
   .header-actions{width:100%;gap:6px}
@@ -1013,7 +1013,7 @@ body{
     <button onclick="changeDay(-1)">&#8249;</button>
     <span class="mobile-date-context mobile-week-indicator" id="mobileWeekIndicator"></span>
     <span id="currentDate"></span>
-    <span class="mobile-date-context mobile-race-countdown" id="mobileRaceCountdown" hidden></span>
+    <span class="mobile-date-context mobile-year-progress" id="mobileYearProgress"></span>
     <button onclick="changeDay(1)">&#8250;</button>
   </div>
   <div class="header-control-stack">
@@ -3429,7 +3429,7 @@ function load(){
   const _cdEl=document.getElementById('currentDate');
   if(_cdEl)_cdEl.textContent=fmtD(today);
   updateMobileWeekIndicator();
-  updateMobileRaceCountdown();
+  updateMobileYearProgress();
   try{initTodayWorkoutCard();}catch(e){console.error('initTodayWorkoutCard:',e);}
   try{
     // Tri-state checkboxes
@@ -3774,23 +3774,6 @@ function selectJournalCalendarDate(dateKey){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function activeRaceDate(){
-  var raw=localStorage.getItem('current_training_plan');
-  if(!raw)return null;
-  try{
-    var plan=JSON.parse(raw),raceDate='';
-    if(plan.raceDate&&plan.raceDateConfirmed)raceDate=plan.raceDate;
-    if(!raceDate&&plan.text)raceDate=detectRaceDateFromPlan(String(plan.text||''))||'';
-    if(!raceDate&&plan.raceDate)raceDate=plan.raceDate;
-    if(raceDate)return new Date(raceDate+'T00:00:00');
-    if(plan.startDate&&plan.weeks){
-      var calculated=new Date(plan.startDate+'T00:00:00');
-      calculated.setDate(calculated.getDate()+(Number(plan.weeks)*7));
-      return calculated;
-    }
-  }catch(error){}
-  return null;
-}
 function updateMobileWeekIndicator(){
   var display=document.getElementById('mobileWeekIndicator');if(!display)return;
   var date=new Date(today);date.setHours(0,0,0,0);
@@ -3803,16 +3786,15 @@ function updateMobileWeekIndicator(){
   var sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
   display.title='Week '+week+': '+monday.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'–'+sunday.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
-function updateMobileRaceCountdown(){
-  var display=document.getElementById('mobileRaceCountdown');if(!display)return;
-  var raceDate=activeRaceDate();
-  if(!raceDate||isNaN(raceDate.getTime())){display.hidden=true;return;}
-  var realDate=new Date(dk(_realToday)+'T00:00:00');
-  var days=Math.ceil((raceDate-realDate)/86400000);
-  if(days<0){display.hidden=true;return;}
-  display.textContent=days===0?'🏁 Race day':'🏁 '+days+'d to race';
-  display.title=days===0?'Race day':'Race in '+days+' day'+(days===1?'':'s')+' — '+raceDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  display.hidden=false;
+function updateMobileYearProgress(){
+  var display=document.getElementById('mobileYearProgress');if(!display)return;
+  var date=new Date(today);date.setHours(0,0,0,0);
+  var start=new Date(date.getFullYear(),0,1);
+  var day=Math.floor((date-start)/86400000)+1;
+  var total=new Date(date.getFullYear(),1,29).getMonth()===1?366:365;
+  var percent=Math.round(day/total*100);
+  display.textContent='Day '+day+'/'+total;
+  display.title=percent+'% of '+date.getFullYear()+' complete';
 }
 function changeDay(n){today.setDate(today.getDate()+n);load();}
 
