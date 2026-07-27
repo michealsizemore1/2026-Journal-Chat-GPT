@@ -5120,11 +5120,16 @@ function renderFoodItems(){
         row1.appendChild(nameInp); row1.appendChild(favBtn); row1.appendChild(delBtn);
         div.appendChild(row1);
 
+        var servingCalories=document.createElement('div');
+        servingCalories.style.cssText='font-size:0.75rem;font-weight:700;color:#b45309;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:4px 7px;margin:0 0 5px;';
+        servingCalories.textContent=Math.round(parseFloat(it.cal)||0)+' calories per serving';
+        div.appendChild(servingCalories);
+
         // Row 2: macro grid using standalone _mkMacroCell
         var grid=document.createElement('div');
         grid.style.cssText='display:grid;grid-template-columns:1fr repeat(4,1fr);gap:4px;margin-bottom:4px;';
         grid.appendChild(_mkMacroCell('Svgs','servings',svgs,true,it.id));
-        grid.appendChild(_mkMacroCell('Cal/svg','cal',it.cal,false,it.id));
+        grid.appendChild(_mkMacroCell('Cal/serving','cal',it.cal,false,it.id));
         grid.appendChild(_mkMacroCell('Prot','prot',it.prot,false,it.id));
         grid.appendChild(_mkMacroCell('Fat','fat',it.fat,false,it.id));
         grid.appendChild(_mkMacroCell('Carbs','carbs',it.carbs,false,it.id));
@@ -5681,7 +5686,10 @@ function scanFoodLabel(ev){
       window._pendingScanFood={name:parsed.name||'Scanned Food',cal:parsed.cal||null,prot:parsed.prot||null,fat:parsed.fat||null,carbs:parsed.carbs||null};
       var nameEl=document.getElementById('scanResultName'),macroEl=document.getElementById('scanResultMacros'),modal=document.getElementById('scanConfirmModal');
       if(nameEl)nameEl.textContent=window._pendingScanFood.name;
-      if(macroEl)macroEl.textContent=(window._pendingScanFood.cal||0)+' cal | '+(window._pendingScanFood.prot||0)+'g protein | '+(window._pendingScanFood.fat||0)+'g fat | '+(window._pendingScanFood.carbs||0)+'g carbs';
+      if(macroEl)macroEl.innerHTML='<strong style="color:#b45309;">'+(window._pendingScanFood.cal||0)+' calories per serving</strong><br>'
+        +(window._pendingScanFood.prot||0)+'g protein per serving &nbsp;|&nbsp; '
+        +(window._pendingScanFood.fat||0)+'g fat per serving &nbsp;|&nbsp; '
+        +(window._pendingScanFood.carbs||0)+'g carbs per serving';
       if(modal)modal.style.display='flex';
     }).catch(function(err){
       try{document.body.removeChild(status);}catch(e){}
@@ -5698,7 +5706,7 @@ function confirmScanAdd(){
   var meal=(document.getElementById('scanMealTarget')||{}).value||'snack';
   if(MEALS.indexOf(meal)<0)meal='snack';
   if(!window._foodLog)window._foodLog=[];
-  window._foodLog.push({id:'f'+Date.now(),meal:meal,name:food.name,cal:food.cal,prot:food.prot,fat:food.fat,carbs:food.carbs});
+  window._foodLog.push({id:'f'+Date.now(),meal:meal,name:food.name,cal:food.cal,prot:food.prot,fat:food.fat,carbs:food.carbs,servings:1,source:'scan'});
   _setMealOpen(meal,true);renderFoodItems();save();
   var modal=document.getElementById('scanConfirmModal');if(modal)modal.style.display='none';
   window._pendingScanFood=null;
