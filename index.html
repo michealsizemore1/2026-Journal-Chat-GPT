@@ -1068,14 +1068,13 @@ body{
 <!-- AI toolbar (shown only on Daily tab, sits above Streaks) -->
 <div class="tab-toolbar" id="aiToolbar">
   <div class="compact-toggle" id="aiToolsToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="aiToolsBody" onclick="toggleAITools()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAITools();}" style="width:100%;color:#7c3aed;font-weight:700;">
-    <span id="aiToolsArrow">&#x25B6;</span><span>&#x2728; AI Tools</span><span class="compact-toggle-count">Ask, search &amp; archive</span>
+    <span id="aiToolsArrow">&#x25B6;</span><span>&#x2728; AI Tools</span><span class="compact-toggle-count">Ask &amp; search</span>
   </div>
   <div id="aiToolsBody" class="compact-body" style="width:100%;padding-top:8px;">
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
     <button class="ai-btn" style="background:#8e44ad;" onclick="openAskJournal()">&#x1F4AC; Ask AI</button>
     <button class="ai-btn" style="background:#2980b9;" onclick="openJournalSearch()">&#x1F50D; Search</button>
   </div>
-  <button onclick="openAIArchive()" style="font-size:0.78rem;padding:4px 12px;border-radius:8px;border:1px solid #e8c4f0;background:#f8f0ff;color:#8e44ad;cursor:pointer;margin-top:4px;">&#x1F4C1; AI Archive</button>
   <!-- Ask AI expand panel -->
   <div id="askJournalBox" style="display:none;background:#f8f0ff;border:1px solid #d8b4fe;border-radius:8px;padding:12px;margin-top:8px;width:100%;box-sizing:border-box;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -1324,7 +1323,8 @@ body{
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
     <button class="ai-btn" onclick="aiReviewAnalysis()" style="margin-bottom:0;">&#x2728; AI Review Analysis</button>
   </div>
-  <div id="aiReviewBox" class="ai-box"></div>
+  <label>AI Review Analysis</label>
+  <textarea id="revAnalysis" placeholder="Your AI review analysis will appear here..."></textarea>
   <div class="review-grid">
     <div>
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
@@ -1344,7 +1344,6 @@ body{
     <div>
       <button class="ai-btn" onclick="aiWeeklyTakeaways()" style="margin:0 0 6px;background:linear-gradient(135deg,#7c3aed,#5b21b6);">&#x1F4D3; AI Weekly Takeaways</button>
       <label>Lessons Learned</label><textarea id="revLessons" placeholder="Key takeaways..."></textarea>
-      <div id="aiTakeawaysBox" class="ai-box"></div>
     </div>
   </div>
   <button onclick="saveReview()" style="background:#667eea;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:0.85rem;">Save Review</button>
@@ -4657,12 +4656,7 @@ function aiShow(boxId,text,archLabel){
   const el=document.getElementById(boxId);
   if(!el)return;
   el.style.display='block';
-  const lbl=archLabel||(boxId.replace(/Box$/,'').replace(/([A-Z])/g,' $1').trim())||boxId;
-  _aiLastShown[boxId]={text,lbl};
-  el.innerHTML='<div style="white-space:pre-wrap;line-height:1.6;">'+escHtml(text)+'</div>'
-    +'<div style="text-align:right;margin-top:8px;padding-top:6px;border-top:1px solid #e8c4f0;">'
-    +'<button data-bid="'+boxId+'" onclick="archiveAIResp(this.dataset.bid)" style="font-size:0.75rem;padding:3px 10px;border-radius:6px;border:none;background:#8e44ad;color:#fff;cursor:pointer;">&#x1F4C1; Archive</button>'
-    +'</div>';
+  el.innerHTML='<div style="white-space:pre-wrap;line-height:1.6;">'+escHtml(text)+'</div>';
   el.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function archiveAIResp(boxId){
@@ -4930,6 +4924,7 @@ function aiWeeklyAnalysis(){
 // ── AI Review Analysis ────────────────────────────────────────────────────────
 function aiReviewAnalysis(){
   const btn=document.querySelector('[onclick="aiReviewAnalysis()"]');
+  const target=document.getElementById('revAnalysis');
   aiBtnState(btn,true);
   const ws=wkStart(revOff2);
   const wins=document.getElementById('revWins')?.value||'';
@@ -4937,22 +4932,22 @@ function aiReviewAnalysis(){
   const focus=document.getElementById('revFocus')?.value||'';
   const lessons=document.getElementById('revLessons')?.value||'';
   if(!wins&&!improve&&!focus&&!lessons){
-    aiShow('aiReviewBox','Please fill in your review first, then tap AI Review Analysis.');
+    if(target)target.value='Please fill in your review first, then tap AI Review Analysis.';
     aiBtnState(btn,false);return;
   }
   const wLabel=ws.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   const content=[wins&&'Wins: '+wins,improve&&'Improve: '+improve,focus&&'Next focus: '+focus,lessons&&'Lessons: '+lessons].filter(Boolean).join('\n');
   const prompt='You are a thoughtful life coach reading someone\'s weekly review for the week of '+wLabel+'.\n\n'+content+'\n\nProvide 3-4 sentences of coaching feedback: affirm a specific win, gently challenge one area to improve, and give one actionable suggestion for their stated focus. Be warm, specific, and concise.';
-  const box=document.getElementById('aiReviewBox');if(box){box.style.display='block';box.textContent='⏳ Reading your review...';}
+  if(target)target.value='Reading your review...';
   aiCall(prompt,2000,
-    text=>{aiBtnState(btn,false);aiShow('aiReviewBox',text);},
-    err=>{aiBtnState(btn,false);aiShow('aiReviewBox','Error: '+err);}
+    text=>{aiBtnState(btn,false);if(target){target.value=text;target.dispatchEvent(new Event('input'));}saveReview();},
+    err=>{aiBtnState(btn,false);if(target)target.value='Error: '+err;}
   );
 }
 function changeDashOff(n){dashOff2+=n;renderDashboard();renderBPChart();}
 let revOff2=0;
-function renderReview(){const ws=wkStart(revOff2),we=new Date(ws);we.setDate(ws.getDate()+6);document.getElementById('revLabel').textContent=ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' - '+we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const r=localStorage.getItem('review_'+dk(ws)),rv=r?JSON.parse(r):{};['revWins','revImprove','revFocus','revLessons'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=rv[id]||'';});let logged=0,bible=0,prayer=0,ex=0,steps=0;for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);const r2=localStorage.getItem('planner_'+dk(d));if(!r2)continue;logged++;const dd=JSON.parse(r2);if(dd.spBibleAudio==='green')bible++;if(dd.spAIPrayer==='green')prayer++;if(dd.exRun==='green'||dd.exStrength==='green'||dd.exBike==='green'||dd.exWalk==='green'||hasActivityOnDate(dk(d)))ex++;steps+=parseFloat(dd.exSteps)||0;}document.getElementById('revStats').innerHTML=[{l:'Days Logged',v:logged+'/7'},{l:'Bible Days',v:bible+'/7'},{l:'Prayer Days',v:prayer+'/7'},{l:'Exercise Days',v:ex+'/7'},{l:'Total Steps',v:Math.round(steps).toLocaleString()}].map(({l,v})=>'<div class="review-stat"><strong>'+v+'</strong>'+l+'</div>').join('');}
-function saveReview(){const ws=wkStart(revOff2),d={};['revWins','revImprove','revFocus','revLessons'].forEach(id=>{const e=document.getElementById(id);if(e)d[id]=e.value;});localStorage.setItem('review_'+dk(ws),JSON.stringify(d));const btn=document.querySelector('[onclick="saveReview()"]');if(btn){btn.textContent='Saved!';btn.style.background='#27ae60';setTimeout(()=>{btn.textContent='Save Review';btn.style.background='#667eea';},2000);}}
+function renderReview(){const ws=wkStart(revOff2),we=new Date(ws);we.setDate(ws.getDate()+6);document.getElementById('revLabel').textContent=ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' - '+we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const r=localStorage.getItem('review_'+dk(ws)),rv=r?JSON.parse(r):{};['revAnalysis','revWins','revImprove','revFocus','revLessons'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=rv[id]||'';});let logged=0,bible=0,prayer=0,ex=0,steps=0;for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);const dateKey=dk(d);if(hasActivityOnDate(dateKey))ex++;const r2=localStorage.getItem('planner_'+dateKey);if(!r2)continue;logged++;const dd=JSON.parse(r2);if(dd.spBibleAudio==='green')bible++;if(dd.spAIPrayer==='green')prayer++;steps+=parseFloat(dd.exSteps)||0;}document.getElementById('revStats').innerHTML=[{l:'Days Logged',v:logged+'/7'},{l:'Bible Days',v:bible+'/7'},{l:'Prayer Days',v:prayer+'/7'},{l:'Exercise Days',v:ex+'/7'},{l:'Total Steps',v:Math.round(steps).toLocaleString()}].map(({l,v})=>'<div class="review-stat"><strong>'+v+'</strong>'+l+'</div>').join('');}
+function saveReview(){const ws=wkStart(revOff2),d={};['revAnalysis','revWins','revImprove','revFocus','revLessons'].forEach(id=>{const e=document.getElementById(id);if(e)d[id]=e.value;});localStorage.setItem('review_'+dk(ws),JSON.stringify(d));const btn=document.querySelector('[onclick="saveReview()"]');if(btn){btn.textContent='Saved!';btn.style.background='#27ae60';setTimeout(()=>{btn.textContent='Save Review';btn.style.background='#667eea';},2000);}}
 function changeRevOff(n){revOff2+=n;renderReview();}
 function getReviewWeekJournalText(){
   const ws=wkStart(revOff2),entries=[];
@@ -4982,9 +4977,9 @@ function aiReviewField(type,btn){
   aiCall(prompt,1800,function(text){aiBtnState(btn,false);target.value=text;target.dispatchEvent(new Event('input'));saveReview();v26Toast(isImprove?'What to Improve added':'Next-week focus added');},function(err){aiBtnState(btn,false);alert('AI error: '+err);});
 }
 function aiWeeklyTakeaways(){
-  const box=document.getElementById('aiTakeawaysBox');
-  if(!box)return;
-  box.style.display='block';box.textContent='⏳ Reading your journal for the week...';
+  const target=document.getElementById('revLessons');
+  if(!target)return;
+  target.value='Reading your journal for the week...';
   const ws=wkStart(revOff2);
   const we=new Date(ws);we.setDate(ws.getDate()+6);
   const weekLabel=ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
@@ -5009,7 +5004,7 @@ function aiWeeklyTakeaways(){
     if(parts.length)entries.push('--- '+dayLabel+' ---\n'+parts.join('\n'));
   }
   if(!entries.length){
-    box.innerHTML='<div style="color:#b91c1c;font-weight:600;">⚠️ No journal entries found for this week. Add notes on the Daily tab first.</div>';
+    target.value='No journal entries found for this week. Add notes on the Daily tab first.';
     return;
   }
   const prompt='You are a thoughtful life coach reviewing a personal journal. Here are the journal entries for the week of '+weekLabel+':\n\n'
@@ -5021,10 +5016,10 @@ function aiWeeklyTakeaways(){
     +'4. AN ENCOURAGING WORD — A brief, genuine word of encouragement based on what was shared\n\n'
     +'Be specific and personal — reference actual things written in the journal. Be warm and insightful, not generic. Under 350 words.';
   const key=localStorage.getItem('ai_key');
-  if(!key){box.textContent='⚠️ Add your AI key first in ⚙️ Settings.';return;}
+  if(!key){target.value='Add your AI key first in Settings.';return;}
   aiCall(prompt,4000,function(text){
-    aiShow('aiTakeawaysBox',text,'Weekly Takeaways — '+weekLabel);
-  },function(err){box.textContent='Error: '+err;});
+    target.value=text;target.dispatchEvent(new Event('input'));saveReview();
+  },function(err){target.value='Error: '+err;});
 }
 // ── Daily Bread AI ────────────────────────────────────────
 function aiDailyBread(){
@@ -11363,13 +11358,13 @@ function renderGoals(){
   let miles=0,audioMin=0,bibleD=0,prayerD=0,exD=0;
   for(let i=0;i<7;i++){
     const d=new Date(ws);d.setDate(ws.getDate()+i);
+    if(hasActivityOnDate(dk(d)))exD++;
     const r=localStorage.getItem('planner_'+dk(d));if(!r)continue;
     const dd=JSON.parse(r);
     miles+=parseFloat(dd.exMiles)||0;
     audioMin+=parseMins(dd.gaAudiobookTime);
     if(dd.spBibleAudio==='green')bibleD++;
     if(dd.spAIPrayer==='green')prayerD++;
-    if(dd.exRun==='green'||dd.exStrength==='green'||dd.exBike==='green'||dd.exWalk==='green'||hasActivityOnDate(dk(d)))exD++;
   }
   const actuals=[
     {key:'Miles',label:'Miles',actual:parseFloat(miles.toFixed(1)),unit:'mi',fmt:v=>v.toFixed(1)},
