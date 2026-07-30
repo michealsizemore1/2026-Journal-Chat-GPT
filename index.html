@@ -8784,24 +8784,26 @@ function writeBibleReadingArchive(arch){
   localStorage.setItem('bible_reading_archive',JSON.stringify(arch||[]));
 }
 
-function mirrorBibleReadingArchive(arch){
-  (arch||[]).forEach(function(entry){
-    var journalDate=entry.journalDate||'';
-    if(!journalDate&&entry.ts){
-      var savedAt=new Date(entry.ts);
-      if(!isNaN(savedAt.getTime()))journalDate=dk(savedAt);
-    }
-    if(!journalDate)return;
-    entry.journalDate=journalDate;
-    var plannerKey='planner_'+journalDate,dayData={};
-    try{dayData=JSON.parse(localStorage.getItem(plannerKey)||'{}');}catch(e){dayData={};}
-    var datedEntries=Array.isArray(dayData.bibleReadingArchiveEntries)?dayData.bibleReadingArchiveEntries:[];
-    var entryId=entry.id||entry.ts;
-    if(datedEntries.some(function(saved){return (saved.id||saved.ts)===entryId;}))return;
-    datedEntries.unshift(entry);
-    dayData.bibleReadingArchiveEntries=datedEntries.slice(0,25);
-    localStorage.setItem(plannerKey,JSON.stringify(dayData));
+function compactBibleReadingArchiveStorage(){
+  var changed=false,arch=readBibleReadingArchive(),keys=[];
+  for(var i=0;i<localStorage.length;i++){
+    var key=localStorage.key(i)||'';
+    if(key.indexOf('planner_')===0)keys.push(key);
+  }
+  keys.forEach(function(key){
+    try{
+      var dayData=JSON.parse(localStorage.getItem(key)||'{}');
+      if(!Array.isArray(dayData.bibleReadingArchiveEntries))return;
+      delete dayData.bibleReadingArchiveEntries;
+      localStorage.setItem(key,JSON.stringify(dayData));
+      changed=true;
+    }catch(e){}
   });
+  try{
+    writeBibleReadingArchive(arch);
+    if(changed)localStorage.setItem('journal_cloud_dirty','1');
+  }catch(e){}
+  return changed;
 }
 
 function saveBibleReadingToArchive(btn){
@@ -8832,22 +8834,28 @@ function saveBibleReadingToArchive(btn){
   }
   arch.unshift(entry);
   while(arch.length>365)arch.pop();
-  writeBibleReadingArchive(arch);
-  var plannerKey='planner_'+journalDate,dayData={};
-  try{dayData=JSON.parse(localStorage.getItem(plannerKey)||'{}');}catch(e){dayData={};}
-  var datedEntries=Array.isArray(dayData.bibleReadingArchiveEntries)?dayData.bibleReadingArchiveEntries:[];
-  datedEntries.unshift(entry);
-  dayData.bibleReadingArchiveEntries=datedEntries.slice(0,25);
-  localStorage.setItem(plannerKey,JSON.stringify(dayData));
+  try{
+    writeBibleReadingArchive(arch);
+  }catch(e){
+    if(btn){
+      var failedLabel=btn.textContent;
+      btn.textContent='Storage full — not saved';
+      btn.disabled=false;
+      setTimeout(function(){btn.textContent=failedLabel;},3000);
+    }
+    alert('The Bible reading could not be saved because this browser’s journal storage is full. Use Backup, then remove large stored uploads or transcripts and try again.');
+    return;
+  }
   if(btn){
     var savedLabel=btn.textContent,savedBackground=btn.style.background;
     btn.textContent='✓ Saved!';btn.disabled=true;btn.style.background='#27ae60';
     setTimeout(function(){btn.textContent=savedLabel;btn.disabled=false;btn.style.background=savedBackground;},1800);
   }
-  // Refresh archive panel if open
-  if(document.getElementById('bibleArchivePanel')&&document.getElementById('bibleArchivePanel').style.display!=='none'){
-    renderBibleArchive();
-  }
+  var archivePanel=document.getElementById('bibleArchivePanel');
+  var archiveArrow=document.getElementById('bibleArchiveArrow');
+  if(archivePanel)archivePanel.style.display='block';
+  if(archiveArrow)archiveArrow.innerHTML='&#x25BC;';
+  renderBibleArchive();
 }
 
 function toggleBibleArchive(){
@@ -8862,7 +8870,6 @@ function toggleBibleArchive(){
 
 function renderBibleArchive(){
   var arch=readBibleReadingArchive();
-  mirrorBibleReadingArchive(arch);
   var list=document.getElementById('bibleArchiveList');
   var empty=document.getElementById('bibleArchiveEmpty');
   if(!list)return;
@@ -8900,17 +8907,6 @@ function deleteBibleArchiveEntry(idx){
   if(!removed)return;
   arch.splice(idx,1);
   writeBibleReadingArchive(arch);
-  for(var i=0;i<localStorage.length;i++){
-    var key=localStorage.key(i)||'';
-    if(key.indexOf('planner_')!==0)continue;
-    try{
-      var dayData=JSON.parse(localStorage.getItem(key)||'{}');
-      if(!Array.isArray(dayData.bibleReadingArchiveEntries))continue;
-      var before=dayData.bibleReadingArchiveEntries.length;
-      dayData.bibleReadingArchiveEntries=dayData.bibleReadingArchiveEntries.filter(function(e){return (e.id||e.ts)!==(removed.id||removed.ts);});
-      if(dayData.bibleReadingArchiveEntries.length!==before)localStorage.setItem(key,JSON.stringify(dayData));
-    }catch(e){}
-  }
   renderBibleArchive();
 }
 
@@ -11780,7 +11776,8 @@ function journalCloudSetStatus(text,state){
 function journalCloudSchedule(){
   if(journalCloudApplying||!journalCloudUser||!journalCloudReady)return;
   journalCloudChangeSeq++;
-  localStorage.setItem('journal_cloud_dirty','1');
+  try{localStorage.setItem('journal_cloud_dirty','1');}
+  catch(e){journalCloudSetStatus('Storage full — backup recommended','error');return;}
   journalCloudSetStatus('Saved locally — cloud sync pending','busy');
   clearTimeout(journalCloudTimer);
   journalCloudTimer=setTimeout(function(){journalCloudSmartSync();},1800);
@@ -12003,6 +12000,7 @@ function journalCloudInit(){
   try{
     localStorage.removeItem('ai_archive');
     localStorage.removeItem('ai_key');
+    compactBibleReadingArchiveStorage();
   }catch(e){}
   if(!window.supabase||!window.supabase.createClient){
     document.getElementById('cloudAuthError').textContent='The secure sign-in service could not load. Check your internet connection and refresh.';
@@ -12032,8 +12030,8 @@ function journalCloudInit(){
     }
   });
   var originalSet=Storage.prototype.setItem,originalRemove=Storage.prototype.removeItem;
-  Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&journalCloudCanSyncKey(k))journalCloudSchedule();};
-  Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&journalCloudCanSyncKey(k))journalCloudSchedule();};
+  Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&journalCloudCanSyncKey(k)){try{journalCloudSchedule();}catch(e){}}};
+  Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&journalCloudCanSyncKey(k)){try{journalCloudSchedule();}catch(e){}}};
   window.addEventListener('online',function(){if(journalCloudUser&&localStorage.getItem('journal_cloud_dirty'))journalCloudSmartSync();});
   window.addEventListener('offline',function(){journalCloudSetStatus('Offline — saved on this device','error');});
 }
