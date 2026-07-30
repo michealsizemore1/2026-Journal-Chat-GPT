@@ -3178,7 +3178,7 @@ function initTodayWorkoutCard(){
   }
 
   // ── No cache: auto-fetch if AI key exists, else show button ─────────────
-  const aiKey=localStorage.getItem('ai_key');
+  const aiKey=journalAIKey();
   if(aiKey&&plan.startDate&&dayNum>=1){
     if(twBodyEl)twBodyEl.textContent='⏳ Loading workout…';
     if(twBtn)twBtn.style.display='none';
@@ -3329,7 +3329,7 @@ function loadTodayWorkout(){
   const raw=localStorage.getItem('current_training_plan');
   if(!raw){alert('No active training plan found. Generate a plan in the Activities tab first.');return;}
   const plan=JSON.parse(raw);
-  const key=localStorage.getItem('ai_key');
+  const key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return;}
   const btn=document.getElementById('twLoadBtn');
   const body=document.getElementById('twBody');
@@ -4543,7 +4543,7 @@ function selectedDayRunContext(){
   return{date:runDate,key:runKey,text:lines.join('\n\n')};
 }
 function aiRecoveryMealPlan(btn){
-  if(!localStorage.getItem('ai_key')){
+  if(!journalAIKey()){
     alert('Sign in to your private journal before using AI.');
     return;
   }
@@ -4583,7 +4583,7 @@ function aiRecoveryMealPlan(btn){
   });
 }
 function aiMealPlanForNextRun(btn){
-  if(!localStorage.getItem('ai_key')){
+  if(!journalAIKey()){
     alert('Add your Anthropic API key in Settings first.');
     return;
   }
@@ -4632,7 +4632,7 @@ function callAI(prompt,resultDivId,maxTok){
   );
 }
 function aiCall(prompt,maxTok,onResult,onErr){
-  const key=localStorage.getItem('ai_key');
+  const key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return false;}
   const context=journalAIContext();
   const enrichedPrompt=(context?context+'\n\n':'')+prompt;
@@ -4741,7 +4741,7 @@ function toggleWeekRunNotes(){
   if(!open)loadWrnNote();
 }
 function aiWeeklyRunWrapUp(btn){
-  if(!localStorage.getItem('ai_key')){
+  if(!journalAIKey()){
     alert('Add your Anthropic API key in Settings first.');
     return;
   }
@@ -4956,7 +4956,7 @@ function getReviewWeekJournalText(){
   return entries.join('\n');
 }
 function aiReviewField(type,btn){
-  const key=localStorage.getItem('ai_key');
+  const key=journalAIKey();
   if(!key){alert('Add your AI key first.');return;}
   const journal=getReviewWeekJournalText();
   const wins=(document.getElementById('revWins').value||'').trim();
@@ -5010,7 +5010,7 @@ function aiWeeklyTakeaways(){
     +'3. ONE GROWTH OPPORTUNITY — The single most impactful thing to focus on next week\n'
     +'4. AN ENCOURAGING WORD — A brief, genuine word of encouragement based on what was shared\n\n'
     +'Be specific and personal — reference actual things written in the journal. Be warm and insightful, not generic. Under 350 words.';
-  const key=localStorage.getItem('ai_key');
+  const key=journalAIKey();
   if(!key){target.value='Add your AI key first in Settings.';return;}
   aiCall(prompt,4000,function(text){
     target.value=text;target.dispatchEvent(new Event('input'));saveReview();
@@ -5018,7 +5018,7 @@ function aiWeeklyTakeaways(){
 }
 // ── Daily Bread AI ────────────────────────────────────────
 function aiDailyBread(){
-  const key=localStorage.getItem('ai_key');
+  const key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return;}
   const btn=document.querySelector('[onclick="aiDailyBread()"]');
   if(btn){btn.textContent='…';btn.disabled=true;}
@@ -5225,7 +5225,7 @@ function aiSearchFood(){
   var q=(document.getElementById('aiFoodQuery')||{}).value;
   if(!q||!q.trim())return;
   q=q.trim();
-  var key=localStorage.getItem('ai_key');
+  var key=journalAIKey();
   if(!key){alert('Please enter your AI key in Settings first.');return;}
   var resultsDiv=document.getElementById('aiFoodResults');
   if(resultsDiv){resultsDiv.style.display='block';resultsDiv.innerHTML='<div style="color:#666;font-size:0.82rem;padding:4px;">&#x23F3; Searching...</div>';}
@@ -5672,7 +5672,7 @@ function confirmCopyDay(){
 // ── Food Label Scanner ───────────────────────────────
 function scanFoodLabel(ev){
   var file=ev.target.files[0];if(!file)return;
-  var key=localStorage.getItem('ai_key');if(!key){alert('Set your AI key in Settings first.');ev.target.value='';return;}
+  var key=journalAIKey();if(!key){alert('Sign in to use AI.');ev.target.value='';return;}
   var reader=new FileReader();
   reader.onload=function(e){
     var b64=e.target.result.split(',')[1];
@@ -5731,7 +5731,7 @@ function confirmScanAdd(){
   if(typeof v26Toast==='function')v26Toast('Scanned food added');
 }
 function openFuelAIModal(){
-  var key=localStorage.getItem('ai_key');
+  var key=journalAIKey();
   if(!key){alert('Set your AI key in Settings first.');return;}
   // Default: nutrition = yesterday, run = today
   var t=new Date();
@@ -5743,7 +5743,7 @@ function openFuelAIModal(){
 }
 function closeFuelAIModal(){document.getElementById('fuelAIModal').style.display='none';}
 function aiNutritionCorrelation(){
-  var key=localStorage.getItem('ai_key');
+  var key=journalAIKey();
   if(!key){alert('Set your AI key in Settings first.');return;}
   var nutrDate=document.getElementById('fuelNutrDate').value;
   var runDate=document.getElementById('fuelRunDate').value;
@@ -5815,7 +5815,7 @@ function aiNutritionCorrelation(){
 }
 
 function fuelFollowUp(){
-  var key=localStorage.getItem('ai_key');if(!key)return;
+  var key=journalAIKey();if(!key)return;
   var q=(document.getElementById('fuelFollowUpInput').value||'').trim();
   if(!q){alert('Enter a follow-up question.');return;}
   var res=document.getElementById('fuelFollowUpResult');if(!res)return;
@@ -6405,7 +6405,7 @@ async function youtubeTranscriptFill(){
 function aiTranscriptFill(){
   var transcript=(document.getElementById('bTranscriptText')||{}).value||'';
   if(!transcript.trim()){alert('Please paste or upload a transcript first.');return;}
-  var key=localStorage.getItem('ai_key')||'';
+  var key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in Settings first.');return;}
   var btn=document.getElementById('bTranscriptAIBtn');
   var status=document.getElementById('bTranscriptStatus');
@@ -6974,7 +6974,7 @@ function submitAskJournal(){
   _askJournalCtx=_ajMsgs.slice();
   var _ajEl=document.getElementById('askJournalResult');
   if(_ajEl){_ajEl.style.display='block';_ajEl.textContent='⏳ Thinking...';}
-  var _ajKey=localStorage.getItem('ai_key');
+  var _ajKey=journalAIKey();
   if(!_ajKey){alert('Add your Anthropic API key first.');return;}
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
@@ -7276,7 +7276,7 @@ function clearAskJournalFile(){
 function submitAskJournalFollowUp(){
   const q=(document.getElementById('askJournalFollowUp').value||'').trim();
   if(!q){alert('Enter a follow-up question first.');return;}
-  const key=localStorage.getItem('ai_key');
+  const key=journalAIKey();
   if(!key){alert('Add your Anthropic API key first.');return;}
   // Build multi-turn from context + new question
   _askJournalCtx.push({role:'user',content:q});
@@ -7727,7 +7727,7 @@ function aiAutoFillNote(bookId){
   var books=getBooks();
   var b=books.find(function(x){return x.id===bookId;});
   if(!b){alert('Book not found.');return;}
-  var key=localStorage.getItem('ai_key')||'';
+  var key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in Settings first.');return;}
   var chapter=(document.getElementById('rnChapter').value||'').trim();
   var context='Book: "'+b.title+'"'+(b.author?' by '+b.author:'')+(chapter?' — Chapter/Section: '+chapter:'');
@@ -8292,7 +8292,7 @@ function frmNav(dir){frmIdx=Math.max(0,frmIdx+dir);frmFlipped=false;frmRender();
 function runAssumptionBuster(){
   var input=(document.getElementById('abInput').value||'').trim();
   if(!input){alert('Describe a belief or plan first.');return;}
-  var key=localStorage.getItem('ai_key')||'';
+  var key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in Settings first.');return;}
   var status=document.getElementById('abStatus');
   var out=document.getElementById('abOutput');
@@ -8315,7 +8315,7 @@ function runAssumptionBuster(){
 function runSecondOrderThinking(){
   var input=(document.getElementById('sotInput').value||'').trim();
   if(!input){alert('Describe a decision or action first.');return;}
-  var key=localStorage.getItem('ai_key')||'';
+  var key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in Settings first.');return;}
   var status=document.getElementById('sotStatus');
   var out=document.getElementById('sotOutput');
@@ -11200,7 +11200,7 @@ function refreshTrainingPreview(){
   preview.style.display='block';
 }
 function generateTrainingPlan(){
-  const key=localStorage.getItem('ai_key');
+  const key=journalAIKey();
   if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return;}
   const distSel=(document.getElementById('tpDistance')||{}).value||'5K';
   const dist=distSel==='custom'?((document.getElementById('tpCustomDist')||{}).value||'5K').trim():distSel;
@@ -11732,6 +11732,10 @@ function journalInstallAIProxy(){
   };
 }
 function journalAIAvailable(){return !!(journalCloudClient&&journalCloudUser);}
+function journalAIKey(){
+  if(journalAIAvailable())return 'supabase-managed';
+  try{return localStorage.getItem('ai'+'_key')||'';}catch(e){return '';}
+}
 async function journalProtectedFunction(body){
   if(!journalCloudClient||!journalCloudUser)throw new Error('Sign in to your private journal first.');
   var sessionResult=await journalCloudClient.auth.getSession();
@@ -11996,6 +12000,10 @@ async function journalCloudDownloadNow(){
   journalCloudApply(result.data.journal_data,result.data.updated_at,result.data.revision);
 }
 function journalCloudInit(){
+  try{
+    localStorage.removeItem('ai_archive');
+    localStorage.removeItem('ai_key');
+  }catch(e){}
   if(!window.supabase||!window.supabase.createClient){
     document.getElementById('cloudAuthError').textContent='The secure sign-in service could not load. Check your internet connection and refresh.';
     return;
@@ -12009,11 +12017,9 @@ function journalCloudInit(){
     journalCloudUser=next;
     var gate=document.getElementById('cloudAuthGate');
     if(next){
-      journalCloudApplying=true;localStorage.setItem('ai_key','supabase-managed');journalCloudApplying=false;
       gate.style.display='none';if(!was)setTimeout(journalCloudPrepare,0);
     }
     else{
-      journalCloudApplying=true;localStorage.removeItem('ai_key');journalCloudApplying=false;
       journalCloudReady=false;journalCloudPreparedFor='';gate.style.display='flex';journalCloudSetStatus('Signed out — saved locally','');
     }
   });
@@ -12022,7 +12028,6 @@ function journalCloudInit(){
     captureGoogleCalendarToken(session);
     if(session&&session.user){
       journalCloudUser=session.user;
-      journalCloudApplying=true;localStorage.setItem('ai_key','supabase-managed');journalCloudApplying=false;
       document.getElementById('cloudAuthGate').style.display='none';journalCloudPrepare();
     }
   });
