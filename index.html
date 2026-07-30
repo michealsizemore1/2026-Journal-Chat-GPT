@@ -847,14 +847,14 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-mobile-dock{display:none;}
 .section,.panel,.review-section,.journaling-section{scroll-margin-top:70px;}
 .container{overflow:visible;}
-.journal-sticky-shell{position:fixed;top:16px;left:50%;transform:translateX(-50%);width:min(calc(100% - 32px),1120px);z-index:2200;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 5px 14px rgba(31,41,55,.09);}
-.journal-sticky-spacer{height:var(--journal-sticky-height,174px);}
+.journal-sticky-shell{position:relative;top:auto;left:auto;transform:none;width:auto;z-index:auto;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 5px 14px rgba(31,41,55,.09);}
+.journal-sticky-spacer{display:none;height:0;}
 .journal-sticky-shell .header{border-radius:12px 12px 0 0;}
 html{scroll-padding-top:190px;}
 @media(max-width:800px){.journal-home-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-settings-grid{grid-template-columns:1fr;}}
 @media(max-width:700px){
   body{padding-bottom:64px;}
-  .journal-sticky-shell{top:0;width:100%;}.journal-sticky-shell,.journal-sticky-shell .header{border-radius:0;}
+  .journal-sticky-shell{top:auto;width:100%;}.journal-sticky-shell,.journal-sticky-shell .header{border-radius:0;}
   html{scroll-padding-top:285px;}
   .journal-mobile-dock{position:fixed;display:grid;grid-template-columns:repeat(4,1fr);left:0;right:0;bottom:0;z-index:2500;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e4e7ec;box-shadow:0 -4px 18px rgba(16,24,40,.08);}
   .journal-mobile-dock button{border:0;background:none;color:#475467;padding:8px 3px 7px;font-size:.68rem;font-weight:700;min-height:49px;}
@@ -1222,7 +1222,6 @@ body{
     <div class="week-nav" style="margin-bottom:0;"><button onclick="changeWeekOff(-1)">&#8249; Prev</button><span id="weekLabel"></span><button onclick="changeWeekOff(1)">Next &#8250;</button></div>
     <button class="clear-btn" onclick="clearPage('weekly')">&#x1F5D1; Clear Week</button>
   </div>
-  <button class="ai-btn" onclick="aiWeeklyAnalysis()">&#x2728; AI Weekly Analysis</button>
   <div class="goals-wrap" id="goalsWrap">
     <div class="goals-title">
       <span>🎯 Weekly Goals</span>
@@ -1998,6 +1997,8 @@ body{
         <div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;">
           <button onclick="audibleSummarize()"
             style="background:#f97316;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:0.82rem;cursor:pointer;font-weight:700;">&#x2728; Summarize Today&#39;s Reading</button>
+          <button id="bibleReadingSaveBtn" onclick="saveBibleReadingToArchive(this)"
+            style="background:#d97706;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:0.82rem;cursor:pointer;font-weight:700;">&#x1F4BE; Save Reading to Archive</button>
           <span style="font-size:0.67rem;color:#b45309;">Enter the passages you heard above for an accurate summary.</span>
         </div>
         <div id="audibleAIResult" style="display:none;background:#fff8f0;border:1px solid #fdba74;border-radius:8px;padding:12px;margin-top:8px;font-size:0.87rem;color:#78350f;line-height:1.6;white-space:pre-wrap;"></div>
@@ -2546,8 +2547,10 @@ body{
 <!-- ═══════════════════════════════ NUTRITION TAB ═══════════════════════════════ -->
 <div class="tab-panel" id="tab-nutrition"><div class="panel">
   <!-- MEAL PLANNING -->
-  <div class="section-title orange" style="margin-bottom:10px;">&#x1F4CB; Meal Planning</div>
-  <div style="background:#fffdf5;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
+  <div class="section-title orange" role="button" tabindex="0" aria-expanded="false" aria-controls="mealPlanningPanel" onclick="toggleMealPlanning()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMealPlanning();}" style="margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+    <span>&#x1F4CB; Meal Planning</span><span id="mealPlanningArrow">&#x25B6;</span>
+  </div>
+  <div id="mealPlanningPanel" style="display:none;background:#fffdf5;border:1px solid #fde68a;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
     <div style="font-size:0.75rem;color:#92400e;margin-bottom:10px;">Plan what you intend to eat today. Log actual food &amp; macros in Nutrition below.</div>
     <div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin-bottom:5px;">
       <button id="aiMealPlanBtn" onclick="aiMealPlanForNextRun(this)" style="flex:1 1 220px;background:linear-gradient(135deg,#f59e0b,#ea580c);color:#fff;border:none;border-radius:7px;padding:8px 13px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x2728; AI Plan for Tomorrow&#39;s Run</button>
@@ -2708,16 +2711,6 @@ body{
 
 </div></div>
 <!-- ═══════════════════════════════ END NUTRITION TAB ═══════════════════════════════ -->
-
-<div id="aiArchiveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9300;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;">
-  <div style="background:#fff;border-radius:14px;width:100%;max-width:520px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.22);">
-    <div style="padding:16px 18px 10px;border-bottom:1px solid #f0e8ff;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-weight:700;color:#8e44ad;font-size:1rem;">&#x1F4C1; AI Response Archive</span>
-      <button onclick="closeAIArchive()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#aaa;">&#x2715;</button>
-    </div>
-    <div id="aiArchiveList" style="overflow-y:auto;padding:12px 14px;flex:1;"></div>
-  </div>
-</div>
 
 <!-- Fuel AI Modal -->
 <div id="fuelAIModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9300;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;" onclick="if(event.target===this)closeFuelAIModal()">
@@ -5062,6 +5055,29 @@ if(!window._foodLog)window._foodLog=[];
 const MEALS=['breakfast','lunch','dinner','snack','liquids','sports'];
 const MEAL_LABELS={breakfast:'🌅 Breakfast',lunch:'🥗 Lunch',dinner:'🍽️ Dinner',snack:'🍎 Snacks',liquids:'💧 Liquids',sports:'💪 Sports Nutrition'};
 const MEAL_HINTS={breakfast:'Food name',lunch:'Food name',dinner:'Food name',snack:'Snack name',liquids:'Drink name',sports:'Sports fuel / supplement'};
+
+function toggleMealPlanning(){
+  var panel=document.getElementById('mealPlanningPanel');
+  var arrow=document.getElementById('mealPlanningArrow');
+  var header=panel&&panel.previousElementSibling;
+  if(!panel)return;
+  var open=panel.style.display==='none';
+  panel.style.display=open?'block':'none';
+  if(arrow)arrow.innerHTML=open?'&#x25BC;':'&#x25B6;';
+  if(header)header.setAttribute('aria-expanded',open?'true':'false');
+  localStorage.setItem('meal_planning_open',open?'1':'0');
+}
+
+function restoreMealPlanningState(){
+  var panel=document.getElementById('mealPlanningPanel');
+  var arrow=document.getElementById('mealPlanningArrow');
+  if(!panel)return;
+  var open=localStorage.getItem('meal_planning_open')==='1';
+  panel.style.display=open?'block':'none';
+  if(arrow)arrow.innerHTML=open?'&#x25BC;':'&#x25B6;';
+  var header=panel.previousElementSibling;
+  if(header)header.setAttribute('aria-expanded',open?'true':'false');
+}
 
 function _mkMacroCell(labelTxt, field, val, highlight, itemId){
   var lbl=document.createElement('label');
@@ -8737,11 +8753,7 @@ function audibleSummarize(){
     // Store pending data for archive save (avoids putting large text in onclick)
     _audiblePending={text:text,label:label,passages:passages,day:day,book:book};
     res.style.display='block';
-    res.innerHTML='<div style="white-space:pre-wrap;line-height:1.6;color:#78350f;">'+escHtml(text)+'</div>'
-      +'<div style="display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #fde68a;flex-wrap:wrap;">'
-      +'<button id="bibleArchiveSaveBtn" onclick="saveBibleReadingToArchive(this)" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(217,119,6,0.35);letter-spacing:.01em;">&#x1F4C1; Save to Bible Archive</button>'
-      +'<button onclick="archiveAIResp(\'audibleAIResult\')" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(91,33,182,0.35);letter-spacing:.01em;">&#x2B07; General Archive</button>'
-      +'</div>';
+    res.innerHTML='<div style="white-space:pre-wrap;line-height:1.6;color:#78350f;">'+escHtml(text)+'</div>';
     _aiLastShown['audibleAIResult']={text:text,lbl:'Bible Reading — '+label};
   },function(err){res.textContent='Error: '+err;});
 }
@@ -8794,15 +8806,30 @@ function mirrorBibleReadingArchive(arch){
 
 function saveBibleReadingToArchive(btn){
   var p=_audiblePending||{};
-  if(!p.text){if(btn){btn.textContent='Nothing to save';setTimeout(function(){btn.textContent='📁 Save to Bible Archive';},2000);}return;}
+  var passages=((document.getElementById('audiblePassages')||{}).value||p.passages||'').trim();
+  var day=((document.getElementById('audibleChapter')||{}).value||p.day||'').trim();
+  var book=((document.getElementById('audibleBook')||{}).value||p.book||'').trim();
+  var result=document.querySelector('#audibleAIResult > div');
+  var summary=(p.text||(result&&result.textContent)||'').trim();
+  if(!passages&&!summary){
+    if(btn){var original=btn.textContent;btn.textContent='Add passages first';setTimeout(function(){btn.textContent=original;btn.disabled=false;},2000);}
+    return;
+  }
   var journalDate=dk(today),entry={
     id:'bible-'+journalDate+'-'+Date.now(),
-    label:p.label||'',text:p.text,passages:p.passages||'',day:p.day||'',book:p.book||'',
+    label:(day?day+' — ':'')+(passages||book||'Bible Reading'),
+    text:summary||['Bible Reading',book&&'Book: '+book,day&&'Day: '+day,passages&&'Passages: '+passages].filter(Boolean).join('\n'),
+    passages:passages,day:day,book:book,
     journalDate:journalDate,
     date:today.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
     ts:new Date().toISOString()
   };
   var arch=readBibleReadingArchive();
+  var duplicate=arch.some(function(saved){return saved.journalDate===journalDate&&String(saved.passages||'').trim()===passages&&String(saved.book||'').trim()===book;});
+  if(duplicate){
+    if(btn){var duplicateLabel=btn.textContent;btn.textContent='✓ Already saved';setTimeout(function(){btn.textContent=duplicateLabel;btn.disabled=false;},2000);}
+    return;
+  }
   arch.unshift(entry);
   while(arch.length>365)arch.pop();
   writeBibleReadingArchive(arch);
@@ -8812,7 +8839,11 @@ function saveBibleReadingToArchive(btn){
   datedEntries.unshift(entry);
   dayData.bibleReadingArchiveEntries=datedEntries.slice(0,25);
   localStorage.setItem(plannerKey,JSON.stringify(dayData));
-  if(btn){btn.textContent='✓ Saved!';btn.disabled=true;btn.style.background='#27ae60';}
+  if(btn){
+    var savedLabel=btn.textContent,savedBackground=btn.style.background;
+    btn.textContent='✓ Saved!';btn.disabled=true;btn.style.background='#27ae60';
+    setTimeout(function(){btn.textContent=savedLabel;btn.disabled=false;btn.style.background=savedBackground;},1800);
+  }
   // Refresh archive panel if open
   if(document.getElementById('bibleArchivePanel')&&document.getElementById('bibleArchivePanel').style.display!=='none'){
     renderBibleArchive();
@@ -9384,7 +9415,6 @@ function meditAIPrompt(type){
     res.innerHTML='<div style="white-space:pre-wrap;line-height:1.6;color:#3b0764;">'+escHtml(text)+'</div>'
       +'<div style="display:flex;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid #d8b4fe;flex-wrap:wrap;">'
       +'<button id="meditArchiveSaveBtn" onclick="saveToMeditArchive(this)" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(109,40,217,0.35);letter-spacing:.01em;">&#x1F4C1; Save to AI Prayer Archive</button>'
-      +'<button onclick="archiveAIResp(\'meditAIResult\')" style="background:linear-gradient(135deg,#4c1d95,#3b0764);color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(59,7,100,0.35);letter-spacing:.01em;">&#x2B07; General Archive</button>'
       +'</div>';
     _aiLastShown['meditAIResult']={text:text,lbl:'Meditation — '+typeLabel};
   },function(err){res.textContent='Error: '+err;});
@@ -11670,6 +11700,16 @@ var JOURNAL_SUPABASE_URL='https://dtsirzzklkdncmchwebr.supabase.co';
 var JOURNAL_SUPABASE_KEY='sb_publishable_FiX7PK2M6NKTI4hGZCg4OQ_ShVr0Aho';
 var journalCloudClient=null,journalCloudUser=null,journalCloudTimer=null,journalCloudApplying=false,journalCloudBusy=false,journalCloudReady=false,journalCloudPreparedFor='',journalCloudChangeSeq=0;
 var journalOriginalFetch=window.fetch.bind(window);
+function journalCloudWithTimeout(promise,ms,message){
+  var timer;
+  return Promise.race([
+    promise,
+    new Promise(function(resolve,reject){timer=setTimeout(function(){reject(new Error(message||'The connection timed out.'));},ms);})
+  ]).finally(function(){clearTimeout(timer);});
+}
+function journalCloudDirectLock(name,acquireTimeout,fn){
+  return Promise.resolve().then(fn);
+}
 function journalInstallAIProxy(){
   if(window.__journalAIProxyInstalled)return;
   window.__journalAIProxyInstalled=true;
@@ -11866,12 +11906,27 @@ async function journalCloudSignIn(ev){
   ev.preventDefault();
   var btn=document.getElementById('cloudLoginBtn'),err=document.getElementById('cloudAuthError');
   btn.disabled=true;btn.textContent='Signing in...';err.textContent='';
-  var result=await journalCloudClient.auth.signInWithPassword({
-    email:document.getElementById('cloudEmail').value.trim(),
-    password:document.getElementById('cloudPassword').value
-  });
-  btn.disabled=false;btn.textContent='Sign In';
-  if(result.error){err.textContent=result.error.message==='Invalid login credentials'?'The email address or password was not recognized.':result.error.message;return;}
+  try{
+    if(!journalCloudClient)throw new Error('The secure sign-in service is not ready. Refresh the page and try again.');
+    var result=await journalCloudWithTimeout(journalCloudClient.auth.signInWithPassword({
+      email:document.getElementById('cloudEmail').value.trim(),
+      password:document.getElementById('cloudPassword').value
+    }),15000,'Sign-in took too long. Check the internet connection, close any other open journal tabs, and try again.');
+    if(result.error){
+      err.textContent=result.error.message==='Invalid login credentials'?'The email address or password was not recognized.':result.error.message;
+      return;
+    }
+    var session=result.data&&result.data.session;
+    if(session&&session.user){
+      journalCloudUser=session.user;
+      document.getElementById('cloudAuthGate').style.display='none';
+      setTimeout(journalCloudPrepare,0);
+    }
+  }catch(e){
+    err.textContent=e&&e.message?e.message:'Sign-in could not be completed. Please try again.';
+  }finally{
+    btn.disabled=false;btn.textContent='Sign In';
+  }
 }
 async function journalCloudSignOut(){
   if(!journalCloudClient)return;
@@ -11945,7 +12000,7 @@ function journalCloudInit(){
     document.getElementById('cloudAuthError').textContent='The secure sign-in service could not load. Check your internet connection and refresh.';
     return;
   }
-  journalCloudClient=window.supabase.createClient(JOURNAL_SUPABASE_URL,JOURNAL_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  journalCloudClient=window.supabase.createClient(JOURNAL_SUPABASE_URL,JOURNAL_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:journalCloudDirectLock}});
   journalInstallAIProxy();
   document.getElementById('cloudLoginForm').addEventListener('submit',journalCloudSignIn);
   journalCloudClient.auth.onAuthStateChange(function(event,session){
@@ -12039,19 +12094,13 @@ async function updateBoiseAirQuality(){
   }
 }
 function journalSyncFixedHeaderHeight(){
-  var shell=document.querySelector('.journal-sticky-shell');if(!shell)return;
-  var height=Math.ceil(shell.getBoundingClientRect().height);
-  document.documentElement.style.setProperty('--journal-sticky-height',height+'px');
-  document.documentElement.style.scrollPaddingTop=(height+16)+'px';
+  document.documentElement.style.removeProperty('--journal-sticky-height');
+  document.documentElement.style.scrollPaddingTop='';
 }
 function journalInitFixedHeader(){
-  var shell=document.querySelector('.journal-sticky-shell');if(!shell)return;
   journalSyncFixedHeaderHeight();
-  if(window.ResizeObserver){
-    window._journalHeaderObserver=new ResizeObserver(journalSyncFixedHeaderHeight);
-    window._journalHeaderObserver.observe(shell);
-  }
-  window.addEventListener('resize',journalSyncFixedHeaderHeight);
+  var spacer=document.getElementById('journalStickySpacer');
+  if(spacer)spacer.style.display='none';
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',journalInitFixedHeader);
 else journalInitFixedHeader();
@@ -12098,6 +12147,7 @@ function v26SavedFeedback(){
 }
 window.addEventListener('DOMContentLoaded',function(){
   journalCloudInit();
+  restoreMealPlanningState();
   arrangeActivityTrainingCards();
   relocateDashboardCharts();
   makeHabitsInformational();
