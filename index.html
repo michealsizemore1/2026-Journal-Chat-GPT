@@ -844,6 +844,8 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-setting-row input[type="checkbox"]{accent-color:#5b5bd6;}
 .storage-health{font-size:.76rem;line-height:1.45;color:#667085;background:#f8fafc;border-radius:7px;padding:8px;margin-top:8px;}
 .journal-float-top{position:fixed;right:18px;bottom:18px;z-index:1200;border:1px solid #d0d5dd;background:#fff;color:#475467;border-radius:999px;padding:8px 11px;box-shadow:0 4px 16px rgba(16,24,40,.14);cursor:pointer;display:none;}
+.journal-floating-title{position:fixed;top:7px;left:50%;transform:translate(-50%,-14px);z-index:2400;max-width:calc(100vw - 28px);box-sizing:border-box;background:rgba(10,49,97,.96);color:#fff;border:2px solid #b31942;border-radius:999px;padding:6px 14px;font-size:.78rem;font-weight:800;letter-spacing:.01em;white-space:nowrap;box-shadow:0 5px 16px rgba(10,49,97,.24);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility .18s;}
+.journal-floating-title.show{opacity:1;visibility:visible;transform:translate(-50%,0);}
 .journal-mobile-dock{display:none;}
 .section,.panel,.review-section,.journaling-section{scroll-margin-top:70px;}
 .container{overflow:visible;}
@@ -854,6 +856,7 @@ html{scroll-padding-top:190px;}
 @media(max-width:800px){.journal-home-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-settings-grid{grid-template-columns:1fr;}}
 @media(max-width:700px){
   body{padding-bottom:64px;}
+  .journal-floating-title{top:4px;font-size:.7rem;padding:5px 11px;}
   .journal-sticky-shell{top:auto;width:100%;}.journal-sticky-shell,.journal-sticky-shell .header{border-radius:0;}
   html{scroll-padding-top:285px;}
   .journal-mobile-dock{position:fixed;display:grid;grid-template-columns:repeat(4,1fr);left:0;right:0;bottom:0;z-index:2500;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid #e4e7ec;box-shadow:0 -4px 18px rgba(16,24,40,.08);}
@@ -957,6 +960,8 @@ body{
 </style>
 </head>
 <body>
+
+<div class="journal-floating-title" id="journalFloatingTitle" aria-hidden="true">&#x1F9ED; My Life Command Center</div>
 
 <!-- Sidebar overlay + panel (outside container so fixed positioning works) -->
 <div id="hmOverlay" onclick="closeHamburger()"></div>
@@ -12105,8 +12110,24 @@ function journalInitFixedHeader(){
   var spacer=document.getElementById('journalStickySpacer');
   if(spacer)spacer.style.display='none';
 }
+function journalInitFloatingTitle(){
+  var original=document.querySelector('.header h1');
+  var floating=document.getElementById('journalFloatingTitle');
+  if(!original||!floating)return;
+  function update(){
+    var rect=original.getBoundingClientRect();
+    var show=rect.bottom<=8||rect.top>=window.innerHeight;
+    floating.classList.toggle('show',show);
+    floating.setAttribute('aria-hidden',show?'false':'true');
+  }
+  update();
+  window.addEventListener('scroll',update,{passive:true});
+  window.addEventListener('resize',update);
+}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',journalInitFixedHeader);
 else journalInitFixedHeader();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',journalInitFloatingTitle);
+else journalInitFloatingTitle();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateMeridianWeather);
 else updateMeridianWeather();
 setInterval(updateMeridianWeather,15*60*1000);
