@@ -8879,6 +8879,35 @@ function audibleSummarize(){
   },function(err){res.textContent='Error: '+err;});
 }
 
+var _bibleReadingArchiveLargeCache=null;
+function journalLargeStoreOpen(){
+  if(window._journalLargeStorePromise)return window._journalLargeStorePromise;
+  window._journalLargeStorePromise=new Promise(function(resolve,reject){
+    var req=indexedDB.open('my_life_command_center_large_storage',1);
+    req.onupgradeneeded=function(){var db=req.result;if(!db.objectStoreNames.contains('journal'))db.createObjectStore('journal');};
+    req.onsuccess=function(){resolve(req.result);};req.onerror=function(){reject(req.error||new Error('Large journal storage could not be opened.'));};
+  });
+  return window._journalLargeStorePromise;
+}
+async function journalLargeStoreGet(key){
+  var db=await journalLargeStoreOpen();
+  return new Promise(function(resolve,reject){var tx=db.transaction('journal','readonly'),req=tx.objectStore('journal').get(key);req.onsuccess=function(){resolve(req.result);};req.onerror=function(){reject(req.error);};});
+}
+async function journalLargeStoreSet(key,value){
+  var db=await journalLargeStoreOpen();
+  return new Promise(function(resolve,reject){var tx=db.transaction('journal','readwrite');tx.objectStore('journal').put(value,key);tx.oncomplete=function(){resolve(true);};tx.onerror=function(){reject(tx.error);};});
+}
+async function hydrateBibleReadingArchiveStorage(){
+  var legacy=[];try{legacy=JSON.parse(localStorage.getItem('bible_reading_archive')||'[]')||[];}catch(e){}
+  var stored=[];try{stored=await journalLargeStoreGet('bible_reading_archive')||[];}catch(e2){}
+  var merged=[],seen={};
+  stored.concat(legacy).forEach(function(entry){if(!entry||!entry.text)return;var id=entry.id||entry.ts||entry.text.slice(0,80);if(seen[id])return;seen[id]=true;merged.push(entry);});
+  merged.sort(function(a,b){return String(b.ts||'').localeCompare(String(a.ts||''));});
+  _bibleReadingArchiveLargeCache=merged.slice(0,365);
+  try{await journalLargeStoreSet('bible_reading_archive',_bibleReadingArchiveLargeCache);localStorage.removeItem('bible_reading_archive');}catch(ignore){}
+  if(document.getElementById('bibleArchiveList'))renderBibleArchive();
+  return _bibleReadingArchiveLargeCache;
+}
 function readBibleReadingArchive(){
   var merged=[],seen={};
   function add(entry){
@@ -8887,6 +8916,7 @@ function readBibleReadingArchive(){
     if(seen[id])return;
     entry.id=id;seen[id]=true;merged.push(entry);
   }
+  (_bibleReadingArchiveLargeCache||[]).forEach(add);
   try{(JSON.parse(localStorage.getItem('bible_reading_archive')||'[]')||[]).forEach(add);}catch(e){}
   for(var i=0;i<localStorage.length;i++){
     var key=localStorage.key(i)||'';
@@ -8901,11 +8931,18 @@ function readBibleReadingArchive(){
   return merged;
 }
 
-function writeBibleReadingArchive(arch){
-  localStorage.setItem('bible_reading_archive',JSON.stringify(arch||[]));
+async function writeBibleReadingArchive(arch){
+  _bibleReadingArchiveLargeCache=Array.isArray(arch)?arch.slice(0,365):[];
+  await journalLargeStoreSet('bible_reading_archive',_bibleReadingArchiveLargeCache);
+  var dirtyMarked=false;
+  try{localStorage.removeItem('bible_reading_archive');localStorage.setItem('journal_cloud_dirty','1');dirtyMarked=true;}catch(ignore){}
+  if(journalCloudUser&&journalCloudReady){
+    if(dirtyMarked)journalCloudSchedule();
+    else setTimeout(function(){journalCloudUpload(false);},0);
+  }
 }
 
-function compactBibleReadingArchiveStorage(){
+async function compactBibleReadingArchiveStorage(){
   var changed=false,arch=readBibleReadingArchive(),keys=[];
   for(var i=0;i<localStorage.length;i++){
     var key=localStorage.key(i)||'';
@@ -8921,13 +8958,13 @@ function compactBibleReadingArchiveStorage(){
     }catch(e){}
   });
   try{
-    writeBibleReadingArchive(arch);
+    await writeBibleReadingArchive(arch);
     if(changed)localStorage.setItem('journal_cloud_dirty','1');
   }catch(e){}
   return changed;
 }
 
-function saveBibleReadingToArchive(btn){
+async function saveBibleReadingToArchive(btn){
   var p=_audiblePending||{};
   var passages=((document.getElementById('audiblePassages')||{}).value||p.passages||'').trim();
   var day=((document.getElementById('audibleChapter')||{}).value||p.day||'').trim();
@@ -8956,7 +8993,7 @@ function saveBibleReadingToArchive(btn){
   arch.unshift(entry);
   while(arch.length>365)arch.pop();
   try{
-    writeBibleReadingArchive(arch);
+    await writeBibleReadingArchive(arch);
   }catch(e){
     if(btn){
       var failedLabel=btn.textContent;
@@ -9022,26 +9059,52 @@ function toggleBibleArchiveItem(btn,idx){
   btn.innerHTML=open?'&#x25BC; Collapse':'&#x25B6; Expand';
 }
 
-function deleteBibleArchiveEntry(idx){
+async function deleteBibleArchiveEntry(idx){
   if(!confirm('Delete this entry?'))return;
   var arch=readBibleReadingArchive(),removed=arch[idx];
   if(!removed)return;
   arch.splice(idx,1);
-  writeBibleReadingArchive(arch);
+  await writeBibleReadingArchive(arch);
   renderBibleArchive();
 }
 
 /* --- AI Prayer Archive --- */
 var _meditPending={};
+function readMeditArchive(){
+  try{
+    var parsed=JSON.parse(localStorage.getItem('meditation_archive')||'[]');
+    return Array.isArray(parsed)?parsed:[];
+  }catch(e){return[];}
+}
+function writeMeditArchive(entries){
+  var value=JSON.stringify(Array.isArray(entries)?entries:[]);
+  localStorage.setItem('meditation_archive',value);
+  var check=readMeditArchive();
+  if(!check.length&&entries&&entries.length)throw new Error('The prayer could not be verified in device storage.');
+  return check;
+}
 function saveToMeditArchive(btn){
   var p=_meditPending||{};
-  if(!p.text){if(btn){btn.textContent='Nothing to save';setTimeout(function(){btn.textContent='📁 Save to AI Prayer Archive';},2000);}return;}
-  var arch=JSON.parse(localStorage.getItem('meditation_archive')||'[]');
-  arch.unshift({label:p.label||'Meditation Guide',text:p.text,type:p.type||'',date:p.date||new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),ts:new Date().toISOString()});
-  while(arch.length>200)arch.pop();
-  localStorage.setItem('meditation_archive',JSON.stringify(arch));
-  if(btn){btn.textContent='✓ Saved!';btn.disabled=true;btn.style.background='#16a34a';}
-  if(document.getElementById('meditArchivePanel')&&document.getElementById('meditArchivePanel').style.display!=='none'){renderMeditArchive();}
+  var displayed='';
+  if(btn&&btn.parentElement&&btn.parentElement.previousElementSibling)displayed=(btn.parentElement.previousElementSibling.textContent||'').trim();
+  var prayer=String(p.text||displayed||'').trim();
+  if(!prayer){if(btn){btn.textContent='Nothing to save';setTimeout(function(){btn.textContent='📁 Save to AI Prayer Archive';},2000);}return;}
+  try{
+    var arch=readMeditArchive(),stamp=new Date().toISOString();
+    arch.unshift({label:p.label||'Guided Prayer',text:prayer,type:p.type||'prayer',date:p.date||new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),ts:stamp});
+    while(arch.length>200)arch.pop();
+    var saved=writeMeditArchive(arch);
+    if(!saved.some(function(e){return e&&e.ts===stamp;}))throw new Error('The saved prayer could not be found after writing it.');
+    var panel=document.getElementById('meditArchivePanel'),arrow=document.getElementById('meditArchiveArrow');
+    if(panel)panel.style.display='block';
+    if(arrow)arrow.innerHTML='&#x25BC;';
+    renderMeditArchive();
+    if(btn){btn.textContent='✓ Saved to AI Prayer Archive';btn.disabled=true;btn.style.background='#16a34a';}
+    if(typeof v26Toast==='function')v26Toast('Prayer saved to AI Prayer Archive');
+  }catch(e){
+    if(btn){btn.textContent='Save failed — try again';btn.disabled=false;btn.style.background='#b91c1c';}
+    alert('The prayer could not be saved. Press Sync, then try again.\n\n'+(e&&e.message?e.message:''));
+  }
 }
 function toggleMeditArchive(){
   var panel=document.getElementById('meditArchivePanel');
@@ -9053,7 +9116,7 @@ function toggleMeditArchive(){
   if(open)renderMeditArchive();
 }
 function renderMeditArchive(){
-  var arch=JSON.parse(localStorage.getItem('meditation_archive')||'[]');
+  var arch=readMeditArchive();
   var list=document.getElementById('meditArchiveList');
   var empty=document.getElementById('meditArchiveEmpty');
   if(!list)return;
@@ -9082,9 +9145,9 @@ function toggleMeditArchiveItem(btn,idx){
 }
 function deleteMeditArchiveEntry(idx){
   if(!confirm('Delete this entry?'))return;
-  var arch=JSON.parse(localStorage.getItem('meditation_archive')||'[]');
+  var arch=readMeditArchive();
   arch.splice(idx,1);
-  localStorage.setItem('meditation_archive',JSON.stringify(arch));
+  writeMeditArchive(arch);
   renderMeditArchive();
 }
 
@@ -10365,9 +10428,10 @@ function exportBackup(){
     const k=localStorage.key(i);
     if(k&&(!window.journalCloudCanSyncKey||journalCloudCanSyncKey(k)))d[k]=localStorage.getItem(k);
   }
-  Promise.all([getAllBookDocuments(),getAllBookCovers()]).then(function(results){
+  Promise.all([getAllBookDocuments(),getAllBookCovers(),journalLargeStoreGet('bible_reading_archive').catch(function(){return[];})]).then(function(results){
     if(results[0]&&results[0].length)d['__idb_book_documents']=JSON.stringify(results[0]);
     if(results[1]&&results[1].length)d['__idb_book_covers']=JSON.stringify(results[1]);
+    if(results[2]&&results[2].length)d['__idb_bible_reading_archive']=JSON.stringify(results[2]);
     var json=JSON.stringify(d,null,2);
     var filename='planner_backup_'+new Date().toISOString().slice(0,10)+'.json';
     // Use File System Access API (Save As dialog) if available
@@ -10424,10 +10488,14 @@ function importBackup(ev){
       const plannerCount=Object.keys(d).filter(function(k){return k.indexOf('planner_')===0;}).length;
       const activityCount=(()=>{try{return JSON.parse(d.activities_data||'[]').length;}catch(e2){return 0;}})();
       if(!confirm('Restore preview:\n\n'+plannerCount+' daily entries\n'+activityCount+' activities\n'+Object.keys(d).length+' saved data groups\n\nOverwrite matching current data with this backup?'))return;
-      Object.entries(d).forEach(([k,v])=>{if(!k.startsWith('__idb_')&&(!window.journalCloudCanSyncKey||journalCloudCanSyncKey(k)))localStorage.setItem(k,v);});
+      Object.entries(d).forEach(([k,v])=>{if(k==='bible_reading_archive')return;if(!k.startsWith('__idb_')&&(!window.journalCloudCanSyncKey||journalCloudCanSyncKey(k)))localStorage.setItem(k,v);});
       var docPromises=[];var covPromises=[];
       try{if(d['__idb_book_documents']){var docs=JSON.parse(d['__idb_book_documents']);docPromises=docs.map(function(doc){return putBookDocument(doc);});}}catch(e2){}
       try{if(d['__idb_book_covers']){var covs=JSON.parse(d['__idb_book_covers']);covPromises=covs.map(function(c){return setBookCover(c.bookId,c.dataUrl);});}}catch(e3){}
+      try{
+        var restoredBibleArchive=JSON.parse(d['__idb_bible_reading_archive']||d.bible_reading_archive||'[]');
+        if(Array.isArray(restoredBibleArchive)&&restoredBibleArchive.length){_bibleReadingArchiveLargeCache=restoredBibleArchive;docPromises.push(journalLargeStoreSet('bible_reading_archive',restoredBibleArchive));}
+      }catch(e4){}
       if(docPromises.length||covPromises.length){
         Promise.all(docPromises.concat(covPromises)).then(function(){
           load();alert('Data restored! ('+docPromises.length+' document(s) and '+covPromises.length+' cover(s) included)');
@@ -11908,12 +11976,17 @@ var journalCloudAuthStorage={
     try{sessionStorage.removeItem(key);}catch(ignore2){}
   }
 };
-function journalCloudPayload(){
+async function journalCloudPayload(){
   var out={};
   for(var i=0;i<localStorage.length;i++){
     var k=localStorage.key(i);
     if(journalCloudCanSyncKey(k))out[k]=localStorage.getItem(k);
   }
+  try{
+    var bibleArchive=_bibleReadingArchiveLargeCache;
+    if(!Array.isArray(bibleArchive))bibleArchive=await journalLargeStoreGet('bible_reading_archive')||[];
+    if(bibleArchive.length)out.bible_reading_archive=JSON.stringify(bibleArchive);
+  }catch(ignore){}
   return out;
 }
 function journalCloudHasJournalData(){
@@ -11942,7 +12015,7 @@ async function journalCloudUpload(showMessage,expectedRevision){
   journalCloudBusy=true;journalCloudSetStatus('Synchronizing securely...','busy');
   try{
     var uploadSeq=journalCloudChangeSeq;
-    var payload=journalCloudPayload();
+    var payload=await journalCloudPayload();
     var values={
       user_id:journalCloudUser.id,
       journal_data:payload,
@@ -11991,12 +12064,20 @@ async function journalCloudUpload(showMessage,expectedRevision){
     return false;
   }finally{journalCloudBusy=false;}
 }
-function journalCloudApply(payload,updatedAt,revision){
+async function journalCloudApply(payload,updatedAt,revision){
   journalCloudApplying=true;
   var remove=[];
   for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(journalCloudCanSyncKey(k))remove.push(k);}
   remove.forEach(function(k){localStorage.removeItem(k);});
-  Object.keys(payload||{}).forEach(function(k){if(journalCloudCanSyncKey(k))localStorage.setItem(k,String(payload[k]));});
+  var cloudBibleArchive=null;
+  Object.keys(payload||{}).forEach(function(k){
+    if(k==='bible_reading_archive'){try{cloudBibleArchive=JSON.parse(payload[k]||'[]');}catch(ignore){}return;}
+    if(journalCloudCanSyncKey(k))localStorage.setItem(k,String(payload[k]));
+  });
+  if(Array.isArray(cloudBibleArchive)){
+    _bibleReadingArchiveLargeCache=cloudBibleArchive;
+    try{await journalLargeStoreSet('bible_reading_archive',cloudBibleArchive);}catch(ignore2){}
+  }
   localStorage.setItem('journal_cloud_last_sync',updatedAt||new Date().toISOString());
   if(revision!=null)localStorage.setItem('journal_cloud_revision',String(revision));
   localStorage.removeItem('journal_cloud_dirty');
@@ -12155,7 +12236,7 @@ function journalCloudInit(){
   try{
     localStorage.removeItem('ai_archive');
     localStorage.removeItem('ai_key');
-    compactBibleReadingArchiveStorage();
+    hydrateBibleReadingArchiveStorage().then(function(){compactBibleReadingArchiveStorage();});
   }catch(e){}
   if(!window.supabase||!window.supabase.createClient){
     document.getElementById('cloudAuthError').textContent='The secure sign-in service could not load. Check your internet connection and refresh.';
