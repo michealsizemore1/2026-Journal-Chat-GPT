@@ -11874,6 +11874,40 @@ function journalCloudCanSyncKey(k){
   if(lower.indexOf('service_role')>=0||lower.indexOf('sb_secret_')>=0||lower.indexOf('password')>=0)return false;
   return true;
 }
+function journalCloudIsQuotaError(e){
+  return !!(e&&(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED'||e.code===22||e.code===1014));
+}
+function journalCloudPruneRegenerableStorage(removeItemFn){
+  var remove=[],freed=0;
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i)||'';
+    if(k.indexOf('workout_cache_')===0||k.indexOf('tw_caches_cleared_')===0||k==='ai_archive'||k==='ai_key')remove.push(k);
+  }
+  remove.forEach(function(k){
+    try{var v=localStorage.getItem(k)||'';freed+=(k.length+v.length)*2;(removeItemFn||Storage.prototype.removeItem).call(localStorage,k);}catch(ignore){}
+  });
+  return freed;
+}
+var journalCloudAuthStorage={
+  getItem:function(key){
+    try{var value=localStorage.getItem(key);if(value!=null)return value;}catch(ignore){}
+    try{return sessionStorage.getItem(key);}catch(ignore2){return null;}
+  },
+  setItem:function(key,value){
+    try{localStorage.setItem(key,value);try{sessionStorage.removeItem(key);}catch(ignore){}return;}
+    catch(e){
+      if(journalCloudIsQuotaError(e)){
+        try{journalCloudPruneRegenerableStorage();localStorage.setItem(key,value);return;}catch(ignore2){}
+      }
+      try{sessionStorage.setItem(key,value);return;}catch(ignore3){}
+      throw e;
+    }
+  },
+  removeItem:function(key){
+    try{localStorage.removeItem(key);}catch(ignore){}
+    try{sessionStorage.removeItem(key);}catch(ignore2){}
+  }
+};
 function journalCloudPayload(){
   var out={};
   for(var i=0;i<localStorage.length;i++){
@@ -12127,7 +12161,7 @@ function journalCloudInit(){
     document.getElementById('cloudAuthError').textContent='The secure sign-in service could not load. Check your internet connection and refresh.';
     return;
   }
-  journalCloudClient=window.supabase.createClient(JOURNAL_SUPABASE_URL,JOURNAL_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:journalCloudDirectLock}});
+  journalCloudClient=window.supabase.createClient(JOURNAL_SUPABASE_URL,JOURNAL_SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,lock:journalCloudDirectLock,storage:journalCloudAuthStorage}});
   journalInstallAIProxy();
   document.getElementById('cloudLoginForm').addEventListener('submit',journalCloudSignIn);
   journalCloudClient.auth.onAuthStateChange(function(event,session){
@@ -12151,10 +12185,25 @@ function journalCloudInit(){
     }
   });
   var originalSet=Storage.prototype.setItem,originalRemove=Storage.prototype.removeItem;
-  Storage.prototype.setItem=function(k,v){originalSet.call(this,k,v);if(this===localStorage&&journalCloudCanSyncKey(k)){try{journalCloudSchedule();}catch(e){}}};
+  Storage.prototype.setItem=function(k,v){
+    try{originalSet.call(this,k,v);}
+    catch(e){
+      if(this!==localStorage||!journalCloudIsQuotaError(e))throw e;
+      journalCloudPruneRegenerableStorage(originalRemove);
+      try{originalSet.call(this,k,v);}
+      catch(e2){journalCloudSetStatus('Device storage is full — cloud sync needed','error');throw e2;}
+    }
+    if(this===localStorage&&journalCloudCanSyncKey(k)){try{journalCloudSchedule();}catch(e){}}
+  };
   Storage.prototype.removeItem=function(k){originalRemove.call(this,k);if(this===localStorage&&journalCloudCanSyncKey(k)){try{journalCloudSchedule();}catch(e){}}};
   window.addEventListener('online',function(){if(journalCloudUser&&localStorage.getItem('journal_cloud_dirty'))journalCloudSmartSync();});
   window.addEventListener('offline',function(){journalCloudSetStatus('Offline — saved on this device','error');});
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='hidden'&&journalCloudUser&&localStorage.getItem('journal_cloud_dirty')&&!journalCloudBusy)journalCloudSmartSync();
+  });
+  window.addEventListener('pagehide',function(){
+    if(journalCloudUser&&localStorage.getItem('journal_cloud_dirty')&&!journalCloudBusy)journalCloudSmartSync();
+  });
 }
 
 /* v26 quality-of-life enhancements. Existing storage keys and data remain unchanged. */
