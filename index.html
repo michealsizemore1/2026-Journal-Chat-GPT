@@ -9270,7 +9270,14 @@ function bibleSpeechReady(){
   if(!bibleSpeechSupported()){controls.innerHTML='<span style="font-size:.74rem;color:#b91c1c;">Text-to-speech is not available in this browser.</span>';return;}
   bibleSpeechPopulateVoices();var rate=document.getElementById('bibleSpeechRate'),saved='';try{saved=localStorage.getItem('bible_speech_rate')||'';}catch(ignore){}if(rate&&saved)rate.value=saved;
 }
-function bibleSpeechText(){var result=document.getElementById('audibleAIResult');return result?result.innerText.replace(/\s+/g,' ').trim():'';}
+function bibleSpeechText(){
+  var result=document.getElementById('audibleAIResult');if(!result)return'';
+  return result.innerText
+    .replace(/https?:\/\/\S+|www\.\S+/gi,' ')
+    .replace(/[^\p{L}\p{N}'\s]/gu,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
 function bibleSpeechMakeChunks(text){
   var sentences=text.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text],chunks=[],current='';
   sentences.forEach(function(sentence){sentence=sentence.trim();if(!sentence)return;if((current+' '+sentence).length>220&&current){chunks.push(current);current=sentence;}else current+=(current?' ':'')+sentence;});if(current)chunks.push(current);return chunks;
