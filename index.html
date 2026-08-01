@@ -2278,35 +2278,6 @@ body{
 
     <!-- Sermon Section -->
     <div class="section" style="margin-bottom:10px;">
-      <div class="section" style="margin-bottom:12px;background:#f0fff4;border:1px solid #b7e4c7;border-radius:10px;padding:0;overflow:hidden;">
-  <div onclick="toggleSermonTranscript()" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;cursor:pointer;">
-    <div class="section-title" style="color:#1e6b3a;margin:0;padding:0;background:none;border:0;">&#x1F4C4; Sermon Transcript</div>
-    <div style="display:flex;align-items:center;gap:8px;min-width:0;">
-      <span id="bTranscriptSummary" style="font-size:0.74rem;color:#528062;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">No transcript saved</span>
-      <span id="bTranscriptArrow" style="font-size:0.8rem;color:#1e6b3a;">&#x25B6;</span>
-    </div>
-  </div>
-  <div id="bTranscriptPanel" style="display:none;border-top:1px solid #b7e4c7;padding:10px 12px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-      <label style="background:#e8f7ed;border:1px solid #86c99c;color:#1e6b3a;border-radius:7px;padding:6px 10px;font-size:0.8rem;font-weight:700;cursor:pointer;">&#x1F4C2; Choose .txt File
-        <input type="file" id="bTranscriptFile" accept=".txt,.md,.text,.rtf" onchange="loadTranscriptFile(event)" style="display:none;">
-      </label>
-      <span style="font-size:0.72rem;color:#528062;">Uploaded files are saved with this Sermon date.</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap;">
-      <input type="url" id="bTranscriptYouTubeURL" placeholder="Paste YouTube sermon link..." style="flex:1 1 230px;min-width:0;border:1px solid #b7e4c7;border-radius:7px;padding:7px 9px;font-size:0.82rem;box-sizing:border-box;">
-      <button id="bYouTubeFillBtn" onclick="youtubeTranscriptFill()" style="background:#dc2626;color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:0.8rem;cursor:pointer;font-weight:700;white-space:nowrap;">&#x25B6; Get Transcript &amp; Fill Fields</button>
-    </div>
-    <div style="font-size:0.69rem;color:#71867a;margin:-3px 0 8px;">Works with public YouTube videos that have accessible captions. AI credits are used only after captions are found.</div>
-    <textarea id="bTranscriptText" rows="5" oninput="markTranscriptEdited()" placeholder="Paste or upload sermon transcript here..." style="width:100%;border:1px solid #b7e4c7;border-radius:7px;padding:8px;font-size:0.82rem;resize:vertical;box-sizing:border-box;font-family:'Courier New',Courier,monospace;white-space:pre;overflow-x:auto;" wrap="off" spellcheck="false"></textarea>
-    <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
-      <button onclick="aiTranscriptFill()" id="bTranscriptAIBtn" style="background:linear-gradient(135deg,#1e6b3a,#27ae60);color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:0.85rem;cursor:pointer;font-weight:600;">&#x1F9E0; AI Fill All Fields</button>
-      <button onclick="saveBibleEntry()" style="background:#dff3e5;color:#1e6b3a;border:1px solid #86c99c;border-radius:7px;padding:7px 14px;font-size:0.85rem;cursor:pointer;font-weight:600;">&#x1F4BE; Save Transcript</button>
-      <button onclick="clearTranscript()" style="background:#f0f0f0;color:#888;border:none;border-radius:7px;padding:7px 14px;font-size:0.85rem;cursor:pointer;">&#x1F5D1; Clear</button>
-      <div id="bTranscriptStatus" style="display:none;font-size:0.78rem;color:#27ae60;"></div>
-    </div>
-  </div>
-</div>
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
   <div class="tri-check" data-key="spSermon" onclick="triClick(this)" title="Mark Sermon complete"></div>
   <div class="section-title" style="color:#6d4c41;background:linear-gradient(135deg,#fff8f0,#fdebd0);border-left:4px solid #e67e22;flex:1;">&#x1F3AC; Sermon</div>
@@ -6930,6 +6901,9 @@ function aiTranscriptFill(){
 function saveBibleEntry(){
   const dateKey=getBibleDateInput();
   if(!dateKey)return;
+  let previousBibleEntry={};
+  try{previousBibleEntry=JSON.parse(localStorage.getItem('bible_'+dateKey)||'{}')||{};}catch(ignore){}
+  const transcriptField=document.getElementById('bTranscriptText');
   const entry={
     sermonTitle:(document.getElementById('bSermonTitle')||{}).value||'',
     sermonSpeaker:(document.getElementById('bSermonSpeaker')||{}).value||'',
@@ -6941,8 +6915,8 @@ function saveBibleEntry(){
     notes:(document.getElementById('bNotes')||{}).value||'',
     application:(document.getElementById('bApplication')||{}).value||'',
     prayer:(document.getElementById('bPrayer')||{}).value||'',
-    transcript:(document.getElementById('bTranscriptText')||{}).value||'',
-    transcriptFileName:((document.getElementById('bTranscriptText')||{}).dataset||{}).fileName||'',
+    transcript:transcriptField?(transcriptField.value||''):(previousBibleEntry.transcript||''),
+    transcriptFileName:transcriptField?((transcriptField.dataset||{}).fileName||''):(previousBibleEntry.transcriptFileName||''),
     savedAt:new Date().toISOString()
   };
   localStorage.setItem('bible_'+dateKey, JSON.stringify(entry));
