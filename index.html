@@ -906,6 +906,12 @@ html{scroll-padding-top:190px;}
 }
 @media(max-width:430px){.journal-home-grid{grid-template-columns:1fr;}.journal-home{margin-left:10px;margin-right:10px;}}
 
+/* Today Home: force every summary card to use the complete row width. */
+#tab-daily .journal-home{width:calc(100% - 32px)!important;max-width:none!important;box-sizing:border-box!important;}
+#tab-daily #journalHomeGrid{display:flex!important;flex-direction:column!important;align-items:stretch!important;width:100%!important;box-sizing:border-box!important;}
+#tab-daily #journalHomeGrid>.journal-home-card{display:block!important;width:100%!important;max-width:none!important;min-width:100%!important;flex:0 0 100%!important;box-sizing:border-box!important;margin:0!important;}
+@media(max-width:430px){#tab-daily .journal-home{width:calc(100% - 20px)!important;}}
+
 /* Patriotic theme — navy structure, white surfaces, restrained red accents. */
 :root{
   --ink:#16243a;
