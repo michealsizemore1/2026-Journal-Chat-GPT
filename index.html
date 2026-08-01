@@ -4555,7 +4555,30 @@ function renderActivitySectionCharts(){
 }
 function renderNutritionSectionCharts(){renderSectionCharts('nutritionChartsGrid',[{k:'calories',l:'Calories',c:'#f39c12'},{k:'water',l:'Water',c:'#3498db'}]);}
 function renderLibrarySectionCharts(){renderSectionCharts('libraryChartsGrid',[{k:'audiobook',l:'Audiobook Time',c:'#27ae60'}]);}
-function renderSkillSectionCharts(){renderSectionCharts('skillChartsGrid',[{k:'skill',l:'Skill-Building Time',c:'#e91e8c'}]);}
+function renderSkillSectionCharts(){
+  var grid=document.getElementById('skillChartsGrid');if(!grid)return;
+  grid.innerHTML='';
+  if(typeof Chart==='undefined'){grid.innerHTML='<div class="dash-card"><h3>Chart unavailable</h3><div style="font-size:.82rem;color:#667085;">Check your internet connection and refresh.</div></div>';return;}
+  var ws=wkStart(0),dateKeys=[],labels=[],sessions=[0,0,0,0,0,0,0],minutes=[0,0,0,0,0,0,0];
+  for(var i=0;i<7;i++){var day=new Date(ws);day.setDate(ws.getDate()+i);dateKeys.push(dk(day));labels.push(day.toLocaleDateString('en-US',{weekday:'short'}));}
+  var entries=getSkillEntries().slice(),hidden=[];try{hidden=JSON.parse(localStorage.getItem('hidden_skill_daily_ids')||'[]');}catch(ignore){}
+  dateKeys.forEach(function(dateKey,idx){
+    var dayEntries=entries.filter(function(e){return e.date===dateKey;});
+    dayEntries.forEach(function(e){sessions[idx]++;minutes[idx]+=parseMins(e.time);});
+    try{
+      var raw=localStorage.getItem('planner_'+dateKey),d=raw?JSON.parse(raw):{};
+      if((d.gaSkill==='green'||d.gaSkillText)&&d.gaSkillText&&!hidden.includes('daily_'+dateKey)){
+        var duplicate=dayEntries.some(function(e){return e.name===d.gaSkillText;});
+        if(!duplicate){sessions[idx]++;minutes[idx]+=parseMins(d.gaSkillTime);}
+      }
+    }catch(ignore){}
+  });
+  var totalSessions=sessions.reduce(function(a,b){return a+b;},0),totalMinutes=minutes.reduce(function(a,b){return a+b;},0),id='section_skillChartsGrid_sessions';
+  var card=document.createElement('div');card.className='dash-card';
+  card.innerHTML='<h3 style="margin-bottom:3px;">Skills Completed &mdash; This Week</h3><div style="font-size:.75rem;color:#667085;margin-bottom:8px;">Sessions saved in the Skills section</div><div style="height:220px;"><canvas id="'+id+'"></canvas></div><div style="font-size:.75rem;color:#667085;text-align:center;margin-top:8px;"><strong>'+totalSessions+'</strong> session'+(totalSessions===1?'':'s')+(totalMinutes?' &nbsp;&bull;&nbsp; <strong>'+fmtMins(totalMinutes)+'</strong> total':'')+'</div>';
+  grid.appendChild(card);if(charts[id]){charts[id].destroy();delete charts[id];}
+  charts[id]=new Chart(document.getElementById(id).getContext('2d'),{type:'bar',data:{labels:labels,datasets:[{data:sessions,backgroundColor:'#e91e8c',borderColor:'#be185d',borderWidth:1,borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){var n=ctx.parsed.y||0,m=minutes[ctx.dataIndex]||0;return n+' session'+(n===1?'':'s')+(m?' - '+fmtMins(m):'');}}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{stepSize:1,precision:0},title:{display:true,text:'Completed sessions'}}}}});
+}
 function renderWellnessSectionCharts(){renderBPChart();renderWeightChart();}
 
 // Weekly habit trend: days-hit (0-7) for Bible / Prayer / Exercise / Water over the dashboard week.
@@ -7066,6 +7089,7 @@ function saveSkillEntry(){
   var f=document.getElementById('addSkillForm');
   if(f)f.style.display='none';
   renderSkillLog();
+  renderSkillSectionCharts();
 }
 
 function deleteSkillEntry(id,source){
@@ -7079,6 +7103,7 @@ function deleteSkillEntry(id,source){
     saveSkillEntries(entries);
   }
   renderSkillLog();
+  renderSkillSectionCharts();
 }
 
 function convertAndEditDailySkill(id){
@@ -7092,6 +7117,7 @@ function convertAndEditDailySkill(id){
   if(!hidden.includes(id))hidden.push(id);
   localStorage.setItem('hidden_skill_daily_ids',JSON.stringify(hidden));
   renderSkillLog();
+  renderSkillSectionCharts();
   editSkillEntry(newId);
 }
 
@@ -7118,6 +7144,7 @@ function importSkillLog(ev){
       });
       saveSkillEntries(existing);
       renderSkillLog();
+      renderSkillSectionCharts();
       alert('Imported '+added+' new entries.');
     }catch(err){alert('Import failed: '+err.message);}
   };
