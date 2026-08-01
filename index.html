@@ -9299,17 +9299,23 @@ function bibleSpeechReady(){
 }
 function bibleSpeechText(){
   var result=document.getElementById('audibleAIResult');if(!result)return'';
-  return result.innerText
+  var text=result.innerText
     .replace(/https?:\/\/\S+|www\.\S+/gi,' ')
     .replace(/\b(?:[123]\s+)?(?:Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|Samuel|Kings|Chronicles|Ezra|Nehemiah|Esther|Job|Psalms?|Proverbs|Ecclesiastes|Song\s+of\s+(?:Solomon|Songs)|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|Luke|John|Acts|Romans|Corinthians|Galatians|Ephesians|Philippians|Colossians|Thessalonians|Timothy|Titus|Philemon|Hebrews|James|Peter|Jude|Revelation)\s+\d+(?:\s*[:.]\s*\d+)?(?:\s*[-–—]\s*\d+)?\b/gi,' ')
+    .replace(/[.!?]+/g,'\n')
     .replace(/[\p{N}]/gu,' ')
-    .replace(/[^\p{L}'\s]/gu,' ')
-    .replace(/\s+/g,' ')
-    .trim();
+    .replace(/[^\p{L}'\s\n]/gu,' ');
+  return text.split(/\n+/).map(function(sentence){return sentence.replace(/\s+/g,' ').trim();}).filter(Boolean).join('\n');
 }
 function bibleSpeechMakeChunks(text){
-  var sentences=text.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text],chunks=[],current='';
-  sentences.forEach(function(sentence){sentence=sentence.trim();if(!sentence)return;if((current+' '+sentence).length>220&&current){chunks.push(current);current=sentence;}else current+=(current?' ':'')+sentence;});if(current)chunks.push(current);return chunks;
+  var sentences=text.split(/\n+/),chunks=[];
+  sentences.forEach(function(sentence){
+    sentence=sentence.trim();if(!sentence)return;
+    if(sentence.length<=240){chunks.push(sentence);return;}
+    var words=sentence.split(/\s+/),current='';
+    words.forEach(function(word){if((current+' '+word).trim().length>240&&current){chunks.push(current);current=word;}else current+=(current?' ':'')+word;});if(current)chunks.push(current);
+  });
+  return chunks;
 }
 function bibleSpeechSetState(state){
   var read=document.getElementById('bibleSpeechReadBtn'),pause=document.getElementById('bibleSpeechPauseBtn'),stop=document.getElementById('bibleSpeechStopBtn'),status=document.getElementById('bibleSpeechStatus');
@@ -9318,7 +9324,7 @@ function bibleSpeechSetState(state){
 function bibleSpeechSpeakNext(token){
   if(token!==_bibleSpeechToken)return;if(_bibleSpeechIndex>=_bibleSpeechChunks.length){bibleSpeechStop(true);return;}
   var utterance=new SpeechSynthesisUtterance(_bibleSpeechChunks[_bibleSpeechIndex]),voiceId=(document.getElementById('bibleSpeechVoice')||{}).value||'',voice=window.speechSynthesis.getVoices().find(function(v){return (v.voiceURI||v.name)===voiceId;});if(voice){utterance.voice=voice;utterance.lang=voice.lang;}utterance.rate=parseFloat((document.getElementById('bibleSpeechRate')||{}).value)||1;utterance.pitch=1;
-  utterance.onend=function(){if(token!==_bibleSpeechToken)return;_bibleSpeechIndex++;bibleSpeechSpeakNext(token);};utterance.onerror=function(e){if(e.error==='canceled'||e.error==='interrupted')return;bibleSpeechStop(true);var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Reading stopped';};window.speechSynthesis.speak(utterance);
+  utterance.onend=function(){if(token!==_bibleSpeechToken)return;_bibleSpeechIndex++;setTimeout(function(){bibleSpeechSpeakNext(token);},550);};utterance.onerror=function(e){if(e.error==='canceled'||e.error==='interrupted')return;bibleSpeechStop(true);var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Reading stopped';};window.speechSynthesis.speak(utterance);
 }
 function bibleSpeechRead(){
   if(!bibleSpeechSupported()){alert('Text-to-speech is not available in this browser.');return;}var text=bibleSpeechText();if(!text){alert('Create the Bible reading summary first.');return;}
