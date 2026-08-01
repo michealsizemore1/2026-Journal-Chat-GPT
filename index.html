@@ -6839,7 +6839,7 @@ async function youtubeTranscriptFill(){
     setTimeout(function(){if(btn){btn.disabled=false;btn.innerHTML='&#x25B6; Get Transcript &amp; Fill Fields';}},900);
   }
 }
-function aiTranscriptFill(){
+async function aiTranscriptFill(){
   var transcript=(document.getElementById('bTranscriptText')||{}).value||'';
   if(!transcript.trim()){alert('Please paste or upload a transcript first.');return;}
   var key=journalAIKey();
@@ -6850,12 +6850,16 @@ function aiTranscriptFill(){
   if(status){status.style.display='inline';status.textContent='AI is reading the transcript...';}
   var maxChars=60000;
   var excerpt=transcript.length>maxChars?transcript.slice(0,maxChars)+'...[truncated]':transcript;
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1800,
-      messages:[{role:'user',content:'You are a sermon analysis assistant. Read the following sermon or Bible-study transcript and fill every applicable journal field. Return ONLY a valid JSON object with these exact keys:\n{\n  "sermonTitle": "a concise title taken from or accurately inferred from the message",\n  "speaker": "the speaker or teacher; if not stated, write Not identified in transcript",\n  "sermonNotes": "a clear 3-5 sentence summary of the key points and main message",\n  "scripture": "all principal scripture passages referenced; if none are clear, write Not clearly identified in transcript",\n  "keyVerse": "the most central verse or passage; if no exact verse is stated, identify the closest clearly discussed passage",\n  "mainTheme": "the central theme in 3-6 words",\n  "studyNotes": "important biblical insights, context, or interpretation in 2-4 sentences",\n  "application": "2-4 specific, practical life-application statements"\n}\n\nEvery value must contain useful text. Do not leave any value blank. Do not invent a speaker name or an exact verse citation that the transcript does not support. Return only the JSON, with no markdown or additional text.\n\nTranscript:\n'+excerpt}]})
-  }).then(function(r){return r.json();}).then(function(d){
+  var requestBody={model:'claude-haiku-4-5-20251001',max_tokens:1800,
+    messages:[{role:'user',content:'You are a sermon analysis assistant. Read the following sermon or Bible-study transcript and fill every applicable journal field. Return ONLY a valid JSON object with these exact keys:\n{\n  "sermonTitle": "a concise title taken from or accurately inferred from the message",\n  "speaker": "the speaker or teacher; if not stated, write Not identified in transcript",\n  "sermonNotes": "a clear 3-5 sentence summary of the key points and main message",\n  "scripture": "all principal scripture passages referenced; if none are clear, write Not clearly identified in transcript",\n  "keyVerse": "the most central verse or passage; if no exact verse is stated, identify the closest clearly discussed passage",\n  "mainTheme": "the central theme in 3-6 words",\n  "studyNotes": "important biblical insights, context, or interpretation in 2-4 sentences",\n  "application": "2-4 specific, practical life-application statements"\n}\n\nEvery value must contain useful text. Do not leave any value blank. Do not invent a speaker name or an exact verse citation that the transcript does not support. Return only the JSON, with no markdown or additional text.\n\nTranscript:\n'+excerpt}]};
+  try{
+    var d;
+    try{d=await journalProtectedFunction(requestBody);}
+    catch(firstError){
+      if(status){status.textContent='Connection interrupted. Retrying securely...';status.style.color='#b45309';}
+      await new Promise(function(resolve){setTimeout(resolve,900);});
+      d=await journalProtectedFunction(requestBody);
+    }
     var text=(d.content&&d.content[0]&&d.content[0].text)||'';
     var jsonMatch=text.match(/\{[\s\S]*\}/);
     if(!jsonMatch)throw new Error('No JSON found in response');
@@ -6880,10 +6884,12 @@ function aiTranscriptFill(){
     saveBibleEntry();
     if(btn){btn.disabled=false;btn.innerHTML='&#x1F9E0; AI Fill All Fields';}
     if(status){status.textContent='&#x2713; Fields filled from transcript!';status.style.color='#27ae60';}
-  }).catch(function(e){
+  }catch(e){
     if(btn){btn.disabled=false;btn.innerHTML='&#x1F9E0; AI Fill All Fields';}
-    if(status){status.textContent='Error: '+e.message;status.style.color='#e74c3c';}
-  });
+    var message=e&&e.message?e.message:String(e||'Unknown error');
+    if(/failed to fetch|networkerror|load failed/i.test(message))message='Could not reach the protected AI service. Confirm that you are signed in and test from the published GitHub journal.';
+    if(status){status.textContent='Error: '+message;status.style.color='#e74c3c';}
+  }
 }
 
 function saveBibleEntry(){
