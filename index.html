@@ -2296,7 +2296,7 @@ body{
       <div class="task-row"><label style="min-width:110px;font-weight:600;">Title / Topic:</label><input type="text" id="bSermonTitle" placeholder="Sermon or study title…" style="flex:1;border:1px solid #e9ecef;border-radius:6px;padding:5px 8px;font-size:0.85rem;"></div>
       <div class="task-row"><label style="min-width:110px;font-weight:600;">Speaker / Teacher:</label><input type="text" id="bSermonSpeaker" placeholder="Pastor, speaker, or study leader…" style="flex:1;border:1px solid #e9ecef;border-radius:6px;padding:5px 8px;font-size:0.85rem;"></div>
       <div class="task-row" style="gap:6px;flex-wrap:wrap;">
-        <label style="min-width:90px;font-weight:600;">&#x1F517; URL:</label>
+        <label style="min-width:90px;font-weight:600;">&#x1F517; URL <span style="font-size:.68rem;color:#98a2b3;">(optional)</span>:</label>
         <input type="url" id="bSermonURL" placeholder="https://…" style="flex:1;min-width:180px;border:1px solid #e9ecef;border-radius:6px;padding:5px 8px;font-size:0.85rem;">
         <button onclick="openBibleSermonLink()" style="background:#667eea;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x25B6; Watch</button>
       </div>
@@ -6798,8 +6798,9 @@ function loadTranscriptFile(ev){
       var lines=text.split('\n').length;
       var chars=text.length;
       status.style.color='#27ae60';
-      status.textContent='Loaded temporarily: '+file.name+' \u2022 '+lines+' lines \u2022 '+chars.toLocaleString()+' characters. Tap Fill Fields with AI when ready.';
+      status.textContent='Loaded temporarily: '+file.name+' \u2022 '+lines+' lines \u2022 '+chars.toLocaleString()+' characters. AI analysis is starting...';
     }
+    setTimeout(aiTranscriptFill,50);
   };
   reader.readAsText(file,'UTF-8');
 }
@@ -6853,12 +6854,20 @@ function aiTranscriptFill(){
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
     body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1800,
-      messages:[{role:'user',content:'You are a sermon analysis assistant. Read the following sermon/Bible study transcript and extract the key information. Return ONLY a valid JSON object with these exact keys:\n{\n  "sermonTitle": "title of the sermon",\n  "speaker": "name of the speaker/pastor if mentioned",\n  "sermonNotes": "key points and main message of the sermon (2-4 sentences)",\n  "scripture": "main scripture passage(s) referenced",\n  "keyVerse": "the single most important verse quoted",\n  "mainTheme": "the central theme or topic in 3-5 words",\n  "studyNotes": "key insights from any Bible study portion",\n  "application": "practical application points for daily life",\n  "prayerResponse": "suggested prayer response or prayer points"\n}\n\nIf a field cannot be determined, use an empty string. Return only the JSON, no other text.\n\nTranscript:\n'+excerpt}]})
+      messages:[{role:'user',content:'You are a sermon analysis assistant. Read the following sermon or Bible-study transcript and fill every applicable journal field. Return ONLY a valid JSON object with these exact keys:\n{\n  "sermonTitle": "a concise title taken from or accurately inferred from the message",\n  "speaker": "the speaker or teacher; if not stated, write Not identified in transcript",\n  "sermonNotes": "a clear 3-5 sentence summary of the key points and main message",\n  "scripture": "all principal scripture passages referenced; if none are clear, write Not clearly identified in transcript",\n  "keyVerse": "the most central verse or passage; if no exact verse is stated, identify the closest clearly discussed passage",\n  "mainTheme": "the central theme in 3-6 words",\n  "studyNotes": "important biblical insights, context, or interpretation in 2-4 sentences",\n  "application": "2-4 specific, practical life-application statements"\n}\n\nEvery value must contain useful text. Do not leave any value blank. Do not invent a speaker name or an exact verse citation that the transcript does not support. Return only the JSON, with no markdown or additional text.\n\nTranscript:\n'+excerpt}]})
   }).then(function(r){return r.json();}).then(function(d){
     var text=(d.content&&d.content[0]&&d.content[0].text)||'';
     var jsonMatch=text.match(/\{[\s\S]*\}/);
     if(!jsonMatch)throw new Error('No JSON found in response');
     var fields=JSON.parse(jsonMatch[0]);
+    fields.sermonTitle=fields.sermonTitle||'Sermon or Bible Study';
+    fields.speaker=fields.speaker||'Not identified in transcript';
+    fields.scripture=fields.scripture||'Not clearly identified in transcript';
+    fields.keyVerse=fields.keyVerse||'No specific key verse identified';
+    fields.mainTheme=fields.mainTheme||'Central message and life application';
+    fields.sermonNotes=fields.sermonNotes||'The transcript was reviewed, but a clear summary could not be generated.';
+    fields.studyNotes=fields.studyNotes||'Review the transcript alongside the referenced Scripture for additional context.';
+    fields.application=fields.application||'Identify one truth from this message to practice this week.';
     var map={sermonTitle:'bSermonTitle',speaker:'bSermonSpeaker',scripture:'bScripture',keyVerse:'bKeyVerse',mainTheme:'bTheme'};
     Object.keys(map).forEach(function(k){
       var el=document.getElementById(map[k]);
