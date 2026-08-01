@@ -111,17 +111,17 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 #tab-dashboard .summary-table th:not(:first-child),#tab-dashboard .summary-table td:not(:first-child){text-align:center;}
 @media(max-width:768px){
   body.tab-weekly-active .container,body.tab-monthly-active .container,body.tab-yearly-active .container,
-  body.tab-nutrition-active .container,body.tab-habits-active .container,body.tab-meditate-active .container,
+  body.tab-nutrition-active .container,body.tab-habits-active .container,body.tab-habits2-active .container,body.tab-meditate-active .container,
   body.tab-bible-active .container,body.tab-library-active .container,body.tab-activities-active .container,
   body.tab-skill-log-active .container,body.tab-thinking-active .container,body.tab-wellness-active .container,
   body.tab-file-uploads-active .container,body.tab-dashboard-active .container{width:100%;max-width:none;margin:0;border:none;border-radius:0;box-shadow:none;}
   body.tab-weekly-active,body.tab-monthly-active,body.tab-yearly-active,
-  body.tab-nutrition-active,body.tab-habits-active,body.tab-meditate-active,
+  body.tab-nutrition-active,body.tab-habits-active,body.tab-habits2-active,body.tab-meditate-active,
   body.tab-bible-active,body.tab-library-active,body.tab-activities-active,
   body.tab-skill-log-active,body.tab-thinking-active,body.tab-wellness-active,
   body.tab-file-uploads-active,body.tab-dashboard-active{padding-left:6px;padding-right:6px;}
   #tab-weekly .panel,#tab-monthly .panel,#tab-yearly .panel,
-  #tab-nutrition .panel,#tab-habits .panel,#tab-meditate .panel,
+  #tab-nutrition .panel,#tab-habits .panel,#tab-habits2 .panel,#tab-meditate .panel,
   #tab-bible .panel,#tab-library .panel,#tab-activities .panel,
   #tab-skill-log .panel,#tab-thinking .panel,#tab-wellness .panel,
   #tab-file-uploads .panel,#tab-dashboard .panel{padding-left:8px;padding-right:8px;}
@@ -817,6 +817,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 }
 @media(min-width:701px){
   #tab-habits.active,
+  #tab-habits2.active,
   #tab-meditate.active,
   #tab-library.active,
   #tab-activities.active,
@@ -1112,6 +1113,19 @@ body{
 .cloud-account-bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb}
 .cloud-status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#94a3b8}.cloud-status-dot.ok{background:#22c55e}.cloud-status-dot.busy{background:#f59e0b}.cloud-status-dot.error{background:#ef4444}
 @media(max-width:620px){.cloud-auth-card,.cloud-sync-card{padding:20px}.cloud-auth-card h2{font-size:1.18rem}}
+
+/* Habits 2 — flexible, low-friction habit tracking */
+.habits2-shell{--h2-navy:#0a3161;--h2-red:#b31942;--h2-green:#16835d;color:#16243a;}
+.h2-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:14px;}
+.h2-header h2{margin:2px 0 4px;color:var(--h2-navy);font-size:1.35rem}.h2-header p{margin:0;color:#667085;font-size:.82rem;line-height:1.45}.h2-eyebrow{font-size:.62rem;font-weight:900;letter-spacing:.1em;color:var(--h2-red)}
+.h2-header-actions,.h2-form-actions,.h2-toolbar,.h2-filters{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.h2-header-actions{justify-content:flex-end}
+.h2-primary,.h2-secondary,.h2-date-btn,.h2-icon-btn,.h2-filters button{border-radius:8px;padding:7px 11px;font:700 .75rem inherit;cursor:pointer}.h2-primary{border:1px solid var(--h2-navy);background:var(--h2-navy);color:#fff}.h2-secondary,.h2-date-btn,.h2-icon-btn,.h2-filters button{border:1px solid #cbd5e1;background:#fff;color:#475467}.h2-icon-btn{border:0;padding:3px 6px}.h2-date-btn{min-width:118px}.h2-filters button.active{background:var(--h2-navy);border-color:var(--h2-navy);color:#fff}
+.h2-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.h2-summary{background:#fff;border:1px solid rgba(10,49,97,.18);border-radius:12px;padding:12px;box-shadow:0 3px 0 rgba(10,49,97,.13),0 9px 20px rgba(10,49,97,.10)}.h2-summary span{display:block;color:#667085;font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.h2-summary strong{display:block;color:var(--h2-navy);font-size:1.35rem;margin-top:3px}.h2-summary small{color:#98a2b3;font-size:.66rem}
+.h2-card{background:#fff;border:1px solid rgba(10,49,97,.2);border-radius:12px;padding:13px;margin-bottom:12px;box-shadow:inset 0 1px #fff,0 3px 0 rgba(10,49,97,.15),0 10px 22px rgba(10,49,97,.12)}.h2-card-title{display:flex;justify-content:space-between;font-weight:800;color:var(--h2-navy);margin-bottom:10px}.h2-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 12px}.h2-form-grid label{font-size:.69rem;font-weight:800;color:#475467}.h2-form-grid input,.h2-form-grid select,.h2-toolbar select{display:block;width:100%;box-sizing:border-box;margin-top:4px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:8px;font:400 .8rem inherit;color:#1e293b}.h2-wide{grid-column:1/-1}.h2-day-picker{display:flex;gap:6px;flex-wrap:wrap}.h2-day-picker button{width:38px;height:34px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#64748b;font-weight:800;cursor:pointer}.h2-day-picker button.active{background:var(--h2-navy);color:#fff;border-color:var(--h2-navy)}.h2-form-actions{justify-content:flex-end;margin-top:11px}.h2-toolbar{justify-content:space-between}.h2-toolbar select{width:auto;min-width:150px;margin:0;padding:6px 9px}
+.h2-habit-list{display:grid;gap:10px;margin-bottom:12px}.h2-empty{padding:35px 16px;text-align:center;background:#fff;border:1px dashed #94a3b8;border-radius:12px;color:#64748b}.h2-empty strong{display:block;color:var(--h2-navy);font-size:1rem;margin-bottom:4px}
+.h2-habit-card{--habit-color:#0a3161;background:#fff;border:1px solid rgba(10,49,97,.18);border-left:6px solid var(--habit-color);border-radius:12px;padding:12px;box-shadow:0 3px 0 rgba(10,49,97,.14),0 10px 22px rgba(10,49,97,.1)}.h2-habit-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}.h2-habit-name{font-weight:850;color:#1e293b;font-size:.94rem}.h2-habit-meta{font-size:.68rem;color:#64748b;margin-top:3px}.h2-habit-why{font-size:.72rem;color:#475569;margin-top:6px;font-style:italic}.h2-habit-actions{display:flex;gap:5px;align-items:flex-start}.h2-habit-actions button{border:1px solid #dbe2ea;border-radius:7px;background:#fff;color:#64748b;padding:5px 7px;cursor:pointer}.h2-progress-row{display:grid;grid-template-columns:minmax(155px,1fr) auto;gap:10px;align-items:center;margin-top:10px}.h2-today-control{display:flex;gap:6px;align-items:center}.h2-today-control button{border:1px solid #cbd5e1;background:#f8fafc;color:#475569;border-radius:8px;padding:7px 10px;font-size:.72rem;font-weight:800;cursor:pointer}.h2-today-control button.done{background:#dcfce7;border-color:#86efac;color:#166534}.h2-today-control button.partial{background:#f3e8ff;border-color:#d8b4fe;color:#6b21a8}.h2-today-control button.skip{background:#e2e8f0;border-color:#94a3b8;color:#334155}.h2-value-control{display:flex;align-items:center;gap:5px}.h2-value-control button{width:31px;height:31px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;font-size:1rem;font-weight:800;cursor:pointer}.h2-value-control span{min-width:70px;text-align:center;font-size:.76rem;font-weight:800;color:#334155}.h2-week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:10px}.h2-week-day{text-align:center;font-size:.58rem;color:#94a3b8}.h2-week-day i{display:block;width:100%;height:8px;border-radius:4px;background:#e2e8f0;margin-top:3px}.h2-week-day i.done{background:var(--habit-color)}.h2-week-day i.partial{background:#a855f7}.h2-week-day i.skip{background:#64748b}.h2-stats{display:flex;gap:11px;flex-wrap:wrap;margin-top:8px;font-size:.65rem;color:#64748b}.h2-stats strong{color:#334155}
+.h2-card summary{cursor:pointer;color:var(--h2-navy);font-size:.84rem;font-weight:850}.h2-insight-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin-top:12px}.h2-insight-grid h3{margin:0 0 8px;font-size:.72rem;text-transform:uppercase;color:#64748b}.h2-heatmap{display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(7,12px);grid-auto-flow:column;gap:3px}.h2-heatmap i{border-radius:3px;background:#e2e8f0}.h2-heatmap i.l1{background:#bfdbd1}.h2-heatmap i.l2{background:#72b49d}.h2-heatmap i.l3{background:#16835d}.h2-heat-legend{display:flex;align-items:center;justify-content:flex-end;gap:3px;margin-top:6px;color:#94a3b8;font-size:.6rem}.h2-heat-legend i{width:10px;height:10px;border-radius:2px;background:#e2e8f0}.h2-heat-legend i:nth-of-type(2){background:#bfdbd1}.h2-heat-legend i:nth-of-type(3){background:#72b49d}.h2-heat-legend i:nth-of-type(4){background:#16835d}.h2-performance-row{margin-bottom:8px}.h2-performance-label{display:flex;justify-content:space-between;font-size:.68rem;color:#475569;margin-bottom:3px}.h2-performance-bar{height:7px;background:#e2e8f0;border-radius:5px;overflow:hidden}.h2-performance-bar i{display:block;height:100%;border-radius:5px}.h2-coach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}.h2-coach-grid div{background:#f8fafc;border-radius:9px;padding:9px}.h2-coach-grid strong,.h2-coach-grid span{display:block}.h2-coach-grid strong{font-size:.72rem;color:var(--h2-navy)}.h2-coach-grid span{font-size:.67rem;color:#64748b;line-height:1.4;margin-top:2px}
+@media(max-width:700px){.h2-header{display:block}.h2-header-actions{justify-content:flex-start;margin-top:10px}.h2-summary-grid{grid-template-columns:repeat(2,1fr)}.h2-form-grid,.h2-insight-grid,.h2-coach-grid{grid-template-columns:1fr}.h2-wide{grid-column:auto}.h2-progress-row{grid-template-columns:1fr}.h2-habit-top{grid-template-columns:1fr}.h2-habit-actions{justify-content:flex-end}.h2-today-control{flex-wrap:wrap}.h2-today-control button{flex:1;min-width:72px}.h2-date-btn{min-width:100px}}
 </style>
 </head>
 <body>
@@ -1134,6 +1148,7 @@ body{
   <button id="hm-bible" class="hm-nav-btn" onclick="hmSwitch('bible',event)">&#x1F4D6; Bible</button>
   <button id="hm-file-uploads" class="hm-nav-btn" onclick="hmSwitch('file-uploads',event)">&#x1F4C1; Uploads</button>
   <button id="hm-habits" class="hm-nav-btn" onclick="hmSwitch('habits',event)">&#x1F501; Habits</button>
+  <button id="hm-habits2" class="hm-nav-btn" onclick="hmSwitch('habits2',event)">&#x1F331; Habits 2 <span style="font-size:.62rem;opacity:.8;">NEW</span></button>
   <button id="hm-library" class="hm-nav-btn" onclick="hmSwitch('library',event)">&#x1F4DA; Library</button>
   <button id="hm-meditate" class="hm-nav-btn" onclick="hmSwitch('meditate',event)">&#x1F9D8; Meditate</button>
   <button id="hm-nutrition" class="hm-nav-btn" onclick="hmSwitch('nutrition',event)">&#x1F957; Nutrition</button>
@@ -1602,6 +1617,75 @@ body{
       </div>
       <div id="habitScorecard" style="overflow-x:auto;"></div>
     </div>
+  </div>
+</div>
+
+<div id="tab-habits2" class="tab-panel">
+  <div class="panel habits2-shell">
+    <div class="h2-header">
+      <div>
+        <div class="h2-eyebrow">EXPERIMENTAL REPLACEMENT</div>
+        <h2>&#x1F331; Habits 2</h2>
+        <p>A low-friction tracker built around consistency, flexible goals, and honest progress.</p>
+      </div>
+      <div class="h2-header-actions">
+        <button class="h2-secondary" onclick="h2ShiftDate(-1)" title="Previous day">&#x2039;</button>
+        <button class="h2-date-btn" id="h2DateButton" onclick="h2GoToday()">Today</button>
+        <button class="h2-secondary" onclick="h2ShiftDate(1)" title="Next day">&#x203A;</button>
+        <button class="h2-primary" onclick="h2ToggleForm(true)">+ Add Habit</button>
+      </div>
+    </div>
+
+    <div class="h2-summary-grid" id="h2SummaryGrid"></div>
+
+    <div class="h2-card h2-form-card" id="h2FormCard" style="display:none;">
+      <div class="h2-card-title"><span id="h2FormTitle">Create a Habit</span><button class="h2-icon-btn" onclick="h2ToggleForm(false)" aria-label="Close">&#x2715;</button></div>
+      <div class="h2-form-grid">
+        <label class="h2-wide">Habit name<input id="h2Name" maxlength="80" placeholder="Example: Read the Bible"></label>
+        <label>Category<select id="h2Category"><option>Faith</option><option>Health</option><option>Fitness</option><option>Growth</option><option>Relationships</option><option>Home</option><option>Other</option></select></label>
+        <label>Color<select id="h2Color"><option value="#0a3161">Navy</option><option value="#b31942">Red</option><option value="#16835d">Green</option><option value="#7c3aed">Purple</option><option value="#d97706">Gold</option><option value="#0284c7">Blue</option></select></label>
+        <label>Tracking style<select id="h2Type" onchange="h2UpdateFormFields()"><option value="check">Done / not done</option><option value="count">Count toward a target</option><option value="duration">Minutes toward a target</option></select></label>
+        <label>Daily target<input id="h2Target" type="number" min="1" max="10000" value="1"></label>
+        <label>Schedule<select id="h2Schedule" onchange="h2UpdateFormFields()"><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="custom">Specific days</option><option value="weekly">Times per week</option></select></label>
+        <label id="h2WeeklyTargetWrap" style="display:none;">Times each week<input id="h2WeeklyTarget" type="number" min="1" max="7" value="3"></label>
+        <div class="h2-wide h2-day-picker" id="h2DayPicker" style="display:none;"></div>
+        <label class="h2-wide">Why this matters<input id="h2Why" maxlength="140" placeholder="The identity or result this habit supports"></label>
+        <label>After I…<input id="h2Cue" maxlength="100" placeholder="Pour my morning coffee"></label>
+        <label>I will…<input id="h2Minimum" maxlength="100" placeholder="Read one page (minimum version)"></label>
+      </div>
+      <div class="h2-form-actions"><button class="h2-secondary" onclick="h2ToggleForm(false)">Cancel</button><button class="h2-primary" onclick="h2SaveHabit()">Save Habit</button></div>
+    </div>
+
+    <div class="h2-toolbar h2-card">
+      <div class="h2-filters" id="h2Filters">
+        <button class="active" data-filter="all" onclick="h2SetFilter('all',this)">All</button>
+        <button data-filter="due" onclick="h2SetFilter('due',this)">Due</button>
+        <button data-filter="complete" onclick="h2SetFilter('complete',this)">Complete</button>
+        <button data-filter="remaining" onclick="h2SetFilter('remaining',this)">Remaining</button>
+      </div>
+      <select id="h2CategoryFilter" onchange="h2Render()"><option value="all">All categories</option></select>
+    </div>
+
+    <div id="h2HabitList" class="h2-habit-list"></div>
+
+    <details class="h2-card h2-insights" open>
+      <summary>Progress &amp; Consistency</summary>
+      <div class="h2-insight-grid">
+        <div><h3>Last 12 Weeks</h3><div id="h2Heatmap" class="h2-heatmap"></div><div class="h2-heat-legend"><span>Less</span><i></i><i></i><i></i><i></i><span>More</span></div></div>
+        <div><h3>Habit Performance</h3><div id="h2Performance"></div></div>
+      </div>
+    </details>
+
+    <details class="h2-card h2-coach">
+      <summary>Habit Design Notes</summary>
+      <div class="h2-coach-grid">
+        <div><strong>Make it obvious</strong><span>Use “After I…, I will…” to give every habit a reliable cue.</span></div>
+        <div><strong>Start small</strong><span>Define a minimum version easy enough to do on a difficult day.</span></div>
+        <div><strong>Measure consistency</strong><span>Use completion rate and momentum—not only an unbroken streak.</span></div>
+        <div><strong>Recover quickly</strong><span>A missed day is information. Aim to return on the next scheduled day.</span></div>
+      </div>
+      <button class="h2-secondary" onclick="h2ImportLegacyHabits()">Import custom habits from current Habits</button>
+    </details>
   </div>
 </div>
 
@@ -7455,6 +7539,78 @@ function renderRunMetrics(){
 }
 
 // ── Atomic Habits ─────────────────────────────────────────────────────
+// Habits 2 — experimental flexible habit tracker
+var h2ViewDate=new Date(),h2Filter='all',h2EditingId=null;
+function h2State(){
+  try{var parsed=JSON.parse(localStorage.getItem('habits2_state')||'{}');return{habits:Array.isArray(parsed.habits)?parsed.habits:[],logs:parsed.logs&&typeof parsed.logs==='object'?parsed.logs:{}};}catch(e){return{habits:[],logs:{}};}
+}
+function h2SaveState(state){try{localStorage.setItem('habits2_state',JSON.stringify(state));return true;}catch(e){alert('Habits 2 could not save because this browser storage is full. Use Backup, then remove older large transcripts or uploads.');return false;}}
+function h2Key(date){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
+function h2Date(key){var p=String(key).split('-').map(Number);return new Date(p[0],p[1]-1,p[2],12);}
+function h2StartWeek(date){var d=new Date(date),day=d.getDay();d.setDate(d.getDate()-((day+6)%7));d.setHours(12,0,0,0);return d;}
+function h2Log(state,id,dateKey){return(state.logs[dateKey]&&state.logs[dateKey][id])||{value:0,status:''};}
+function h2IsComplete(habit,log){return log&&((log.status==='done')||Number(log.value)>=Number(habit.target||1));}
+function h2WeekDone(state,habit,date){var start=h2StartWeek(date),count=0;for(var i=0;i<7;i++){var d=new Date(start);d.setDate(d.getDate()+i);if(h2IsComplete(habit,h2Log(state,habit.id,h2Key(d))))count++;}return count;}
+function h2IsDue(habit,date,state){
+  if(habit.archived)return false;
+  var created=habit.created?new Date(habit.created):null;if(created&&date<new Date(created.getFullYear(),created.getMonth(),created.getDate()))return false;
+  if(habit.schedule==='weekdays')return date.getDay()!==0&&date.getDay()!==6;
+  if(habit.schedule==='custom')return(habit.days||[]).indexOf(date.getDay())!==-1;
+  if(habit.schedule==='weekly')return h2WeekDone(state,habit,date)<Number(habit.weeklyTarget||3)||h2IsComplete(habit,h2Log(state,habit.id,h2Key(date)));
+  return true;
+}
+function h2ScheduleLabel(h){if(h.schedule==='weekdays')return'Weekdays';if(h.schedule==='custom')return(h.days||[]).map(function(d){return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d];}).join(', ')||'Custom';if(h.schedule==='weekly')return(h.weeklyTarget||3)+' times/week';return'Every day';}
+function h2TypeLabel(h){if(h.type==='duration')return(h.target||1)+' min';if(h.type==='count')return(h.target||1)+' times';return'Done / not done';}
+function h2ToggleForm(show,habit){
+  var card=document.getElementById('h2FormCard');if(!card)return;card.style.display=show?'block':'none';if(!show){h2EditingId=null;return;}
+  h2EditingId=habit&&habit.id||null;document.getElementById('h2FormTitle').textContent=h2EditingId?'Edit Habit':'Create a Habit';
+  document.getElementById('h2Name').value=habit&&habit.name||'';document.getElementById('h2Category').value=habit&&habit.category||'Health';document.getElementById('h2Color').value=habit&&habit.color||'#0a3161';document.getElementById('h2Type').value=habit&&habit.type||'check';document.getElementById('h2Target').value=habit&&habit.target||1;document.getElementById('h2Schedule').value=habit&&habit.schedule||'daily';document.getElementById('h2WeeklyTarget').value=habit&&habit.weeklyTarget||3;document.getElementById('h2Why').value=habit&&habit.why||'';document.getElementById('h2Cue').value=habit&&habit.cue||'';document.getElementById('h2Minimum').value=habit&&habit.minimum||'';
+  h2BuildDays(habit&&habit.days||[1,2,3,4,5]);h2UpdateFormFields();card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function h2BuildDays(selected){var el=document.getElementById('h2DayPicker');if(!el)return;el.innerHTML=['S','M','T','W','T','F','S'].map(function(n,i){return'<button type="button" data-day="'+i+'" class="'+(selected.indexOf(i)!==-1?'active':'')+'" onclick="this.classList.toggle(\'active\')">'+n+'</button>';}).join('');}
+function h2UpdateFormFields(){var type=document.getElementById('h2Type').value,schedule=document.getElementById('h2Schedule').value;document.getElementById('h2Target').parentElement.style.display=type==='check'?'none':'block';document.getElementById('h2DayPicker').style.display=schedule==='custom'?'flex':'none';document.getElementById('h2WeeklyTargetWrap').style.display=schedule==='weekly'?'block':'none';}
+function h2SaveHabit(){
+  var name=document.getElementById('h2Name').value.trim();if(!name){alert('Please enter a habit name.');return;}
+  var state=h2State(),days=Array.from(document.querySelectorAll('#h2DayPicker button.active')).map(function(b){return Number(b.dataset.day);});
+  var habit={id:h2EditingId||('h2-'+Date.now()),name:name,category:document.getElementById('h2Category').value,color:document.getElementById('h2Color').value,type:document.getElementById('h2Type').value,target:Math.max(1,Number(document.getElementById('h2Target').value)||1),schedule:document.getElementById('h2Schedule').value,weeklyTarget:Math.max(1,Math.min(7,Number(document.getElementById('h2WeeklyTarget').value)||3)),days:days,why:document.getElementById('h2Why').value.trim(),cue:document.getElementById('h2Cue').value.trim(),minimum:document.getElementById('h2Minimum').value.trim(),created:new Date().toISOString()};
+  if(h2EditingId){var index=state.habits.findIndex(function(h){return h.id===h2EditingId;});if(index>=0)habit.created=state.habits[index].created||habit.created;if(index>=0)state.habits[index]=habit;}else state.habits.push(habit);
+  if(h2SaveState(state)){h2ToggleForm(false);h2Render();}
+}
+function h2Edit(id){var habit=h2State().habits.find(function(h){return h.id===id;});if(habit)h2ToggleForm(true,habit);}
+function h2Delete(id){if(!confirm('Delete this habit and its tracked history?'))return;var state=h2State();state.habits=state.habits.filter(function(h){return h.id!==id;});Object.keys(state.logs).forEach(function(k){delete state.logs[k][id];if(!Object.keys(state.logs[k]).length)delete state.logs[k];});if(h2SaveState(state))h2Render();}
+function h2SetLog(id,status,value){var state=h2State(),key=h2Key(h2ViewDate),habit=state.habits.find(function(h){return h.id===id;});if(!habit)return;if(!state.logs[key])state.logs[key]={};var old=h2Log(state,id,key);if(status&&old.status===status&&habit.type==='check'){delete state.logs[key][id];}else state.logs[key][id]={status:status||'',value:value==null?(status==='done'?Number(habit.target||1):Number(old.value||0)):Math.max(0,value),at:new Date().toISOString()};if(!Object.keys(state.logs[key]).length)delete state.logs[key];if(h2SaveState(state))h2Render();}
+function h2Adjust(id,delta){var state=h2State(),habit=state.habits.find(function(h){return h.id===id;});if(!habit)return;var key=h2Key(h2ViewDate),old=h2Log(state,id,key),value=Math.max(0,Number(old.value||0)+delta),status=value>=Number(habit.target||1)?'done':value>0?'partial':'';h2SetLog(id,status,value);}
+function h2ShiftDate(days){h2ViewDate.setDate(h2ViewDate.getDate()+days);h2Render();}
+function h2GoToday(){h2ViewDate=new Date();h2Render();}
+function h2SetFilter(filter,btn){h2Filter=filter;document.querySelectorAll('#h2Filters button').forEach(function(b){b.classList.toggle('active',b===btn);});h2Render();}
+function h2HabitStats(state,habit){
+  var due=0,done=0,streak=0,best=0,current=0,started=new Date();started.setDate(started.getDate()-89);
+  for(var i=0;i<90;i++){var d=new Date(started);d.setDate(d.getDate()+i);if(!h2IsDue(habit,d,state))continue;var log=h2Log(state,habit.id,h2Key(d));due++;if(h2IsComplete(habit,log)){done++;current++;best=Math.max(best,current);}else if(log.status!=='skip')current=0;}
+  var cursor=new Date();for(var j=0;j<365;j++){if(h2IsDue(habit,cursor,state)){var lg=h2Log(state,habit.id,h2Key(cursor));if(h2IsComplete(habit,lg))streak++;else if(lg.status!=='skip'&&h2Key(cursor)!==h2Key(new Date()))break;}cursor.setDate(cursor.getDate()-1);}
+  return{rate:due?Math.round(done/due*100):0,streak:streak,best:best};
+}
+function h2WeekStrip(state,habit){var start=h2StartWeek(h2ViewDate),out='';for(var i=0;i<7;i++){var d=new Date(start);d.setDate(d.getDate()+i);var log=h2Log(state,habit.id,h2Key(d)),cls=h2IsComplete(habit,log)?'done':log.status==='partial'?'partial':log.status==='skip'?'skip':'';out+='<div class="h2-week-day">'+['M','T','W','T','F','S','S'][i]+'<i class="'+cls+'" title="'+d.toLocaleDateString()+'"></i></div>';}return out;}
+function h2Render(){
+  var state=h2State(),key=h2Key(h2ViewDate),realToday=h2Key(new Date()),dateBtn=document.getElementById('h2DateButton');if(!dateBtn)return;dateBtn.textContent=key===realToday?'Today':h2ViewDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  var category=document.getElementById('h2CategoryFilter'),oldCategory=category.value||'all',cats=Array.from(new Set(state.habits.map(function(h){return h.category||'Other';}))).sort();category.innerHTML='<option value="all">All categories</option>'+cats.map(function(c){return'<option>'+escHtml(c)+'</option>';}).join('');category.value=cats.indexOf(oldCategory)!==-1?oldCategory:'all';
+  var due=state.habits.filter(function(h){return h2IsDue(h,h2ViewDate,state);}),complete=due.filter(function(h){return h2IsComplete(h,h2Log(state,h.id,key));}),allStats=state.habits.map(function(h){return h2HabitStats(state,h);}),bestStreak=allStats.reduce(function(m,s){return Math.max(m,s.streak);},0),momentum=allStats.length?Math.round(allStats.reduce(function(a,s){return a+s.rate;},0)/allStats.length):0;
+  var perfect=0;for(var p=0;p<30;p++){var pd=new Date();pd.setDate(pd.getDate()-p);var pdue=state.habits.filter(function(h){return h2IsDue(h,pd,state);});if(pdue.length&&pdue.every(function(h){return h2IsComplete(h,h2Log(state,h.id,h2Key(pd)));}))perfect++;}
+  document.getElementById('h2SummaryGrid').innerHTML=[['Today',complete.length+'/'+due.length,'due habits complete'],['Momentum',momentum+'%','90-day consistency'],['Current streak',bestStreak+' days','best active streak'],['Perfect days',perfect,'in the last 30 days']].map(function(x){return'<div class="h2-summary"><span>'+x[0]+'</span><strong>'+x[1]+'</strong><small>'+x[2]+'</small></div>';}).join('');
+  var filtered=state.habits.filter(function(h){var log=h2Log(state,h.id,key),isDue=h2IsDue(h,h2ViewDate,state),isDone=h2IsComplete(h,log);if(category.value!=='all'&&h.category!==category.value)return false;if(h2Filter==='due'&&!isDue)return false;if(h2Filter==='complete'&&!isDone)return false;if(h2Filter==='remaining'&&(!isDue||isDone))return false;return true;});
+  var list=document.getElementById('h2HabitList');if(!filtered.length){list.innerHTML='<div class="h2-empty"><strong>'+(state.habits.length?'No habits match this view':'Build your first habit')+'</strong>'+(state.habits.length?'Try a different filter.':'Start small, choose a realistic schedule, and make today your first vote.')+'</div>';}else list.innerHTML=filtered.map(function(h){
+    var log=h2Log(state,h.id,key),done=h2IsComplete(h,log),dueNow=h2IsDue(h,h2ViewDate,state),stats=h2HabitStats(state,h),control;
+    if(h.type==='check')control='<div class="h2-today-control"><button class="'+(done?'done':'')+'" onclick="h2SetLog(\''+h.id+'\',\'done\')">&#x2713; Complete</button><button class="'+(log.status==='partial'?'partial':'')+'" onclick="h2SetLog(\''+h.id+'\',\'partial\')">Partial</button><button class="'+(log.status==='skip'?'skip':'')+'" onclick="h2SetLog(\''+h.id+'\',\'skip\')">Skip</button></div>';
+    else control='<div class="h2-value-control"><button onclick="h2Adjust(\''+h.id+'\',-1)">−</button><span>'+Number(log.value||0)+' / '+Number(h.target||1)+(h.type==='duration'?' min':'')+'</span><button onclick="h2Adjust(\''+h.id+'\',1)">+</button></div>';
+    return'<div class="h2-habit-card" style="--habit-color:'+h.color+'"><div class="h2-habit-top"><div><div class="h2-habit-name">'+escHtml(h.name)+'</div><div class="h2-habit-meta">'+escHtml(h.category)+' &bull; '+h2ScheduleLabel(h)+' &bull; '+h2TypeLabel(h)+(dueNow?'':' &bull; Not scheduled')+'</div>'+(h.why?'<div class="h2-habit-why">“'+escHtml(h.why)+'”</div>':'')+'</div><div class="h2-habit-actions"><button onclick="h2Edit(\''+h.id+'\')" title="Edit">&#x270E;</button><button onclick="h2Delete(\''+h.id+'\')" title="Delete">&#x1F5D1;</button></div></div><div class="h2-progress-row">'+control+'<div class="h2-stats"><span><strong>'+stats.streak+'d</strong> streak</span><span><strong>'+stats.rate+'%</strong> consistency</span><span><strong>'+stats.best+'d</strong> best</span></div></div>'+(h.cue||h.minimum?'<div class="h2-habit-meta" style="margin-top:8px;">'+(h.cue?'After I '+escHtml(h.cue)+', ':'')+(h.minimum?'minimum: '+escHtml(h.minimum):'')+'</div>':'')+'<div class="h2-week-strip">'+h2WeekStrip(state,h)+'</div></div>';
+  }).join('');
+  h2RenderInsights(state);
+}
+function h2RenderInsights(state){
+  var heat=document.getElementById('h2Heatmap');if(!heat)return;var start=new Date();start.setDate(start.getDate()-83);var cells=[];for(var i=0;i<84;i++){var d=new Date(start);d.setDate(d.getDate()+i);var due=state.habits.filter(function(h){return h2IsDue(h,d,state);}),done=due.filter(function(h){return h2IsComplete(h,h2Log(state,h.id,h2Key(d)));}).length,ratio=due.length?done/due.length:0,level=ratio===0?'':ratio<.5?'l1':ratio<1?'l2':'l3';cells.push('<i class="'+level+'" title="'+d.toLocaleDateString()+': '+done+'/'+due.length+'"></i>');}heat.innerHTML=cells.join('');
+  var perf=document.getElementById('h2Performance');perf.innerHTML=state.habits.length?state.habits.map(function(h){var s=h2HabitStats(state,h);return'<div class="h2-performance-row"><div class="h2-performance-label"><span>'+escHtml(h.name)+'</span><strong>'+s.rate+'%</strong></div><div class="h2-performance-bar"><i style="width:'+s.rate+'%;background:'+h.color+'"></i></div></div>';}).join(''):'<div style="font-size:.72rem;color:#94a3b8;">Add habits to see performance.</div>';
+}
+function h2ImportLegacyHabits(){var legacy=[];try{legacy=JSON.parse(localStorage.getItem('habit_list')||'[]');}catch(e){}if(!legacy.length){alert('There are no custom habits to import from the current Habits section.');return;}var state=h2State(),names={};state.habits.forEach(function(h){names[h.name.toLowerCase()]=true;});var added=0;legacy.forEach(function(h){if(!h.name||names[h.name.toLowerCase()])return;state.habits.push({id:'h2-'+Date.now()+'-'+added,name:h.name,category:'Growth',color:'#16835d',type:'check',target:1,schedule:'daily',weeklyTarget:3,days:[1,2,3,4,5],why:'',cue:h.stack||'',minimum:'',created:new Date().toISOString()});names[h.name.toLowerCase()]=true;added++;});if(h2SaveState(state)){h2Render();alert(added+' habit'+(added===1?'':'s')+' imported. The original Habits section was not changed.');}}
+
 function toggleAtomicHabits(){
   var body=document.getElementById('atomicHabBody');
   var chev=document.getElementById('atomicHabChev');
@@ -9982,7 +10138,7 @@ function meditInitTab(){
 }
 /* ========= END MEDITATION JS ========= */
 
-var _hmTabs=['nutrition','habits','meditate','bible','library','activities','skill-log','thinking','wellness','file-uploads'];
+var _hmTabs=['nutrition','habits','habits2','meditate','bible','library','activities','skill-log','thinking','wellness','file-uploads'];
 var _cardTabs=['weekly','monthly','yearly','dashboard'].concat(_hmTabs);
 function toggleHamburger(e){
   if(e)e.stopPropagation();
@@ -10034,6 +10190,7 @@ function switchTab(tab,e){
   if(tab==='thinking'){if(typeof mmStart==='function')mmStart();if(typeof finStart==='function')finStart();if(typeof frmStart==='function')frmStart();renderThinkingArchive();renderDecisionJournal();}
   if(tab==='nutrition'){renderFoodItems();renderFavsList();calculateDailyCalorieTarget();renderNutritionSectionCharts();}
   if(tab==='habits'){makeHabitsInformational();var dl=document.getElementById('habitTabDate');if(dl)dl.textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}
+  if(tab==='habits2')h2Render();
   if(tab==='meditate'){meditInitTab();}
   if(tab==='wellness'){var wdl=document.getElementById('wellnessTabDate');if(wdl)wdl.textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});renderWellnessSectionCharts();}
   if(tab==='weekly'){renderGoals();}
@@ -10299,7 +10456,7 @@ window.addEventListener('load',function(){
   migrateLegacySpiritStreaks(); // restore Bible/Prayer streak history from pre-rename field names
   load(); // Always initialize _foodLog and daily fields from localStorage
   var lastTab=localStorage.getItem('last_active_tab');
-  var validTabs=['daily','weekly','monthly','yearly','dashboard','review','nutrition','habits','meditate','bible','library','activities','skill-log','thinking','wellness','file-uploads'];
+  var validTabs=['daily','weekly','monthly','yearly','dashboard','review','nutrition','habits','habits2','meditate','bible','library','activities','skill-log','thinking','wellness','file-uploads'];
   if(lastTab&&lastTab!=='daily'&&validTabs.indexOf(lastTab)!==-1){
     if(_hmTabs.includes(lastTab)){hmSwitch(lastTab,null);}
     else{var btn=document.querySelector('[onclick*="switchTab(\''+lastTab+'\'"]');if(btn)btn.click();}
