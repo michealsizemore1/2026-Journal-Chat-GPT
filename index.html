@@ -2255,6 +2255,14 @@ body{
           <span style="font-size:0.67rem;color:#b45309;">Enter the passages you heard above for an accurate summary.</span>
         </div>
         <div id="audibleAIResult" style="display:none;background:#fff8f0;border:1px solid #fdba74;border-radius:8px;padding:12px;margin-top:8px;font-size:0.87rem;color:#78350f;line-height:1.6;white-space:pre-wrap;"></div>
+        <div id="bibleSpeechControls" style="display:none;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px;padding:9px 10px;background:#fffbeb;border:1px solid #fcd34d;border-radius:9px;">
+          <button type="button" id="bibleSpeechReadBtn" onclick="bibleSpeechRead()" style="background:#0a3161;color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:.76rem;font-weight:700;cursor:pointer;">&#x25B6; Read Summary</button>
+          <button type="button" id="bibleSpeechPauseBtn" onclick="bibleSpeechPauseResume()" disabled style="background:#fff;color:#92400e;border:1px solid #fcd34d;border-radius:7px;padding:6px 10px;font-size:.76rem;font-weight:700;cursor:pointer;">&#x23F8; Pause</button>
+          <button type="button" id="bibleSpeechStopBtn" onclick="bibleSpeechStop()" disabled style="background:#fff;color:#b91c1c;border:1px solid #fca5a5;border-radius:7px;padding:6px 10px;font-size:.76rem;font-weight:700;cursor:pointer;">&#x25A0; Stop</button>
+          <label style="font-size:.68rem;font-weight:700;color:#92400e;">Voice <select id="bibleSpeechVoice" onchange="bibleSpeechSavePrefs()" style="max-width:180px;border:1px solid #fcd34d;border-radius:6px;padding:5px;font-size:.72rem;background:#fff;"></select></label>
+          <label style="font-size:.68rem;font-weight:700;color:#92400e;">Speed <select id="bibleSpeechRate" onchange="bibleSpeechSavePrefs()" style="border:1px solid #fcd34d;border-radius:6px;padding:5px;font-size:.72rem;background:#fff;"><option value="0.8">0.8x</option><option value="0.9">0.9x</option><option value="1" selected>1.0x</option><option value="1.1">1.1x</option><option value="1.25">1.25x</option></select></label>
+          <span id="bibleSpeechStatus" style="font-size:.68rem;color:#b45309;margin-left:auto;">Ready to read</span>
+        </div>
       </div>
 
       <!-- Bible Reading Archive -->
@@ -9243,12 +9251,49 @@ function meditLoadYT(url){
 }
 
 var _audiblePending={};
+var _bibleSpeechChunks=[],_bibleSpeechIndex=0,_bibleSpeechPaused=false,_bibleSpeechToken=0;
+function bibleSpeechSupported(){return'speechSynthesis'in window&&'SpeechSynthesisUtterance'in window;}
+function bibleSpeechPopulateVoices(){
+  var select=document.getElementById('bibleSpeechVoice');if(!select||!bibleSpeechSupported())return;
+  var voices=window.speechSynthesis.getVoices(),saved='';try{saved=localStorage.getItem('bible_speech_voice')||'';}catch(ignore){}
+  select.innerHTML='<option value="">Device default</option>'+voices.map(function(v){return'<option value="'+escHtml(v.name)+'">'+escHtml(v.name)+' ('+escHtml(v.lang)+')</option>';}).join('');
+  if(saved&&voices.some(function(v){return v.name===saved;}))select.value=saved;
+}
+function bibleSpeechSavePrefs(){try{localStorage.setItem('bible_speech_voice',(document.getElementById('bibleSpeechVoice')||{}).value||'');localStorage.setItem('bible_speech_rate',(document.getElementById('bibleSpeechRate')||{}).value||'1');}catch(ignore){}}
+function bibleSpeechReady(){
+  var controls=document.getElementById('bibleSpeechControls');if(!controls)return;controls.style.display='flex';
+  if(!bibleSpeechSupported()){controls.innerHTML='<span style="font-size:.74rem;color:#b91c1c;">Text-to-speech is not available in this browser.</span>';return;}
+  bibleSpeechPopulateVoices();var rate=document.getElementById('bibleSpeechRate'),saved='';try{saved=localStorage.getItem('bible_speech_rate')||'';}catch(ignore){}if(rate&&saved)rate.value=saved;
+}
+function bibleSpeechText(){var result=document.getElementById('audibleAIResult');return result?result.innerText.replace(/\s+/g,' ').trim():'';}
+function bibleSpeechMakeChunks(text){
+  var sentences=text.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[text],chunks=[],current='';
+  sentences.forEach(function(sentence){sentence=sentence.trim();if(!sentence)return;if((current+' '+sentence).length>220&&current){chunks.push(current);current=sentence;}else current+=(current?' ':'')+sentence;});if(current)chunks.push(current);return chunks;
+}
+function bibleSpeechSetState(state){
+  var read=document.getElementById('bibleSpeechReadBtn'),pause=document.getElementById('bibleSpeechPauseBtn'),stop=document.getElementById('bibleSpeechStopBtn'),status=document.getElementById('bibleSpeechStatus');
+  if(read)read.textContent=state==='speaking'?'Restart':'Read Summary';if(pause){pause.disabled=state==='idle';pause.textContent=_bibleSpeechPaused?'Resume':'Pause';}if(stop)stop.disabled=state==='idle';if(status)status.textContent=state==='speaking'?(_bibleSpeechPaused?'Paused':'Reading summary...'):'Ready to read';
+}
+function bibleSpeechSpeakNext(token){
+  if(token!==_bibleSpeechToken)return;if(_bibleSpeechIndex>=_bibleSpeechChunks.length){bibleSpeechStop(true);return;}
+  var utterance=new SpeechSynthesisUtterance(_bibleSpeechChunks[_bibleSpeechIndex]),voiceName=(document.getElementById('bibleSpeechVoice')||{}).value||'',voice=window.speechSynthesis.getVoices().find(function(v){return v.name===voiceName;});if(voice)utterance.voice=voice;utterance.rate=parseFloat((document.getElementById('bibleSpeechRate')||{}).value)||1;utterance.pitch=1;
+  utterance.onend=function(){if(token!==_bibleSpeechToken)return;_bibleSpeechIndex++;bibleSpeechSpeakNext(token);};utterance.onerror=function(e){if(e.error==='canceled'||e.error==='interrupted')return;bibleSpeechStop(true);var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Reading stopped';};window.speechSynthesis.speak(utterance);
+}
+function bibleSpeechRead(){
+  if(!bibleSpeechSupported()){alert('Text-to-speech is not available in this browser.');return;}var text=bibleSpeechText();if(!text){alert('Create the Bible reading summary first.');return;}
+  window.speechSynthesis.cancel();_bibleSpeechToken++;_bibleSpeechChunks=bibleSpeechMakeChunks(text);_bibleSpeechIndex=0;_bibleSpeechPaused=false;bibleSpeechSavePrefs();bibleSpeechSetState('speaking');var token=_bibleSpeechToken;setTimeout(function(){bibleSpeechSpeakNext(token);},80);
+}
+function bibleSpeechPauseResume(){if(!bibleSpeechSupported()||!window.speechSynthesis.speaking)return;if(_bibleSpeechPaused){window.speechSynthesis.resume();_bibleSpeechPaused=false;}else{window.speechSynthesis.pause();_bibleSpeechPaused=true;}bibleSpeechSetState('speaking');}
+function bibleSpeechStop(finished){if(bibleSpeechSupported())window.speechSynthesis.cancel();_bibleSpeechToken++;_bibleSpeechChunks=[];_bibleSpeechIndex=0;_bibleSpeechPaused=false;bibleSpeechSetState('idle');if(!finished){var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Stopped';}}
+if(bibleSpeechSupported()){window.speechSynthesis.onvoiceschanged=bibleSpeechPopulateVoices;}
 function audibleSummarize(){
   var passages=(document.getElementById('audiblePassages')||{}).value||'';
   var day=(document.getElementById('audibleChapter')||{}).value||'';
   var book=(document.getElementById('audibleBook')||{}).value||'';
   var res=document.getElementById('audibleAIResult');
   if(!res)return;
+  bibleSpeechStop(true);
+  var speechControls=document.getElementById('bibleSpeechControls');if(speechControls)speechControls.style.display='none';
   if(!passages.trim()){
     res.style.display='block';
     res.style.background='#fee2e2';res.style.border='1px solid #fca5a5';res.style.color='#b91c1c';
@@ -9275,6 +9320,7 @@ function audibleSummarize(){
     _audiblePending={text:text,label:label,passages:passages,day:day,book:book};
     res.style.display='block';
     res.innerHTML='<div style="white-space:pre-wrap;line-height:1.6;color:#78350f;">'+escHtml(text)+'</div>';
+    bibleSpeechReady();
     _aiLastShown['audibleAIResult']={text:text,lbl:'Bible Reading — '+label};
   },function(err){res.textContent='Error: '+err;});
 }
