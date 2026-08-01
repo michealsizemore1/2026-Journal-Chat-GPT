@@ -2282,6 +2282,7 @@ body{
   <div class="tri-check" data-key="spSermon" onclick="triClick(this)" title="Mark sermon or Bible study complete"></div>
   <div class="section-title" style="color:#6d4c41;background:linear-gradient(135deg,#fff8f0,#fdebd0);border-left:4px solid #e67e22;flex:1;">&#x1F4D6; Sermon &amp; Bible Study</div>
   <span id="bBibleAutoSaveStatus" style="font-size:0.7rem;color:#528062;white-space:nowrap;"></span>
+  <button id="bBibleSaveBtn" onclick="saveBibleEntry(true)" style="background:linear-gradient(135deg,#e67e22,#d35400);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x1F4BE; Save</button>
   <button onclick="clearBibleEntry()" style="background:#e9ecef;color:#777;border:none;border-radius:6px;padding:6px 10px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x1F5D1; Clear</button>
 </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f0fff4;border-radius:8px;padding:9px 10px;margin-top:9px;">
@@ -6892,7 +6893,7 @@ async function aiTranscriptFill(){
   }
 }
 
-function saveBibleEntry(){
+function saveBibleEntry(manualSave){
   const dateKey=getBibleDateInput();
   if(!dateKey)return;
   let previousBibleEntry={};
@@ -6919,7 +6920,9 @@ function saveBibleEntry(){
   if(transcriptStatus&&entry.transcript){transcriptStatus.style.display='inline';transcriptStatus.style.color='#27ae60';transcriptStatus.textContent='Transcript saved with this Sermon date';}
   renderBibleHistory();
   const autoStatus=document.getElementById('bBibleAutoSaveStatus');
-  if(autoStatus){autoStatus.textContent='Saved automatically';setTimeout(function(){autoStatus.textContent='';},1400);}
+  if(autoStatus){autoStatus.textContent=manualSave?'Saved':'Saved automatically';setTimeout(function(){autoStatus.textContent='';},1400);}
+  const saveBtn=document.getElementById('bBibleSaveBtn');
+  if(manualSave&&saveBtn){const original=saveBtn.innerHTML;saveBtn.innerHTML='&#x2713; Saved';saveBtn.disabled=true;setTimeout(function(){saveBtn.innerHTML=original;saveBtn.disabled=false;},1400);}
 }
 let bibleAutoSaveTimer=null;
 function queueBibleAutoSave(){
