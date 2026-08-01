@@ -745,6 +745,8 @@ body{background:radial-gradient(circle at 15% 0%,#eef0ff 0,transparent 34%),var(
 .header-save-status .v26-save-dot{background:#86efac;box-shadow:0 0 0 3px rgba(134,239,172,.16);}
 .header-status-row{display:flex;align-items:center;gap:12px;width:100%;min-width:0;}
 .header-save-status{flex:0 0 auto;}
+.header-aqi-official{display:inline-flex;align-items:center;gap:6px;min-width:0;color:#fff;font-size:.7rem;font-weight:800;text-decoration:none;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.34);border-radius:999px;padding:4px 9px;white-space:nowrap;}
+.header-aqi-official:hover{background:rgba(255,255,255,.25);color:#fff}.header-aqi-dot{width:8px;height:8px;border-radius:50%;background:#94a3b8;box-shadow:0 0 0 2px rgba(255,255,255,.22)}
 .header button,.tab-btn,#hmToggleBtn,.hm-nav-btn{transition:transform .16s ease,background .16s ease,color .16s ease,box-shadow .16s ease;}
 .header button:hover{background:rgba(255,255,255,.28);transform:translateY(-1px);}
 .header button:focus-visible,.tab-btn:focus-visible,#hmToggleBtn:focus-visible,.hm-nav-btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none;box-shadow:var(--focus);}
@@ -1221,6 +1223,7 @@ body{
     </div>
     <div class="header-status-row">
       <span class="v26-save header-save-status" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
+      <a class="header-aqi-official" id="meridianAqi" href="https://www.deq.idaho.gov/air-quality/air-quality-index/real-time-map/" target="_blank" rel="noopener" title="Official monitor-based AQI from EPA AirNow and Idaho DEQ"><span class="header-aqi-dot" id="meridianAqiDot"></span><span id="meridianAqiText">Meridian AQI &mdash;</span></a>
     </div>
   </div>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
@@ -12783,6 +12786,20 @@ async function updateMeridianWeather(){
     display.title='Current Meridian temperature is temporarily unavailable';
   }
 }
+function meridianAqiColor(value){if(value<=50)return'#22c55e';if(value<=100)return'#eab308';if(value<=150)return'#f97316';if(value<=200)return'#ef4444';if(value<=300)return'#a855f7';return'#7f1d1d';}
+async function updateMeridianAQI(retry){
+  var wrap=document.getElementById('meridianAqi'),text=document.getElementById('meridianAqiText'),dot=document.getElementById('meridianAqiDot');if(!wrap||!text||!dot)return;
+  if(!journalCloudUser){if((retry||0)<5)setTimeout(function(){updateMeridianAQI((retry||0)+1);},1800);return;}
+  try{
+    var data=await journalProtectedFunction({action:'airnow-aqi'}),aqi=Math.round(Number(data.aqi));if(!Number.isFinite(aqi))throw new Error('No current AQI');
+    text.textContent='Meridian AQI '+aqi+' · '+String(data.category||'');dot.style.background=meridianAqiColor(aqi);wrap.href=data.sourceUrl||wrap.href;wrap.title='Official monitor-based AQI · '+String(data.pollutant||'AQI')+' · '+String(data.reportingArea||'Meridian area')+(data.observedDate?' · Observed '+data.observedDate+' '+data.observedHour+':00':'')+' · Source: EPA AirNow / Idaho DEQ';
+    try{localStorage.setItem('meridian_airnow_cache',JSON.stringify({data:data,savedAt:Date.now()}));}catch(ignore){}
+  }catch(error){
+    var cached=null;try{cached=JSON.parse(localStorage.getItem('meridian_airnow_cache')||'null');}catch(ignore2){}
+    if(cached&&cached.data&&Number.isFinite(Number(cached.data.aqi))){var age=Math.round((Date.now()-Number(cached.savedAt||0))/3600000);text.textContent='Meridian AQI '+Math.round(Number(cached.data.aqi))+' · cached';dot.style.background=meridianAqiColor(Number(cached.data.aqi));wrap.title='Last official EPA AirNow / Idaho DEQ reading · cached '+age+' hour'+(age===1?'':'s')+' ago';}
+    else{text.textContent='Meridian AQI unavailable';dot.style.background='#94a3b8';wrap.title=(error&&error.message)||'Official AQI is temporarily unavailable';}
+  }
+}
 function journalSyncFixedHeaderHeight(){
   document.documentElement.style.removeProperty('--journal-sticky-height');
   document.documentElement.style.scrollPaddingTop='';
@@ -12813,6 +12830,9 @@ else journalInitFloatingTitle();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateMeridianWeather);
 else updateMeridianWeather();
 setInterval(updateMeridianWeather,15*60*1000);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){updateMeridianAQI(0);});
+else updateMeridianAQI(0);
+setInterval(function(){updateMeridianAQI(0);},30*60*1000);
 
 function v26Toast(message){
   var el=document.getElementById('v26Toast');if(!el)return;
