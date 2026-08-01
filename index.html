@@ -7867,6 +7867,14 @@ function storageValueBytes(value,seen){
   seen=seen||new Set();if(seen.has(value))return 0;seen.add(value);
   var total=0;Object.keys(value).forEach(function(k){total+=storageTextBytes(k)+storageValueBytes(value[k],seen);});return total;
 }
+function journalIsExternalAppKey(key){
+  var lower=String(key||'').toLowerCase();
+  return lower.indexOf('vinylcollection')===0
+    ||lower.indexOf('rcpt-')===0
+    ||lower.indexOf('meridian_money_')===0
+    ||lower.indexOf('retirementplanner')===0
+    ||lower==='cc-register'||lower.indexOf('cc-register-')===0;
+}
 function storageLocalCategory(key){
   if(key.indexOf('planner_')===0)return'Daily entries';
   if(key.indexOf('bible_')===0)return'Bible & worship';
@@ -7896,7 +7904,7 @@ async function renderStorageBreakdown(){
   var local={},largest=[],localTotal=0,externalLocal=0,transcriptBytes=0;
   for(var i=0;i<localStorage.length;i++){
     var key=localStorage.key(i),value=localStorage.getItem(key)||'',bytes=storageTextBytes(key)+storageTextBytes(value),category=storageLocalCategory(key);
-    if(String(key||'').toLowerCase().indexOf('vinylcollection')===0){externalLocal+=bytes;continue;}
+    if(journalIsExternalAppKey(key)){externalLocal+=bytes;continue;}
     if(key.indexOf('bible_')===0){try{var bible=JSON.parse(value);var tb=storageTextBytes(bible.transcript||'');if(tb){transcriptBytes+=tb;bytes=Math.max(0,bytes-tb);}}catch(ignore){}}
     local[category]=(local[category]||0)+bytes;localTotal+=bytes;largest.push({name:key,bytes:bytes});
   }
@@ -7916,7 +7924,7 @@ async function renderStorageBreakdown(){
     +'<div style="background:#ecfdf3;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#047857;text-transform:uppercase;">Local journal space left</div><div style="font-size:1.2rem;font-weight:800;color:#064e3b;margin-top:3px;">'+storageFormatBytes(localRemaining)+'</div><div style="font-size:.7rem;color:#64748b;">Approx. '+localRemainingPct+'% remaining before the typical 5 MB limit</div></div>'
     +'<div style="background:#f0fdf4;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#15803d;text-transform:uppercase;">Expanded file storage</div><div style="font-size:1.2rem;font-weight:800;color:#14532d;margin-top:3px;">'+storageFormatBytes(expanded.reduce(function(s,x){return s+x.bytes;},0))+'</div><div style="font-size:.7rem;color:#64748b;">Uploads, images and large archives</div></div>';
   if(estimate)html+='<div style="background:#fff7ed;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#c2410c;text-transform:uppercase;">Browser origin total</div><div style="font-size:1.2rem;font-weight:800;color:#7c2d12;margin-top:3px;">'+storageFormatBytes(estimate.usage||0)+'</div><div style="font-size:.7rem;color:#64748b;">Browser-reported usage; quota '+storageFormatBytes(estimate.quota||0)+'</div></div>';
-  if(externalLocal)html+='<div style="background:#f5f3ff;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#6d28d9;text-transform:uppercase;">Separate Vinyl app</div><div style="font-size:1.2rem;font-weight:800;color:#4c1d95;margin-top:3px;">'+storageFormatBytes(externalLocal)+'</div><div style="font-size:.7rem;color:#64748b;">Not counted as journal data or synchronized</div></div>';
+  if(externalLocal)html+='<div style="background:#f5f3ff;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#6d28d9;text-transform:uppercase;">Separate app data</div><div style="font-size:1.2rem;font-weight:800;color:#4c1d95;margin-top:3px;">'+storageFormatBytes(externalLocal)+'</div><div style="font-size:.7rem;color:#64748b;">Not listed as journal data, backed up, or synchronized</div></div>';
   html+='</div><h3 style="font-size:.86rem;color:#344054;margin:8px 0 2px;">Local journal categories</h3>';
   localRows.forEach(function(x){html+=storageBarRow(x.name,x.bytes,maxLocal,x.name==='Sermon transcripts'?'Long transcripts are usually the first items worth moving.':'');});
   html+='<h3 style="font-size:.86rem;color:#344054;margin:16px 0 2px;">Expanded file storage</h3>';
@@ -12521,7 +12529,7 @@ function journalStorageHealth(){
   for(var i=0;i<localStorage.length;i++){
     var k=localStorage.key(i),v=localStorage.getItem(k)||'';
     var kb=(k.length+v.length)*2;
-    if(String(k||'').toLowerCase().indexOf('vinylcollection')===0){externalBytes+=kb;continue;}
+    if(journalIsExternalAppKey(k)){externalBytes+=kb;continue;}
     bytes+=kb;
     sizes.push({key:k,bytes:kb});
     if(k&&k.indexOf('planner_')===0){planner++;try{JSON.parse(v);}catch(e){invalid++;}}
@@ -12531,7 +12539,7 @@ function journalStorageHealth(){
   var mb=(bytes/1048576).toFixed(2),last=localStorage.getItem('last_backup_ts'),lastText=last?new Date(last).toLocaleDateString():'Never';
   var nearQuota=bytes>4500000;
   var el=document.getElementById('journalStorageHealth');
-  if(el)el.innerHTML='<strong>'+(invalid?'Attention needed':nearQuota?'Storage nearly full':'Journal healthy')+'</strong><br>'+planner+' daily entries • about '+mb+' MB of journal data • last backup: '+lastText+(externalBytes?'<br><span style="color:#667085;">Separate Vinyl Collection app: '+(externalBytes/1048576).toFixed(2)+' MB (not included or synchronized)</span>':'')+(invalid?'<br>'+invalid+' unreadable daily record(s) found.':'')+(nearQuota?'<br><span style="color:#b91c1c;">You are close to the browser\'s storage limit — back up now, then consider trimming old data.</span>':'')+(top?'<div style="margin-top:6px;font-size:.7rem;color:#78716c;"><strong>Largest journal items:</strong><br>'+top+'</div>':'');
+  if(el)el.innerHTML='<strong>'+(invalid?'Attention needed':nearQuota?'Storage nearly full':'Journal healthy')+'</strong><br>'+planner+' daily entries • about '+mb+' MB of journal data • last backup: '+lastText+(externalBytes?'<br><span style="color:#667085;">Separate apps: '+(externalBytes/1048576).toFixed(2)+' MB (not included or synchronized)</span>':'')+(invalid?'<br>'+invalid+' unreadable daily record(s) found.':'')+(nearQuota?'<br><span style="color:#b91c1c;">You are close to the browser\'s storage limit — back up now, then consider trimming old data.</span>':'')+(top?'<div style="margin-top:6px;font-size:.7rem;color:#78716c;"><strong>Largest journal items:</strong><br>'+top+'</div>':'');
   return{bytes:bytes,externalBytes:externalBytes,planner:planner,invalid:invalid,sizes:sizes};
 }
 function journalConsistencyCheck(){
@@ -12625,7 +12633,7 @@ async function journalProtectedFunction(body){
 function journalCloudCanSyncKey(k){
   if(!k)return false;
   var lower=String(k).toLowerCase();
-  if(lower.indexOf('vinylcollection')===0)return false;
+  if(journalIsExternalAppKey(k))return false;
   if(lower==='handwriting_2026-07-27'||lower==='handwriting_2026-07-29')return false;
   if(lower==='ai_key'||lower.indexOf('sb-')===0||lower.indexOf('journal_cloud_')===0)return false;
   if(lower.indexOf('service_role')>=0||lower.indexOf('sb_secret_')>=0||lower.indexOf('password')>=0)return false;
