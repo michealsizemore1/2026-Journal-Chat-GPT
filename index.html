@@ -839,7 +839,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-home summary::-webkit-details-marker{display:none;}
 .journal-home summary:after{content:'›';margin-left:auto;font-size:1.1rem;color:#98a2b3;transform:rotate(90deg);}
 .journal-home:not([open]) summary:after{transform:rotate(0);}
-.journal-home-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-columns:minmax(0,1fr);gap:8px;padding:10px;align-items:stretch;justify-items:stretch;}
+.journal-home-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:10px;align-items:stretch;justify-items:stretch;}
 .journal-home-card{display:flex;flex-direction:column;width:100%;min-width:0;max-width:none;justify-self:stretch;box-sizing:border-box;border:1px solid #e4e7ec;border-radius:9px;padding:9px 10px;background:#fff;min-height:68px;}
 .journal-home-grid>.journal-home-card{inline-size:100%!important;flex-basis:auto!important;}
 .journal-home-card h3{margin:0 0 5px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#667085;}
@@ -892,7 +892,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-sticky-spacer{display:none;height:0;}
 .journal-sticky-shell .header{border-radius:12px 12px 0 0;}
 html{scroll-padding-top:190px;}
-@media(max-width:800px){.journal-home-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.journal-settings-grid{grid-template-columns:1fr;}}
+@media(max-width:800px){.journal-home-grid{grid-template-columns:minmax(0,1fr);}.journal-settings-grid{grid-template-columns:1fr;}}
 @media(max-width:700px){
   body{padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px));}
   #addActivityForm{margin-bottom:calc(24px + env(safe-area-inset-bottom, 0px))!important;}
