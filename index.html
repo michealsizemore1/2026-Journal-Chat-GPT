@@ -2448,6 +2448,7 @@ body{
           <button class="btn-secondary" onclick="exportBackup()">Backup Now</button>
           <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Restore</button>
           <button class="btn-secondary" onclick="journalConsistencyCheck()">Check Journal</button>
+          <button class="btn-secondary" type="button" onclick="openStorageBreakdown()">Storage Breakdown</button>
         </div>
         <div id="journalStorageHealth" class="storage-health">Checking journal storage...</div>
       </div>
@@ -2473,6 +2474,19 @@ body{
       <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
       <button class="btn-primary" onclick="saveJournalSettings()">Save Settings</button>
     </div>
+  </div>
+</div>
+
+<!-- Storage Breakdown Modal -->
+<div class="modal-overlay" id="storageBreakdownModal" style="display:none;z-index:10020;">
+  <div class="modal" style="max-width:720px;max-height:88vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
+      <h2 style="margin:0;">&#x1F4BE; Storage Breakdown</h2>
+      <button type="button" class="btn-secondary" onclick="closeStorageBreakdown()">Close</button>
+    </div>
+    <p style="font-size:.8rem;color:#667085;line-height:1.45;margin:4px 0 12px;">Approximate space used on this device. Cloud copies are not included. Large files use the browser's expanded file storage; daily journal data uses the smaller local journal storage.</p>
+    <div id="storageBreakdownBody" style="overflow-y:auto;min-height:180px;"><div style="text-align:center;color:#98a2b3;padding:34px;">Calculating storage...</div></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px;"><button type="button" class="btn-primary" onclick="renderStorageBreakdown()">Refresh</button></div>
   </div>
 </div>
 
@@ -7859,6 +7873,83 @@ function openJournalSearch(){
   setTimeout(()=>document.getElementById('journalSearchInput').focus(),50);
 }
 function closeJournalSearch(){document.getElementById('journalSearchModal').style.display='none';}
+
+function storageFormatBytes(bytes){
+  bytes=Math.max(0,Number(bytes)||0);
+  if(bytes<1024)return bytes+' B';
+  if(bytes<1048576)return (bytes/1024).toFixed(bytes<10240?1:0)+' KB';
+  if(bytes<1073741824)return (bytes/1048576).toFixed(bytes<10485760?2:1)+' MB';
+  return (bytes/1073741824).toFixed(2)+' GB';
+}
+function storageTextBytes(value){try{return new Blob([String(value||'')]).size;}catch(e){return String(value||'').length*2;}}
+function storageValueBytes(value,seen){
+  if(value==null)return 0;
+  if(typeof value==='string')return storageTextBytes(value);
+  if(typeof value==='number'||typeof value==='boolean')return 8;
+  if(value instanceof Blob)return value.size||0;
+  if(value instanceof ArrayBuffer)return value.byteLength||0;
+  if(ArrayBuffer.isView(value))return value.byteLength||0;
+  if(typeof value!=='object')return 0;
+  seen=seen||new Set();if(seen.has(value))return 0;seen.add(value);
+  var total=0;Object.keys(value).forEach(function(k){total+=storageTextBytes(k)+storageValueBytes(value[k],seen);});return total;
+}
+function storageLocalCategory(key){
+  if(key.indexOf('planner_')===0)return'Daily entries';
+  if(key.indexOf('bible_')===0)return'Bible & worship';
+  if(key==='ai_archive'||key.indexOf('thinking_archive')===0||key.indexOf('review_')===0)return'AI, thinking & reviews';
+  if(key.indexOf('handwriting_')===0)return'Handwritten notes';
+  if(key.indexOf('training')!==-1||key.indexOf('plan')!==-1||key==='weekly_goals')return'Training plans';
+  if(key.indexOf('library')!==-1||key.indexOf('book')!==-1||key.indexOf('audible')!==-1)return'Library';
+  if(key.indexOf('habit')!==-1||key.indexOf('skill')!==-1)return'Habits & skills';
+  if(key.indexOf('meal')!==-1||key.indexOf('food')!==-1||key.indexOf('nutrition')!==-1)return'Meals & nutrition';
+  if(key.indexOf('cache')!==-1||key.indexOf('weather')!==-1||key.indexOf('airnow')!==-1)return'Temporary caches';
+  return'Settings & other data';
+}
+async function storageReadStore(dbName,storeName){
+  if(indexedDB.databases){var dbs=await indexedDB.databases();if(!dbs.some(function(d){return d.name===dbName;}))return[];}
+  return new Promise(function(resolve){
+    var req=indexedDB.open(dbName);req.onerror=function(){resolve([]);};
+    req.onsuccess=function(){var db=req.result;if(!db.objectStoreNames.contains(storeName)){db.close();resolve([]);return;}var get=db.transaction(storeName,'readonly').objectStore(storeName).getAll();get.onsuccess=function(){var rows=get.result||[];db.close();resolve(rows);};get.onerror=function(){db.close();resolve([]);};};
+  });
+}
+function storageBarRow(name,bytes,maxBytes,note){
+  var pct=maxBytes?Math.max(2,Math.round(bytes/maxBytes*100)):2;
+  return '<div style="padding:9px 0;border-bottom:1px solid #eaecf0;"><div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;"><strong style="font-size:.84rem;color:#344054;">'+escHtml(name)+'</strong><span style="font-size:.82rem;font-weight:700;color:#101828;white-space:nowrap;">'+storageFormatBytes(bytes)+'</span></div><div style="height:7px;background:#f2f4f7;border-radius:99px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#2563eb,#b91c1c);border-radius:99px;"></div></div>'+(note?'<div style="font-size:.7rem;color:#98a2b3;margin-top:4px;">'+escHtml(note)+'</div>':'')+'</div>';
+}
+async function renderStorageBreakdown(){
+  var body=document.getElementById('storageBreakdownBody');if(!body)return;
+  body.innerHTML='<div style="text-align:center;color:#98a2b3;padding:34px;">Calculating storage...</div>';
+  var local={},largest=[],localTotal=0,transcriptBytes=0;
+  for(var i=0;i<localStorage.length;i++){
+    var key=localStorage.key(i),value=localStorage.getItem(key)||'',bytes=storageTextBytes(key)+storageTextBytes(value),category=storageLocalCategory(key);
+    if(key.indexOf('bible_')===0){try{var bible=JSON.parse(value);var tb=storageTextBytes(bible.transcript||'');if(tb){transcriptBytes+=tb;bytes=Math.max(0,bytes-tb);}}catch(ignore){}}
+    local[category]=(local[category]||0)+bytes;localTotal+=bytes;largest.push({name:key,bytes:bytes});
+  }
+  if(transcriptBytes){local['Sermon transcripts']=(local['Sermon transcripts']||0)+transcriptBytes;localTotal+=transcriptBytes;}
+  var dbSpecs=[['JournalArchiveDB','journals','Uploaded journal archive'],['OtherUploadsDB','files','Other uploaded files'],['BookDocumentsDB','docs','Library documents'],['BookCoversDB','covers','Book covers'],['BibleImagesDB','images','Bible images'],['my_life_command_center_large_storage','journal','Activities & Bible archives']];
+  var expanded=[];
+  for(var j=0;j<dbSpecs.length;j++){var rows=await storageReadStore(dbSpecs[j][0],dbSpecs[j][1]),size=storageValueBytes(rows);if(size)expanded.push({name:dbSpecs[j][2],bytes:size,count:rows.length});}
+  local['Sermon transcripts']=local['Sermon transcripts']||0;
+  var localRows=Object.keys(local).map(function(name){return{name:name,bytes:local[name]};}).filter(function(x){return x.bytes>0;}).sort(function(a,b){return b.bytes-a.bytes;});
+  expanded.sort(function(a,b){return b.bytes-a.bytes;});
+  var maxLocal=Math.max.apply(null,localRows.map(function(x){return x.bytes;}).concat([1]));
+  var maxExpanded=Math.max.apply(null,expanded.map(function(x){return x.bytes;}).concat([1]));
+  var estimate=null;try{if(navigator.storage&&navigator.storage.estimate)estimate=await navigator.storage.estimate();}catch(ignore2){}
+  var html='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px;">'
+    +'<div style="background:#eff6ff;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#1d4ed8;text-transform:uppercase;">Local journal data</div><div style="font-size:1.2rem;font-weight:800;color:#172554;margin-top:3px;">'+storageFormatBytes(localTotal)+'</div><div style="font-size:.7rem;color:#64748b;">Approx. '+Math.round(localTotal/5242880*100)+'% of a typical 5 MB limit</div></div>'
+    +'<div style="background:#f0fdf4;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#15803d;text-transform:uppercase;">Expanded file storage</div><div style="font-size:1.2rem;font-weight:800;color:#14532d;margin-top:3px;">'+storageFormatBytes(expanded.reduce(function(s,x){return s+x.bytes;},0))+'</div><div style="font-size:.7rem;color:#64748b;">Uploads, images and large archives</div></div>';
+  if(estimate)html+='<div style="background:#fff7ed;border-radius:10px;padding:12px;"><div style="font-size:.7rem;font-weight:700;color:#c2410c;text-transform:uppercase;">Browser origin total</div><div style="font-size:1.2rem;font-weight:800;color:#7c2d12;margin-top:3px;">'+storageFormatBytes(estimate.usage||0)+'</div><div style="font-size:.7rem;color:#64748b;">Browser-reported usage; quota '+storageFormatBytes(estimate.quota||0)+'</div></div>';
+  html+='</div><h3 style="font-size:.86rem;color:#344054;margin:8px 0 2px;">Local journal categories</h3>';
+  localRows.forEach(function(x){html+=storageBarRow(x.name,x.bytes,maxLocal,x.name==='Sermon transcripts'?'Long transcripts are usually the first items worth moving.':'');});
+  html+='<h3 style="font-size:.86rem;color:#344054;margin:16px 0 2px;">Expanded file storage</h3>';
+  if(expanded.length)expanded.forEach(function(x){html+=storageBarRow(x.name,x.bytes,maxExpanded,x.count+' stored item'+(x.count===1?'':'s'));});else html+='<div style="font-size:.8rem;color:#98a2b3;padding:12px 0;">No uploaded files or large archives were found on this device.</div>';
+  largest.sort(function(a,b){return b.bytes-a.bytes;});
+  html+='<details style="margin-top:14px;background:#f8fafc;border-radius:9px;padding:10px 12px;"><summary style="font-size:.8rem;font-weight:700;color:#475467;cursor:pointer;">Largest individual local records</summary><div style="margin-top:7px;">'+largest.slice(0,10).map(function(x){return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:.74rem;padding:4px 0;border-bottom:1px solid #eaecf0;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(x.name)+'</span><strong>'+storageFormatBytes(x.bytes)+'</strong></div>';}).join('')+'</div></details>';
+  body.innerHTML=html;
+}
+function openStorageBreakdown(){var modal=document.getElementById('storageBreakdownModal');if(modal)modal.style.display='flex';renderStorageBreakdown();}
+function closeStorageBreakdown(){var modal=document.getElementById('storageBreakdownModal');if(modal)modal.style.display='none';}
+
 function runJournalSearch(){
   const q=(document.getElementById('journalSearchInput').value||'').toLowerCase().trim();
   const scope=(document.getElementById('journalSearchScope')||{}).value||'all';
