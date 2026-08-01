@@ -2283,7 +2283,6 @@ body{
   <div class="section-title" style="color:#6d4c41;background:linear-gradient(135deg,#fff8f0,#fdebd0);border-left:4px solid #e67e22;flex:1;">&#x1F4D6; Sermon &amp; Bible Study</div>
   <span id="bBibleAutoSaveStatus" style="font-size:0.7rem;color:#528062;white-space:nowrap;"></span>
   <button id="bBibleSaveBtn" onclick="saveBibleEntry(true)" style="background:linear-gradient(135deg,#e67e22,#d35400);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x1F4BE; Save</button>
-  <button onclick="clearBibleEntry()" style="background:#e9ecef;color:#777;border:none;border-radius:6px;padding:6px 10px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x1F5D1; Clear</button>
 </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f0fff4;border-radius:8px;padding:9px 10px;margin-top:9px;">
         <label style="background:#1e6b3a;color:#fff;border-radius:7px;padding:7px 12px;font-size:0.8rem;font-weight:700;cursor:pointer;white-space:nowrap;">&#x1F4C2; Upload Sermon Transcript
@@ -6973,7 +6972,8 @@ function openMonthlySermonEntry(dateKey){
   today=new Date(dateKey+'T00:00:00');
   load();
   var card=document.getElementById('monthlySermonArchive');if(card)card.open=true;
-  window.scrollTo({top:0,behavior:'smooth'});
+  var sermonSection=document.getElementById('bSermonTitle');
+  if(sermonSection)setTimeout(function(){sermonSection.scrollIntoView({behavior:'smooth',block:'center'});sermonSection.focus({preventScroll:true});},0);
 }
 function deleteMonthlySermonEntry(dateKey){
   var data={};try{data=JSON.parse(localStorage.getItem('bible_'+dateKey)||'{}')||{};}catch(ignore){}
