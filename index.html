@@ -78,6 +78,11 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .header-tools-dropdown{position:absolute;left:0;right:auto;top:calc(100% + 6px);z-index:2600;width:min(210px,calc(100vw - 24px));padding:6px;background:#fff;border:1px solid #d8dee9;border-radius:10px;box-shadow:0 10px 28px rgba(31,41,55,.2);display:grid;gap:3px;}
 .header-tools-dropdown button{width:100%;border:0;background:#fff;color:#344054;text-align:left;padding:8px 10px;border-radius:7px;font-size:.8rem;font-weight:650;cursor:pointer;}
 .header-tools-dropdown button:hover{background:#f1f4ff;color:#4f46e5;}
+.header-tools-status{display:grid;gap:7px;padding:8px 9px;margin-bottom:3px;background:#f8fafc;border:1px solid #dbe4ee;border-radius:8px;}
+.header-tools-status-title{font-size:.62rem;font-weight:850;letter-spacing:.06em;text-transform:uppercase;color:#64748b;}
+.header-tools-status .header-save-status{display:flex;align-items:center;gap:7px;color:#334155;font-size:.72rem;padding:0;white-space:normal;}
+.header-tools-status .header-aqi-official{display:flex;width:100%;color:#0a3161;background:#fff;border:1px solid #cbd5e1;border-radius:7px;padding:6px 7px;font-size:.68rem;white-space:normal;line-height:1.25;}
+.header-tools-status .header-aqi-official:hover{color:#b31942;background:#fff;}
 .pdf-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:white;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);z-index:100;min-width:150px;display:none;}
 .pdf-dropdown.open{display:block;}
 .pdf-dropdown button{display:block;width:100%;padding:9px 14px;border:none;background:none;text-align:left;cursor:pointer;font-size:0.92rem;color:#333;}
@@ -1207,6 +1212,11 @@ body{
       <details class="header-tools-menu" id="headerToolsMenu">
         <summary class="hdr-btn">&#x2630; Tools</summary>
         <div class="header-tools-dropdown">
+          <div class="header-tools-status">
+            <span class="header-tools-status-title">Journal status</span>
+            <span class="v26-save header-save-status" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
+            <a class="header-aqi-official" id="meridianAqi" href="https://www.deq.idaho.gov/air-quality/air-quality-index/real-time-map/" target="_blank" rel="noopener" title="Official monitor-based AQI from EPA AirNow and Idaho DEQ"><span class="header-aqi-dot" id="meridianAqiDot"></span><span id="meridianAqiText">Meridian AQI &mdash;</span></a>
+          </div>
           <button type="button" onclick="exportBackup();closeHeaderTools()">&#x1F4BE; Backup</button>
           <button type="button" onclick="document.getElementById('importFile').click();closeHeaderTools()">&#x1F4C2; Restore</button>
           <button type="button" onclick="printView('daily');closeHeaderTools()">&#x1F5A8; PDF &mdash; Daily</button>
@@ -1220,10 +1230,6 @@ body{
         <button class="v26-quiet-btn v26-focus-btn" type="button" onclick="v26ToggleFocus()" id="v26FocusBtn" title="Hide distractions (F)">Focus</button>
         <span class="v26-weather" id="meridianWeather" title="Current temperature for Meridian, Idaho">&#x1F321;&#xFE0F; Meridian &mdash;&deg;</span>
       </div>
-    </div>
-    <div class="header-status-row">
-      <span class="v26-save header-save-status" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
-      <a class="header-aqi-official" id="meridianAqi" href="https://www.deq.idaho.gov/air-quality/air-quality-index/real-time-map/" target="_blank" rel="noopener" title="Official monitor-based AQI from EPA AirNow and Idaho DEQ"><span class="header-aqi-dot" id="meridianAqiDot"></span><span id="meridianAqiText">Meridian AQI &mdash;</span></a>
     </div>
   </div>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
