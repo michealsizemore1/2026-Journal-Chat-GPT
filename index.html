@@ -9274,7 +9274,9 @@ function bibleSpeechText(){
   var result=document.getElementById('audibleAIResult');if(!result)return'';
   return result.innerText
     .replace(/https?:\/\/\S+|www\.\S+/gi,' ')
-    .replace(/[^\p{L}\p{N}'\s]/gu,' ')
+    .replace(/\b(?:[123]\s+)?(?:Genesis|Exodus|Leviticus|Numbers|Deuteronomy|Joshua|Judges|Ruth|Samuel|Kings|Chronicles|Ezra|Nehemiah|Esther|Job|Psalms?|Proverbs|Ecclesiastes|Song\s+of\s+(?:Solomon|Songs)|Isaiah|Jeremiah|Lamentations|Ezekiel|Daniel|Hosea|Joel|Amos|Obadiah|Jonah|Micah|Nahum|Habakkuk|Zephaniah|Haggai|Zechariah|Malachi|Matthew|Mark|Luke|John|Acts|Romans|Corinthians|Galatians|Ephesians|Philippians|Colossians|Thessalonians|Timothy|Titus|Philemon|Hebrews|James|Peter|Jude|Revelation)\s+\d+(?:\s*[:.]\s*\d+)?(?:\s*[-–—]\s*\d+)?\b/gi,' ')
+    .replace(/[\p{N}]/gu,' ')
+    .replace(/[^\p{L}'\s]/gu,' ')
     .replace(/\s+/g,' ')
     .trim();
 }
