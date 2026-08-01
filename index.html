@@ -6943,7 +6943,8 @@ function saveBibleEntry(manualSave){
     prayer:previousBibleEntry.prayer||'',
     transcript:previousBibleEntry.transcript||'',
     transcriptFileName:previousBibleEntry.transcriptFileName||'',
-    savedAt:new Date().toISOString()
+    savedAt:new Date().toISOString(),
+    archived:manualSave?true:!!previousBibleEntry.archived
   };
   localStorage.setItem('bible_'+dateKey, JSON.stringify(entry));
   updateTranscriptSummary(entry.transcriptFileName,entry.transcript);
@@ -6954,9 +6955,13 @@ function saveBibleEntry(manualSave){
   const autoStatus=document.getElementById('bBibleAutoSaveStatus');
   if(autoStatus){autoStatus.textContent=manualSave?'Saved':'Saved automatically';setTimeout(function(){autoStatus.textContent='';},1400);}
   const saveBtn=document.getElementById('bBibleSaveBtn');
-  if(manualSave&&saveBtn){const original=saveBtn.innerHTML;saveBtn.innerHTML='&#x2713; Saved';saveBtn.disabled=true;setTimeout(function(){saveBtn.innerHTML=original;saveBtn.disabled=false;},1400);}
+  if(manualSave){
+    clearBibleEntry();clearTranscript();
+    if(saveBtn){const original=saveBtn.innerHTML;saveBtn.innerHTML='&#x2713; Saved to Archive';saveBtn.disabled=true;setTimeout(function(){saveBtn.innerHTML=original;saveBtn.disabled=false;},1400);}
+  }
 }
 let bibleAutoSaveTimer=null;
+let bibleArchiveViewingDate='';
 function queueBibleAutoSave(){
   clearTimeout(bibleAutoSaveTimer);
   var status=document.getElementById('bBibleAutoSaveStatus');if(status)status.textContent='Saving…';
@@ -6970,7 +6975,7 @@ function monthlySermonEntries(){
     try{
       var data=JSON.parse(localStorage.getItem(key)||'{}')||{};
       var meaningful=[data.sermonTitle,data.sermonSpeaker,data.sermonURL,data.sermonNotes,data.scripture,data.keyVerse,data.theme].some(function(value){return String(value||'').trim();});
-      if(meaningful)entries.push({date:key.slice(6),data:data});
+       if(meaningful&&data.archived!==false)entries.push({date:key.slice(6),data:data});
     }catch(ignore){}
   }
   return entries.sort(function(a,b){return b.date.localeCompare(a.date);});
@@ -6991,6 +6996,7 @@ function renderMonthlySermonArchive(){
   }).join('');
 }
 function openMonthlySermonEntry(dateKey){
+  bibleArchiveViewingDate=dateKey;
   today=new Date(dateKey+'T00:00:00');
   load();
   var card=document.getElementById('monthlySermonArchive');if(card)card.open=true;
@@ -7019,9 +7025,10 @@ function loadBibleEntry(){
   const keys=['sermonTitle','sermonSpeaker','sermonURL','sermonNotes','scripture','keyVerse','theme','notes','application','prayer'];
   if(raw){
     const e=JSON.parse(raw);
-    fields.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.value=e[keys[i]]||'';});
+    const showArchived=!e.archived||bibleArchiveViewingDate===dateKey;
+    fields.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.value=showArchived?(e[keys[i]]||''):'';});
     const mergedNotes=[e.sermonNotes,e.notes,e.application].filter(function(v,index,arr){return v&&arr.indexOf(v)===index;}).join('\n\n');
-    const mergedNotesEl=document.getElementById('bSermonNotes');if(mergedNotesEl)mergedNotesEl.value=mergedNotes;
+    const mergedNotesEl=document.getElementById('bSermonNotes');if(mergedNotesEl)mergedNotesEl.value=showArchived?mergedNotes:'';
     const legacyNotesEl=document.getElementById('bNotes');if(legacyNotesEl)legacyNotesEl.value='';
     const legacyApplicationEl=document.getElementById('bApplication');if(legacyApplicationEl)legacyApplicationEl.value='';
     const transcript=document.getElementById('bTranscriptText');
@@ -7037,6 +7044,7 @@ function loadBibleEntry(){
     updateTranscriptSummary('','');
   }
   const transcriptFile=document.getElementById('bTranscriptFile');if(transcriptFile)transcriptFile.value='';
+  bibleArchiveViewingDate='';
   const transcriptStatus=document.getElementById('bTranscriptStatus');if(transcriptStatus){transcriptStatus.style.display='inline';transcriptStatus.style.color='#528062';transcriptStatus.textContent='Transcript is temporary and will not be saved.';}
   toggleSermonTranscript(false);
   renderBibleHistory();
