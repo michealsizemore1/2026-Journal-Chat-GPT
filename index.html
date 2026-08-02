@@ -12744,16 +12744,20 @@ function journalAIKey(){
 }
 async function journalProtectedFunction(body){
   if(!journalCloudClient||!journalCloudUser)throw new Error('Sign in to your private journal first.');
-  var sessionResult=await journalCloudClient.auth.getSession();
-  var token=sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.access_token;
-  if(!token)throw new Error('Your journal session expired. Sign in again.');
-  var response=await journalOriginalFetch(JOURNAL_SUPABASE_URL+'/functions/v1/anthropic-proxy',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,'apikey':JOURNAL_SUPABASE_KEY},
-    body:JSON.stringify(body||{})
-  });
+  async function sendProtectedRequest(forceRefresh){
+    var sessionResult=forceRefresh?await journalCloudClient.auth.refreshSession():await journalCloudClient.auth.getSession();
+    var token=sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.access_token;
+    if(!token)throw new Error('Your journal session expired. Sign in again.');
+    return journalCloudWithTimeout(journalOriginalFetch(JOURNAL_SUPABASE_URL+'/functions/v1/anthropic-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,'apikey':JOURNAL_SUPABASE_KEY},
+      body:JSON.stringify(body||{})
+    }),45000,'The protected AI service timed out. Please try again.');
+  }
+  var response=await sendProtectedRequest(false);
+  if(response.status===401)response=await sendProtectedRequest(true);
   var data=await response.json().catch(function(){return{};});
-  if(!response.ok)throw new Error((data.error&&data.error.message)||'The protected journal service could not complete the request.');
+  if(!response.ok)throw new Error((data.error&&data.error.message)||('The protected journal service returned error '+response.status+'.'));
   return data;
 }
 function journalCloudCanSyncKey(k){
