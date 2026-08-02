@@ -1142,6 +1142,12 @@ body{
 .header-tools-dropdown button:hover{background:#edf2f7;color:#b31942;}
 .journal-mobile-dock{border-top:3px solid #b31942;}
 .journal-mobile-dock button{color:#0a3161;}
+/* Financial Video Lab */
+.fv-hero{background:linear-gradient(135deg,#071f3d,#0a3161 62%,#b31942);color:#fff;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 4px 0 rgba(7,31,61,.22),0 14px 28px rgba(10,49,97,.18)}
+.fv-hero h2{color:#fff!important;margin:0 0 5px!important;font-size:1.25rem!important}.fv-hero p{margin:0;color:#dce8f5;font-size:.82rem;line-height:1.5}
+.fv-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:13px 0}.fv-stat{background:#fff;border:1px solid rgba(10,49,97,.2);border-radius:12px;padding:11px;box-shadow:0 3px 0 rgba(10,49,97,.14),0 9px 19px rgba(10,49,97,.1)}.fv-stat span{display:block;font-size:.65rem;color:#667085;font-weight:800;text-transform:uppercase}.fv-stat strong{display:block;color:#0a3161;font-size:1.25rem;margin-top:3px}
+.fv-grid{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(0,1.22fr);gap:13px}.fv-card{background:#fff;border:1px solid rgba(10,49,97,.2);border-radius:13px;padding:13px;box-shadow:0 3px 0 rgba(10,49,97,.14),0 10px 22px rgba(10,49,97,.11);margin-bottom:12px}.fv-card h3{margin:0 0 9px;color:#0a3161;font-size:.88rem}.fv-form{display:grid;gap:8px}.fv-form label{font-size:.7rem;font-weight:800;color:#475467}.fv-form input,.fv-form select,.fv-form textarea,.fv-toolbar select{display:block;width:100%;box-sizing:border-box;margin-top:3px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font:inherit;font-size:.8rem;background:#fff}.fv-form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fv-btn{border:1px solid #0a3161;border-radius:8px;padding:7px 10px;background:#0a3161;color:#fff;font-size:.75rem;font-weight:800;cursor:pointer}.fv-btn.secondary{background:#fff;color:#0a3161}.fv-btn.danger{background:#fff;color:#b42318;border-color:#fecaca}.fv-topics{display:flex;gap:6px;flex-wrap:wrap}.fv-topics button{border:1px solid #b7c7d9;background:#f8fafc;color:#0a3161;border-radius:999px;padding:6px 9px;font-size:.68rem;font-weight:750;cursor:pointer}.fv-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:9px}.fv-toolbar select{width:auto;margin:0}.fv-list{display:grid;gap:9px}.fv-video{border:1px solid #dbe4ee;border-left:5px solid #0a3161;border-radius:11px;padding:11px;background:#fbfdff}.fv-video.watched{border-left-color:#2e8b57;background:#f5fbf7}.fv-video-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.fv-video-title{font-weight:850;color:#172033;font-size:.86rem}.fv-video-meta{font-size:.68rem;color:#667085;margin:3px 0 8px}.fv-video-actions{display:flex;gap:6px;flex-wrap:wrap}.fv-video textarea{width:100%;box-sizing:border-box;border:1px solid #d6dee8;border-radius:8px;padding:7px;font:inherit;font-size:.75rem;resize:vertical;margin-top:7px}.fv-empty{text-align:center;color:#667085;padding:26px 12px;border:1px dashed #94a3b8;border-radius:11px;background:#f8fafc;font-size:.8rem}.fv-route{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.fv-route div{background:#f6f8fb;border-radius:9px;padding:9px;font-size:.68rem;color:#475467}.fv-route strong{display:block;color:#0a3161;margin-bottom:3px}
+@media(max-width:760px){.fv-stats{grid-template-columns:repeat(2,1fr)}.fv-grid{grid-template-columns:1fr}.fv-form-row,.fv-route{grid-template-columns:1fr}.fv-video-head{display:block}.fv-video-head>.fv-btn{margin-top:7px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -1200,6 +1206,7 @@ body{
   <button id="hm-nutrition" class="hm-nav-btn" onclick="hmSwitch('nutrition',event)">&#x1F957; Nutrition</button>
   <button id="hm-skill-log" class="hm-nav-btn" onclick="hmSwitch('skill-log',event)">&#x1F6E0;&#xFE0F; Skills</button>
   <button id="hm-thinking" class="hm-nav-btn" onclick="hmSwitch('thinking',event)">&#x1F9E0; Thinking</button>
+  <button id="hm-financial-videos" class="hm-nav-btn" onclick="hmSwitch('financial-videos',event)">&#x1F4FA; Financial Videos</button>
   <button id="hm-wellness" class="hm-nav-btn" onclick="hmSwitch('wellness',event)">&#x2764;&#xFE0F; Wellness</button>
 </nav>
 
@@ -1293,7 +1300,7 @@ body{
   </div>
   <div id="aiToolsBody" class="compact-body" style="width:100%;padding-top:8px;">
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <button class="ai-btn" style="background:#8e44ad;" onclick="openAskJournal()">&#x1F4AC; Ask AI</button>
+    <button type="button" class="ai-btn" style="background:#8e44ad;" onclick="openAskJournal()">&#x1F4AC; Ask AI</button>
     <button class="ai-btn" style="background:#2980b9;" onclick="openJournalSearch()">&#x1F50D; Search</button>
   </div>
   <!-- Ask AI expand panel -->
@@ -2806,6 +2813,27 @@ body{
 </div></div>
 
 <!-- ═══════════════════════════════ NUTRITION TAB ═══════════════════════════════ -->
+<!-- FINANCIAL VIDEO LAB -->
+<div class="tab-panel" id="tab-financial-videos"><div class="panel">
+  <div class="fv-hero"><h2>&#x1F4FA; Financial Video Lab</h2><p>Build retirement and investing knowledge one useful video at a time. Capture what matters, decide what applies to you, and turn watching into action.</p></div>
+  <div class="fv-stats"><div class="fv-stat"><span>Watch Queue</span><strong id="fvQueueCount">0</strong></div><div class="fv-stat"><span>Completed</span><strong id="fvWatchedCount">0</strong></div><div class="fv-stat"><span>Minutes Learned</span><strong id="fvMinutesCount">0</strong></div><div class="fv-stat"><span>Action Steps</span><strong id="fvActionCount">0</strong></div></div>
+  <div class="fv-card"><h3>&#x1F9ED; Retirement Learning Route</h3><div class="fv-route"><div><strong>1. Foundation</strong>Retirement income, Social Security and Medicare</div><div><strong>2. Portfolio</strong>Asset allocation, fees and withdrawal strategy</div><div><strong>3. Protection</strong>Taxes, inflation, insurance and sequence risk</div><div><strong>4. Legacy</strong>Estate planning, beneficiaries and charitable giving</div></div></div>
+  <div class="fv-grid">
+    <div>
+      <div class="fv-card"><h3>&#x2795; Add to Watch Queue</h3><div class="fv-form">
+        <label>Video title<input id="fvTitle" type="text" placeholder="What is this video about?"></label>
+        <label>YouTube link<input id="fvUrl" type="url" placeholder="https://www.youtube.com/watch?v=..."></label>
+        <div class="fv-form-row"><label>Channel or creator<input id="fvChannel" type="text" placeholder="Optional"></label><label>Length in minutes<input id="fvDuration" type="number" min="0" step="1" placeholder="20"></label></div>
+        <label>Financial topic<select id="fvTopic"><option>Retirement Planning</option><option>Investing</option><option>Social Security</option><option>Taxes</option><option>Medicare &amp; Health</option><option>Estate Planning</option><option>Behavior &amp; Scams</option></select></label>
+        <button type="button" class="fv-btn" onclick="fvAddVideo()">Add Video</button>
+      </div></div>
+      <div class="fv-card"><h3>&#x1F50E; Explore a Topic on YouTube</h3><div class="fv-topics"><button type="button" onclick="fvExplore('retirement income planning')">Income</button><button type="button" onclick="fvExplore('Social Security retirement strategy')">Social Security</button><button type="button" onclick="fvExplore('retirement portfolio withdrawal strategy')">Withdrawals</button><button type="button" onclick="fvExplore('retirement tax planning')">Taxes</button><button type="button" onclick="fvExplore('Medicare retirement planning')">Medicare</button><button type="button" onclick="fvExplore('estate planning retirement beneficiaries')">Legacy</button></div></div>
+      <div class="fv-card fv-form"><h3>&#x1F3AF; Weekly Learning Goal</h3><label>My goal<input id="fvWeeklyGoal" type="text" placeholder="Example: Watch two videos about Social Security" oninput="fvSaveGoal()"></label></div>
+    </div>
+    <div class="fv-card"><div class="fv-toolbar"><h3 style="margin:0;">&#x1F4CB; My Financial Watch Queue</h3><select id="fvFilter" onchange="fvRender()"><option value="all">All videos</option><option value="queue">Not watched</option><option value="watched">Completed</option><option value="action">Has action step</option></select></div><div id="fvVideoList" class="fv-list"></div></div>
+  </div>
+</div></div>
+
 <div class="tab-panel" id="tab-nutrition"><div class="panel">
   <!-- MEAL PLANNING -->
   <div class="section-title orange" role="button" tabindex="0" aria-expanded="false" aria-controls="mealPlanningPanel" onclick="toggleMealPlanning()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMealPlanning();}" style="margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
@@ -7466,12 +7494,21 @@ function openSermonLink(){
 function openAskJournal(){
   const box=document.getElementById('askJournalBox');
   if(!box)return;
-  box.style.display=box.style.display==='none'?'block':'none';
-  if(box.style.display==='block')setTimeout(()=>document.getElementById('askJournalInput').focus(),50);
+  var toolsBody=document.getElementById('aiToolsBody'),toolsToggle=document.getElementById('aiToolsToggle'),toolsArrow=document.getElementById('aiToolsArrow');
+  if(toolsBody)toolsBody.style.display='block';
+  if(toolsToggle)toolsToggle.setAttribute('aria-expanded','true');
+  if(toolsArrow)toolsArrow.innerHTML='&#x25BC;';
+  box.style.display='block';
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  setTimeout(function(){var input=document.getElementById('askJournalInput');if(input)input.focus();},50);
 }
 async function submitAskJournal(){
   const q=(document.getElementById('askJournalInput').value||'').trim();
   if(!q){alert('Enter a question first.');return;}
+  var _ajEl=document.getElementById('askJournalResult'),_ajBtn=document.getElementById('askJournalSubmitBtn');
+  if(_ajEl){_ajEl.style.display='block';_ajEl.textContent='Preparing your journal information...';}
+  if(_ajBtn){_ajBtn.disabled=true;_ajBtn.textContent='Preparing...';}
+  await new Promise(function(resolve){setTimeout(resolve,0);});
   // ── Gather ALL planner data (all time) ──
   const dayLines=[];
   const allPlannerKeys=[];
@@ -7482,7 +7519,7 @@ async function submitAskJournal(){
     const _pDateKey=allPlannerKeys[ki].replace('planner_','');
     const d=new Date(_pDateKey+'T00:00:00');
     if(!r)continue;
-    const dd=JSON.parse(r);
+    let dd;try{dd=JSON.parse(r);}catch(ignore){continue;}
     const label=d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
     const parts=[];
     // Spirituality
@@ -7542,7 +7579,7 @@ async function submitAskJournal(){
     const br=localStorage.getItem(allBibleKeys[ki]);
     const d=new Date(allBibleKeys[ki].replace('bible_','')+'T00:00:00');
     if(!br)continue;
-    const b=JSON.parse(br);
+    let b;try{b=JSON.parse(br);}catch(ignore){continue;}
     const parts=[d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})];
     if(b.sermonTitle)parts.push('Sermon Title: '+b.sermonTitle);
     if(b.scripture)parts.push('Scripture: '+b.scripture);
@@ -7554,7 +7591,7 @@ async function submitAskJournal(){
   }
   // ── Gather recent activities ──
   const recentActs=(window._tpGarminActs&&window._tpGarminActs.length?window._tpGarminActs:getActivities())
-    .sort(function(a,b){return b.date.localeCompare(a.date);});
+    .slice().sort(function(a,b){return String(b&&b.date||'').localeCompare(String(a&&a.date||''));});
   const actLines=recentActs.map(function(a){
     const p=[a.date,a.type||'Run'];
     if(a.distance)p.push(a.distance+'mi');
@@ -7568,10 +7605,10 @@ async function submitAskJournal(){
   });
   // ── Training plan ──
   const planRaw=localStorage.getItem('current_training_plan');
-  const planText=planRaw?JSON.parse(planRaw).text:'';
+  let planText='';try{planText=planRaw?(JSON.parse(planRaw).text||''):'';}catch(ignore){}
   if(!dayLines.length&&!actLines.length&&!planText&&!bibleLines.length){
     const res=document.getElementById('askJournalResult');
-    res.style.display='block';res.textContent='No journal data found. Start filling in your daily planner entries!';return;
+    res.style.display='block';res.textContent='No journal data found. Start filling in your daily planner entries!';if(_ajBtn){_ajBtn.disabled=false;_ajBtn.textContent='Ask';}return;
   }
   let prompt='You are analyzing a comprehensive personal daily planner and journal. Answer the question below using only the data provided. Be specific, cite dates, and include relevant details from any section (spirituality, wellness, exercise, nutrition, growth, journal notes, Bible study).\n\nQuestion: '+q+'\n\n';
   if(dayLines.length)prompt+='DAILY PLANNER ENTRIES (all time, newest first):\n'+dayLines.join('\n\n')+'\n\n';
@@ -7594,7 +7631,7 @@ async function submitAskJournal(){
   var _ajEl=document.getElementById('askJournalResult');
   if(_ajEl){_ajEl.style.display='block';_ajEl.textContent='⏳ Thinking...';}
   var _ajKey=journalAIKey(),_ajBtn=document.getElementById('askJournalSubmitBtn');
-  if(!_ajKey){if(_ajEl)_ajEl.textContent='Sign in to your private journal to use Ask AI.';return;}
+  if(!_ajKey){if(_ajEl)_ajEl.textContent='Sign in to your private journal to use Ask AI.';if(_ajBtn){_ajBtn.disabled=false;_ajBtn.textContent='Ask';}return;}
   if(_ajBtn){_ajBtn.disabled=true;_ajBtn.textContent='Asking...';}
   try{
     var data=await journalProtectedFunction({model:'claude-haiku-4-5-20251001',max_tokens:3000,messages:_ajMsgs});
@@ -10502,7 +10539,34 @@ function meditInitTab(){
 }
 /* ========= END MEDITATION JS ========= */
 
-var _hmTabs=['nutrition','habits2','meditate','bible','library','activities','skill-log','thinking','wellness','file-uploads'];
+var FV_STORAGE_KEY='financial_video_library_v1';
+function fvItems(){try{var value=JSON.parse(localStorage.getItem(FV_STORAGE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(ignore){return[];}}
+function fvSave(items){localStorage.setItem(FV_STORAGE_KEY,JSON.stringify(items));fvRender();}
+function fvValidYouTube(value){try{var url=new URL(value),host=url.hostname.replace(/^www\./,'').toLowerCase();return host==='youtube.com'||host==='m.youtube.com'||host==='youtu.be';}catch(ignore){return false;}}
+function fvAddVideo(){
+  var title=(document.getElementById('fvTitle').value||'').trim(),url=(document.getElementById('fvUrl').value||'').trim();
+  if(!title){alert('Enter a video title.');return;}if(!fvValidYouTube(url)){alert('Enter a valid YouTube link.');return;}
+  var items=fvItems();items.unshift({id:Date.now(),title:title,url:url,channel:(document.getElementById('fvChannel').value||'').trim(),duration:Math.max(0,parseInt(document.getElementById('fvDuration').value||'0',10)||0),topic:document.getElementById('fvTopic').value,watched:false,takeaway:'',action:'',added:new Date().toISOString()});
+  fvSave(items);['fvTitle','fvUrl','fvChannel','fvDuration'].forEach(function(id){document.getElementById(id).value='';});v26Toast('Video added to your queue');
+}
+function fvFind(id){return fvItems().find(function(item){return Number(item.id)===Number(id);});}
+function fvWatch(id){var item=fvFind(id);if(item)window.open(item.url,'_blank','noopener,noreferrer');}
+function fvToggleWatched(id){var items=fvItems(),item=items.find(function(v){return Number(v.id)===Number(id);});if(!item)return;item.watched=!item.watched;item.watchedAt=item.watched?new Date().toISOString():'';fvSave(items);}
+function fvUpdate(id,key,value){var items=fvItems(),item=items.find(function(v){return Number(v.id)===Number(id);});if(!item)return;item[key]=String(value||'').trim();fvSave(items);}
+function fvDelete(id){var item=fvFind(id);if(!item||!confirm('Remove "'+item.title+'" from the Financial Video Lab?'))return;fvSave(fvItems().filter(function(v){return Number(v.id)!==Number(id);}));}
+function fvExplore(topic){window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(topic),'_blank','noopener,noreferrer');}
+function fvSaveGoal(){localStorage.setItem('financial_video_weekly_goal',(document.getElementById('fvWeeklyGoal').value||'').trim());}
+function fvRender(){
+  var list=document.getElementById('fvVideoList');if(!list)return;var items=fvItems(),filter=(document.getElementById('fvFilter')||{}).value||'all';
+  var queue=items.filter(function(v){return !v.watched;}),watched=items.filter(function(v){return !!v.watched;}),minutes=watched.reduce(function(total,v){return total+(Number(v.duration)||0);},0),actions=items.filter(function(v){return String(v.action||'').trim();}).length;
+  var stats={fvQueueCount:queue.length,fvWatchedCount:watched.length,fvMinutesCount:minutes,fvActionCount:actions};Object.keys(stats).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=stats[id];});
+  var goal=document.getElementById('fvWeeklyGoal');if(goal&&document.activeElement!==goal)goal.value=localStorage.getItem('financial_video_weekly_goal')||'';
+  var shown=items.filter(function(v){return filter==='all'||(filter==='queue'&&!v.watched)||(filter==='watched'&&v.watched)||(filter==='action'&&String(v.action||'').trim());});
+  if(!shown.length){list.innerHTML='<div class="fv-empty">'+(items.length?'No videos match this filter.':'Your queue is ready. Add a useful retirement or investing video to begin.')+'</div>';return;}
+  list.innerHTML=shown.map(function(v){var meta=[v.topic,v.channel,v.duration?String(v.duration)+' min':''].filter(Boolean).join(' &middot; ');return '<div class="fv-video '+(v.watched?'watched':'')+'"><div class="fv-video-head"><div><div class="fv-video-title">'+escHtml(v.title||'Untitled video')+'</div><div class="fv-video-meta">'+meta+'</div></div><button type="button" class="fv-btn" onclick="fvWatch('+Number(v.id)+')">&#x25B6; Watch</button></div><div class="fv-video-actions"><button type="button" class="fv-btn secondary" onclick="fvToggleWatched('+Number(v.id)+')">'+(v.watched?'&#x2713; Completed':'Mark Watched')+'</button><button type="button" class="fv-btn danger" onclick="fvDelete('+Number(v.id)+')">Remove</button></div><textarea rows="2" placeholder="Key takeaway: What did you learn?" onchange="fvUpdate('+Number(v.id)+',\'takeaway\',this.value)">'+escHtml(v.takeaway||'')+'</textarea><textarea rows="2" placeholder="Action step: What will you verify, discuss, or change?" onchange="fvUpdate('+Number(v.id)+',\'action\',this.value)">'+escHtml(v.action||'')+'</textarea></div>';}).join('');
+}
+
+var _hmTabs=['nutrition','habits2','meditate','bible','library','activities','skill-log','thinking','financial-videos','wellness','file-uploads'];
 var _cardTabs=['weekly','monthly','yearly'].concat(_hmTabs);
 function toggleHamburger(e){
   if(e)e.stopPropagation();
@@ -10552,6 +10616,7 @@ function switchTab(tab,e){
   if(tab==='bible')renderBibleTab();
   if(tab==='skill-log'){renderSkillLog();renderSkillSectionCharts();}
   if(tab==='thinking'){if(typeof mmStart==='function')mmStart();if(typeof finStart==='function')finStart();if(typeof frmStart==='function')frmStart();renderThinkingArchive();renderDecisionJournal();}
+  if(tab==='financial-videos')fvRender();
   if(tab==='nutrition'){renderFoodItems();renderFavsList();calculateDailyCalorieTarget();renderNutritionSectionCharts();}
   if(tab==='habits2')h2Render();
   if(tab==='meditate'){meditInitTab();}
