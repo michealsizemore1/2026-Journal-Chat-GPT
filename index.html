@@ -4968,15 +4968,10 @@ function callAI(prompt,resultDivId,maxTok){
   );
 }
 function aiCall(prompt,maxTok,onResult,onErr){
-  const key=journalAIKey();
-  if(!key){alert('Add your Anthropic API key in ⚙️ Settings first.');return false;}
+  if(!journalAIAvailable()){alert('Sign in to your private journal to use AI.');return false;}
   const context=journalAIContext();
   const enrichedPrompt=(context?context+'\n\n':'')+prompt;
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:maxTok,messages:[{role:'user',content:enrichedPrompt}]})
-  }).then(r=>r.json()).then(data=>{
+  journalProtectedFunction({model:'claude-haiku-4-5-20251001',max_tokens:maxTok,messages:[{role:'user',content:enrichedPrompt}]}).then(data=>{
     if(data.error){onErr&&onErr(data.error.message);return;}
     onResult((data.content[0].text||'').trim());
   }).catch(e=>{onErr&&onErr(e.message);});
@@ -12716,8 +12711,7 @@ function journalInstallAIProxy(){
 }
 function journalAIAvailable(){return !!(journalCloudClient&&journalCloudUser);}
 function journalAIKey(){
-  if(journalAIAvailable())return 'supabase-managed';
-  try{return localStorage.getItem('ai'+'_key')||'';}catch(e){return '';}
+  return journalAIAvailable()?'supabase-managed':'';
 }
 async function journalProtectedFunction(body){
   if(!journalCloudClient||!journalCloudUser)throw new Error('Sign in to your private journal first.');
