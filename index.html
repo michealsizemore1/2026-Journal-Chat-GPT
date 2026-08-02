@@ -12774,13 +12774,12 @@ function renderJournalSchedule(){
   var items=[
     {time:'5:30 AM',mins:330,label:'Wellness check and water',detail:'Weight, sleep and morning metrics',done:!!(d.wWghtVal||d.wSleepVal||d.wBPVal),tab:'wellness'},
     {time:'5:45 AM',mins:345,label:'Bible reading and prayer',detail:'Daily spiritual anchors',done:d.spBibleAudio==='green'&&d.spAIPrayer==='green',tab:'bible'},
-    {time:'6:15 AM',mins:375,label:'Review priorities, goals and calendar',detail:'Matches Review Tasks, Goals & Calendar',done:!!d.reviewCheck,tab:'daily'},
+    {time:'6:15 AM',mins:375,label:'Review priorities, goals, calendar and email',detail:'Matches Review Tasks, Goals & Calendar',done:!!d.reviewCheck,tab:'daily'},
     {time:'6:30 AM',mins:390,label:'Today’s training',detail:training,done:activityDone,tab:'activities'},
     {time:'7:45 AM',mins:465,label:'Recovery meal and hydration',detail:'Refuel after training',done:foods.length>0&&water>0,tab:'nutrition'},
     {time:'12:30 PM',mins:750,label:'Audiobook or educational listening',detail:'Midday learning block',done:!!parseTimedMins(d.gaAudiobookTime),tab:'library'},
     {time:'5:30 PM',mins:1050,label:'Dinner and nutrition update',detail:'Record meals and hydration',done:foods.length>0,tab:'nutrition'},
     {time:'6:30 PM',mins:1110,label:growth.label,detail:'Today’s rotating Growth focus',done:growth.done,tab:growth.tab},
-    {time:'8:00 PM',mins:1200,label:'Review tasks and Daily Check-In',detail:'Resolve unfinished items',done:!!d.reviewCheck,tab:'daily'},
     {time:'8:15 PM',mins:1215,label:'Journal accomplishments and gratitude',detail:'Capture the day while it is fresh',done:reflected,tab:'daily'},
     {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:!!d.prepJournalCheck,tab:'daily'},
     {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:'Protect tomorrow’s recovery',done:!!d.wSleepVal,tab:'wellness'}
