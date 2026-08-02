@@ -12799,6 +12799,7 @@ function renderJournalSchedule(){
   var restDay=/rest day|no workout scheduled/i.test(training),activityDone=hasActivityOnDate(dateKey)||restDay;
   var items=[
     {time:'5:30 AM',mins:330,label:'Review priorities, goals, calendar and email',detail:'Matches Review Tasks, Goals & Calendar',done:!!d.reviewCheck,tab:'daily'},
+    {time:'5:30 AM',mins:330,label:'Meditation',detail:'Begin the day with meditation and stillness',done:d.spMeditation==='green',tab:'meditate'},
     {time:'5:30 AM',mins:330,label:'Wellness check and water',detail:'Weight, sleep and morning metrics',done:!!(d.wWghtVal||d.wSleepVal||d.wBPVal),tab:'wellness'},
     {time:'5:45 AM',mins:345,label:'Bible reading and prayer',detail:'Daily spiritual anchors',done:d.spBibleAudio==='green'&&d.spAIPrayer==='green',tab:'bible'},
     {time:'6:30 AM',mins:390,label:'Today’s training',detail:training,done:activityDone,tab:'activities'},
