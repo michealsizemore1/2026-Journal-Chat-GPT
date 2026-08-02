@@ -1265,7 +1265,6 @@ body{
           <div class="header-tools-status">
             <span class="header-tools-status-title">Journal status</span>
             <span class="v26-save header-save-status" title="Your entries save automatically on this device"><span class="v26-save-dot"></span><span id="v26SaveText">Saved on this device</span></span>
-            <a class="header-aqi-official" id="meridianAqi" href="https://www.deq.idaho.gov/air-quality/air-quality-index/real-time-map/" target="_blank" rel="noopener" title="Official monitor-based AQI from EPA AirNow and Idaho DEQ"><span class="header-aqi-dot" id="meridianAqiDot"></span><span id="meridianAqiText">Meridian AQI &mdash;</span></a>
           </div>
           <button type="button" onclick="exportBackup();closeHeaderTools()">&#x1F4BE; Backup</button>
           <button type="button" onclick="document.getElementById('importFile').click();closeHeaderTools()">&#x1F4C2; Restore</button>
@@ -1280,6 +1279,9 @@ body{
         <button class="v26-quiet-btn v26-focus-btn" type="button" onclick="v26ToggleFocus()" id="v26FocusBtn" title="Hide distractions (F)">Focus</button>
         <span class="v26-weather" id="meridianWeather" title="Current temperature for Meridian, Idaho">&#x1F321;&#xFE0F; Meridian &mdash;&deg;</span>
       </div>
+    </div>
+    <div class="header-status-row">
+      <a class="header-aqi-official" id="meridianAqi" href="https://www.deq.idaho.gov/air-quality/air-quality-index/real-time-map/" target="_blank" rel="noopener" title="Official monitor-based AQI from EPA AirNow and Idaho DEQ"><span class="header-aqi-dot" id="meridianAqiDot"></span><span id="meridianAqiText">Meridian AQI &mdash;</span></a>
     </div>
   </div>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
