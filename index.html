@@ -562,9 +562,11 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .goals-wrap{background:white;border:1px solid #e9ecef;border-radius:10px;padding:14px;margin-bottom:14px;}
 .week-digest{margin-bottom:14px;}
 .wdig-title{font-weight:700;color:#667eea;font-size:0.95rem;margin-bottom:8px;}
-.wdig-chips{display:flex;flex-wrap:wrap;gap:8px;}
-.wdig-chip{background:#f5f6ff;border:1px solid #e0e3fa;border-radius:8px;padding:7px 11px;font-size:0.82rem;color:#333;}
-.wdig-chip strong{color:#4338ca;}
+.wdig-chips{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;}
+.wdig-chip{background:linear-gradient(145deg,#fff,#f5f7ff);border:1px solid #dfe3f5;border-radius:11px;padding:10px 12px;font-size:0.78rem;color:#475467;box-shadow:0 3px 0 rgba(49,46,129,.10);min-width:0;}
+.wdig-chip strong{display:block;color:#27336f;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+@media(max-width:760px){.wdig-chips{grid-template-columns:1fr 1fr;}}
+@media(max-width:430px){.wdig-chips{grid-template-columns:1fr;}}
 .wdig-empty{color:#999;font-size:0.85rem;font-style:italic;}
 .goals-title{font-size:0.85rem;font-weight:700;color:#667eea;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
 .goal-row{margin-bottom:8px;}
@@ -3294,6 +3296,14 @@ function collectDailyChecks(){
     var el=document.getElementById(id);if(!el)return;
     items.push({key:'',id:id,tab:'daily',group:dailyCheckGroup(el,'daily'),status:el.checked?'green':'blank',label:dailyCheckLabel(el)});
   });
+  var selectedKey=dk(today);
+  var skillEntries=getSkillEntries();
+  var hasCoding=skillEntries.some(function(entry){return entry.date===selectedKey&&(entry.category==='Coding'||entry.category==='Coding / Tech');});
+  var hasGunRange=skillEntries.some(function(entry){return entry.date===selectedKey&&entry.category==='Gun Range';});
+  var hasYouTube=fvItems().some(function(video){return video.watched&&video.watchedAt&&dk(new Date(video.watchedAt))===selectedKey;});
+  items.push({key:'',id:'skillLogContainer',tab:'skill-log',group:'Growth',status:hasCoding?'green':'blank',label:'Coding / Tech'});
+  items.push({key:'',id:'skillLogContainer',tab:'skill-log',group:'Growth',status:hasGunRange?'green':'blank',label:'Gun Range'});
+  items.push({key:'',id:'fvVideoList',tab:'financial-videos',group:'Growth',status:hasYouTube?'green':'blank',label:'YouTube Financial Video'});
   return items;
 }
 function renderDailyCheckOverview(){
@@ -4426,21 +4436,32 @@ function renderWeeklyDigest(days,tot,wDayKeys,lbls){
   var sp=aggSpir(spirs);
   var daysLogged=days.filter(function(d){return d.score||d.miles||d.calories||d.audiobook||d.sleep;}).length;
   var activeDays=days.filter(function(d){return d.miles>0;}).length;
-  var bestIdx=-1,bestScore=0;
-  days.forEach(function(d,i){if(d.score>bestScore){bestScore=d.score;bestIdx=i;}});
-  var ctTotal=(tot.ctMM||0)+(tot.ctAB||0)+(tot.ctSOT||0)+(tot.ctFin||0)+(tot.ctFrm||0);
-  var chips=[];
-  if(tot.score)chips.push('⭐ Day Score avg <strong>'+tot.score.toFixed(1)+'/5</strong>'+(bestIdx>-1?' &middot; best day '+lbls[bestIdx].split(',')[0]:''));
-  if(tot.miles)chips.push('🏃 <strong>'+tot.miles.toFixed(1)+' mi</strong> across '+activeDays+' active day'+(activeDays===1?'':'s'));
-  if(tot.sleep)chips.push('😴 Sleep avg <strong>'+fmtMins(tot.sleep)+'</strong>');
-  if(tot.water)chips.push('💧 <strong>'+Math.round(tot.water)+' oz</strong> water logged');
-  if(sp.bibleAudio||sp.aiPrayer)chips.push('📖 Bible Audio <strong>'+(sp.bibleAudio||0)+'/7</strong> &middot; Prayer <strong>'+(sp.aiPrayer||0)+'/7</strong>');
-  if(tot.skillDone||tot.audiobook)chips.push('🎯 Skill Building <strong>'+(tot.skillDone||0)+'/7</strong> &middot; Audiobook <strong>'+fmtMinsSeconds(tot.audiobook)+'</strong>');
-  if(ctTotal)chips.push('🧠 <strong>'+ctTotal+'</strong> critical-thinking session'+(ctTotal===1?'':'s')+' logged');
-  if(tot.calories)chips.push('🔥 Calories avg <strong>'+Math.round(tot.calories/(daysLogged||7))+' kcal/day</strong>');
-  if(tot.headache)chips.push('🤕 <strong>'+tot.headache+'</strong> headache day'+(tot.headache===1?'':'s'));
-  if(!chips.length){el.innerHTML='<div class="wdig-empty">Log a few days this week to see your at-a-glance summary.</div>';return;}
-  el.innerHTML='<div class="wdig-title">📊 This Week at a Glance</div><div class="wdig-chips">'+chips.map(function(c){return '<div class="wdig-chip">'+c+'</div>';}).join('')+'</div>';
+  var goals={};try{goals=JSON.parse(localStorage.getItem('weekly_goals')||'{}');}catch(ignore){}
+  var goalRows=[{name:'Miles',target:Number(goals.Miles)||0,actual:tot.miles||0},{name:'Audiobook',target:Number(goals.Audio)||0,actual:tot.audiobook||0},{name:'Bible',target:Number(goals.Bible)||0,actual:sp.bibleAudio||0},{name:'Prayer',target:Number(goals.Prayer)||0,actual:sp.aiPrayer||0},{name:'Exercise',target:Number(goals.Exercise)||0,actual:activeDays}].filter(function(goal){return goal.target>0;});
+  var reached=goalRows.filter(function(goal){return goal.actual>=goal.target;}).length;
+  var goalText=goalRows.length?(reached+' of '+goalRows.length+' weekly targets reached'):'Set weekly targets to measure progress';
+  var coverage=[
+    {name:'Daily consistency',value:daysLogged/7,detail:daysLogged+' days logged'},
+    {name:'Fitness',value:activeDays/7,detail:activeDays+' active days'},
+    {name:'Spirituality',value:((sp.bibleAudio||0)+(sp.aiPrayer||0))/14,detail:(sp.bibleAudio||0)+' Bible and '+(sp.aiPrayer||0)+' prayer days'},
+    {name:'Wellness',value:days.filter(function(d){return d.sleep||d.weight||d.bpSys;}).length/7,detail:'wellness recorded'},
+    {name:'Nutrition',value:days.filter(function(d){return d.calories||d.water;}).length/7,detail:'nutrition recorded'}
+  ];
+  coverage.sort(function(a,b){return b.value-a.value;});
+  var strongest=coverage[0].value?coverage[0].name+' — '+coverage[0].detail:'No clear pattern yet';
+  var attentionGoals=goalRows.filter(function(goal){return goal.actual<goal.target;}).sort(function(a,b){return(a.actual/a.target)-(b.actual/b.target);});
+  var weakest=coverage.slice().sort(function(a,b){return a.value-b.value;})[0];
+  var attention=attentionGoals.length?attentionGoals[0].name+' needs '+Math.max(0,Math.round((attentionGoals[0].target-attentionGoals[0].actual)*10)/10)+' more':(weakest.value<1?weakest.name+' has the least coverage':'All tracked areas are current');
+  var priorStart=new Date(wDayKeys[0]+'T12:00:00');priorStart.setDate(priorStart.getDate()-7);var priorDays=[];
+  for(var p=0;p<7;p++){var pd=new Date(priorStart);pd.setDate(priorStart.getDate()+p);var pk=dk(pd),raw=localStorage.getItem('planner_'+pk);priorDays.push(getDM(raw?JSON.parse(raw):{},pk));}
+  var prior=agg(priorDays),priorLogged=priorDays.filter(function(d){return d.score||d.miles||d.calories||d.audiobook||d.sleep;}).length;
+  var changes=[];
+  if(tot.miles||prior.miles){var mileDiff=tot.miles-prior.miles;changes.push((mileDiff>=0?'+':'')+mileDiff.toFixed(1)+' miles');}
+  if(tot.score||prior.score){var scoreDiff=tot.score-prior.score;changes.push((scoreDiff>=0?'+':'')+scoreDiff.toFixed(1)+' average score');}
+  if(!changes.length&&daysLogged!==priorLogged)changes.push((daysLogged-priorLogged>=0?'+':'')+(daysLogged-priorLogged)+' logged days');
+  var changeText=changes.length?changes.join(' and ')+' versus last week':'Not enough prior-week data for comparison';
+  var cards=[['&#x1F3AF; Goals on Track',goalText],['&#x2B50; Strongest Area',strongest],['&#x1F50E; Needs Attention',attention],['&#x2194;&#xFE0F; Change from Last Week',changeText]];
+  el.innerHTML='<div class="wdig-title">&#x1F4CA; Weekly Snapshot</div><div class="wdig-chips">'+cards.map(function(card){return '<div class="wdig-chip"><strong>'+card[0]+'</strong>'+escHtml(card[1])+'</div>';}).join('')+'</div>';
 }
 function renderWeekly(){const ws=wkStart(weekOff2),days=[],lbls=[];for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);const r=localStorage.getItem('planner_'+dk(d));var _dk=dk(d);days.push(r?getDM(JSON.parse(r),_dk):{miles:0,pace:0,watts:0,time:0,steps:0,score:0,weight:0,sleep:0,sleepScore:0,calories:0,water:0,audiobook:0,bpSys:0,bpDia:0,pulse:0,dogWalk:0,headache:0});lbls.push(d.toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}));}const we=new Date(ws);we.setDate(ws.getDate()+6);document.getElementById('weekLabel').textContent=ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' - '+we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const tot=agg(days);document.getElementById('wDayScore').innerHTML=mkT(dsH,days.map((m,i)=>dsRow(lbls[i],m)),dsRow('AVG',tot,true));document.getElementById('wGrowth').innerHTML=mkT(gH,days.map((m,i)=>gRow(lbls[i],m)),gRow('TOTAL',tot,true));var wct=document.getElementById('wCritical');if(wct)wct.innerHTML=mkT(ctH,days.map((m,i)=>ctRow(lbls[i],m)),ctRow('TOTAL',tot,true));document.getElementById('wFitness').innerHTML=mkT(fH,days.map((m,i)=>fRow(lbls[i],m)),fRow('TOTAL/AVG',tot,true));document.getElementById('wWellness').innerHTML=mkT(wH,days.map((m,i)=>wRow(lbls[i],m)),wRow('TOTAL/AVG',tot,true));
   fvRenderWeeklyGrowth(ws,we,days,lbls);
@@ -7255,6 +7276,7 @@ function saveSkillEntry(){
   if(f)f.style.display='none';
   renderSkillLog();
   renderSkillSectionCharts();
+  renderDailyCheckOverview();
 }
 
 function deleteSkillEntry(id,source){
@@ -7269,6 +7291,7 @@ function deleteSkillEntry(id,source){
   }
   renderSkillLog();
   renderSkillSectionCharts();
+  renderDailyCheckOverview();
 }
 
 function convertAndEditDailySkill(id){
@@ -10543,7 +10566,7 @@ function meditInitTab(){
 
 var FV_STORAGE_KEY='financial_video_library_v1';
 function fvItems(){try{var value=JSON.parse(localStorage.getItem(FV_STORAGE_KEY)||'[]');return Array.isArray(value)?value:[];}catch(ignore){return[];}}
-function fvSave(items){localStorage.setItem(FV_STORAGE_KEY,JSON.stringify(items));fvRender();}
+function fvSave(items){localStorage.setItem(FV_STORAGE_KEY,JSON.stringify(items));fvRender();renderDailyCheckOverview();}
 function fvValidYouTube(value){try{var url=new URL(value),host=url.hostname.replace(/^www\./,'').toLowerCase();return host==='youtube.com'||host==='m.youtube.com'||host==='youtu.be';}catch(ignore){return false;}}
 function fvAddVideo(){
   var title=(document.getElementById('fvTitle').value||'').trim(),url=(document.getElementById('fvUrl').value||'').trim();
