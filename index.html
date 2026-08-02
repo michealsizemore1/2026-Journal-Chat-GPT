@@ -7032,12 +7032,30 @@ function renderMonthlySermonArchive(){
   }).join('');
 }
 function openMonthlySermonEntry(dateKey){
+  var entry={};
+  try{entry=JSON.parse(localStorage.getItem('bible_'+dateKey)||'{}')||{};}catch(ignore){}
+  if(!Object.keys(entry).length){alert('This saved sermon could not be found.');renderMonthlySermonArchive();return;}
   bibleArchiveViewingDate=dateKey;
-  today=new Date(dateKey+'T00:00:00');
-  load();
+  var fieldMap={
+    bSermonTitle:'sermonTitle',
+    bSermonSpeaker:'sermonSpeaker',
+    bSermonURL:'sermonURL',
+    bScripture:'scripture',
+    bKeyVerse:'keyVerse',
+    bTheme:'theme'
+  };
+  Object.keys(fieldMap).forEach(function(id){var el=document.getElementById(id);if(el)el.value=entry[fieldMap[id]]||'';});
+  var notes=[entry.sermonNotes,entry.notes,entry.application].filter(function(value,index,values){return value&&values.indexOf(value)===index;}).join('\n\n');
+  var notesEl=document.getElementById('bSermonNotes');if(notesEl)notesEl.value=notes;
+  var legacyNotes=document.getElementById('bNotes');if(legacyNotes)legacyNotes.value='';
+  var legacyApplication=document.getElementById('bApplication');if(legacyApplication)legacyApplication.value='';
+  clearTranscript();
+  var status=document.getElementById('bTranscriptStatus');
+  if(status){status.style.display='inline';status.style.color='#528062';status.textContent='Viewing saved sermon from '+new Date(dateKey+'T00:00:00').toLocaleDateString()+'.';}
   var card=document.getElementById('monthlySermonArchive');if(card)card.open=true;
   var sermonSection=document.getElementById('bSermonTitle');
   if(sermonSection)setTimeout(function(){sermonSection.scrollIntoView({behavior:'smooth',block:'center'});sermonSection.focus({preventScroll:true});},0);
+  v26Toast('Saved sermon opened');
 }
 function deleteMonthlySermonEntry(dateKey){
   var data={};try{data=JSON.parse(localStorage.getItem('bible_'+dateKey)||'{}')||{};}catch(ignore){}
