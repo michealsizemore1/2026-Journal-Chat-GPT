@@ -1277,7 +1277,7 @@ body{
     <div style="display:flex;gap:6px;">
       <input type="text" id="askJournalInput" placeholder="e.g. What were my biggest wins this week?" style="flex:1;border:1px solid #d8b4fe;border-radius:6px;padding:7px 10px;font-size:0.88rem;outline:none;font-family:inherit;" onkeydown="if(event.key==='Enter')submitAskJournal()">
       <button type="button" class="mic-btn" onclick="startVoice('askJournalInput',this)" title="Voice input">🎤 Mic</button>
-      <button onclick="submitAskJournal()" style="background:#7c3aed;color:white;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:0.88rem;white-space:nowrap;">Ask</button>
+      <button id="askJournalSubmitBtn" onclick="submitAskJournal()" style="background:#7c3aed;color:white;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-size:0.88rem;white-space:nowrap;">Ask</button>
     </div>
     <div id="askJournalResult" class="ai-box" style="display:none;margin-top:8px;"></div>
     <div id="askJournalFollowUpWrap" style="display:none;margin-top:8px;border-top:1px solid #d8b4fe;padding-top:8px;">
@@ -7427,7 +7427,7 @@ function openAskJournal(){
   box.style.display=box.style.display==='none'?'block':'none';
   if(box.style.display==='block')setTimeout(()=>document.getElementById('askJournalInput').focus(),50);
 }
-function submitAskJournal(){
+async function submitAskJournal(){
   const q=(document.getElementById('askJournalInput').value||'').trim();
   if(!q){alert('Enter a question first.');return;}
   // ── Gather ALL planner data (all time) ──
@@ -7551,18 +7551,17 @@ function submitAskJournal(){
   _askJournalCtx=_ajMsgs.slice();
   var _ajEl=document.getElementById('askJournalResult');
   if(_ajEl){_ajEl.style.display='block';_ajEl.textContent='⏳ Thinking...';}
-  var _ajKey=journalAIKey();
-  if(!_ajKey){alert('Add your Anthropic API key first.');return;}
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':_ajKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:3000,messages:_ajMsgs})
-  }).then(function(r){return r.json();}).then(function(data){
-    if(data.error){if(_ajEl)_ajEl.textContent='Error: '+data.error.message;return;}
+  var _ajKey=journalAIKey(),_ajBtn=document.getElementById('askJournalSubmitBtn');
+  if(!_ajKey){if(_ajEl)_ajEl.textContent='Sign in to your private journal to use Ask AI.';return;}
+  if(_ajBtn){_ajBtn.disabled=true;_ajBtn.textContent='Asking...';}
+  try{
+    var data=await journalProtectedFunction({model:'claude-haiku-4-5-20251001',max_tokens:3000,messages:_ajMsgs});
+    if(data.error)throw new Error(data.error.message||'The AI request could not be completed.');
     var reply=(data.content[0].text||'').trim();
     _askJournalCtx.push({role:'assistant',content:reply});
     aiShow('askJournalResult',reply,'Ask AI');
-  }).catch(function(e){if(_ajEl)_ajEl.textContent='Error: '+e.message;});
+  }catch(e){if(_ajEl)_ajEl.textContent='Error: '+(e&&e.message?e.message:'Could not reach the protected AI service.');}
+  finally{if(_ajBtn){_ajBtn.disabled=false;_ajBtn.textContent='Ask';}}
   // Show follow-up input
   setTimeout(function(){
     var fw=document.getElementById('askJournalFollowUpWrap');
@@ -7922,7 +7921,7 @@ function clearAskJournalFile(){
   var lbl=document.getElementById('askJournalFileLabel');if(lbl)lbl.style.display='none';
   var inp=document.getElementById('askJournalFile');if(inp)inp.value='';
 }
-function submitAskJournalFollowUp(){
+async function submitAskJournalFollowUp(){
   const q=(document.getElementById('askJournalFollowUp').value||'').trim();
   if(!q){alert('Enter a follow-up question first.');return;}
   const key=journalAIKey();
@@ -7931,17 +7930,14 @@ function submitAskJournalFollowUp(){
   _askJournalCtx.push({role:'user',content:q});
   const followEl=document.getElementById('askJournalResult');
   if(followEl){followEl.style.display='block';followEl.textContent='⏳ Thinking...';}
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:_askJournalCtx})
-  }).then(r=>r.json()).then(data=>{
-    if(data.error){if(followEl)followEl.textContent='Error: '+data.error.message;return;}
+  try{
+    const data=await journalProtectedFunction({model:'claude-haiku-4-5-20251001',max_tokens:2000,messages:_askJournalCtx});
+    if(data.error)throw new Error(data.error.message||'The AI request could not be completed.');
     const reply=(data.content[0].text||'').trim();
     _askJournalCtx.push({role:'assistant',content:reply});
     aiShow('askJournalResult',reply,'Ask AI Follow-up');
     document.getElementById('askJournalFollowUp').value='';
-  }).catch(e=>{if(followEl)followEl.textContent='Error: '+e.message;});
+  }catch(e){if(followEl)followEl.textContent='Error: '+(e&&e.message?e.message:'Could not reach the protected AI service.');}
 }
 
 // ── Journal Search ────────────────────────────────────────
