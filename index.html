@@ -858,6 +858,14 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-home-card h3{margin:0 0 5px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:#667085;}
 .journal-home-card .home-value{font-size:.86rem;color:#344054;line-height:1.4;}
 .journal-home-card .home-value strong{font-size:1rem;color:#172033;}
+.journal-schedule-body{padding:10px 12px 12px;}
+.journal-schedule-status{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:.75rem;color:#667085;}
+.journal-schedule-status strong{color:#172033;font-size:.82rem;}
+.journal-schedule-list{display:grid;gap:6px;}
+.journal-schedule-item{display:grid;grid-template-columns:62px 19px minmax(0,1fr);align-items:center;gap:7px;width:100%;border:0;border-radius:8px;background:#f8fafc;padding:7px 8px;text-align:left;color:#344054;cursor:pointer;font-family:inherit;box-sizing:border-box;}
+.journal-schedule-item:hover{background:#eef4ff;}.journal-schedule-item.done{background:#edf9f1;color:#267143;}.journal-schedule-item.next{box-shadow:inset 3px 0 #315a9b;background:#f2f6ff;}
+.journal-schedule-time{font-size:.68rem;font-weight:800;color:#667085;}.journal-schedule-check{width:16px;height:16px;border:2px solid #b8c0cc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;background:#fff;}.journal-schedule-item.done .journal-schedule-check{border-color:#22a06b;background:#22a06b;color:#fff;}
+.journal-schedule-name{font-size:.76rem;font-weight:700;line-height:1.3;}.journal-schedule-detail{display:block;font-size:.66rem;font-weight:500;color:#7a8494;margin-top:2px;}
 .journal-calendar{margin:10px 16px;border:1px solid #d8def0;border-radius:12px;background:#fff;overflow:hidden;}
 .journal-calendar summary{list-style:none;display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;font-size:.82rem;font-weight:800;color:#344054;background:#f8f9fc;}
 .journal-calendar summary::-webkit-details-marker{display:none;}
@@ -1341,6 +1349,10 @@ body{
 <details class="journal-home" id="journalHome">
   <summary>&#x1F3E0; Today Home <span id="journalHomeDate" style="font-size:.72rem;font-weight:600;color:#98a2b3;"></span></summary>
   <div class="journal-home-grid" id="journalHomeGrid"></div>
+</details>
+<details class="journal-home journal-schedule" id="journalSchedule">
+  <summary>&#x1F552; My Schedule <span id="journalScheduleSummary" style="font-size:.72rem;font-weight:600;color:#98a2b3;"></span></summary>
+  <div class="journal-schedule-body" id="journalScheduleBody"></div>
 </details>
 <details class="journal-calendar" id="journalCalendar" ontoggle="if(this.open)openJournalCalendar()">
   <summary>&#x1F4C5; Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
@@ -12742,6 +12754,42 @@ function journalHomeStreakSummary(){
   ];
   return defs.map(function(item){return'<span style="white-space:nowrap;"><strong>'+streak(item.fn,cache)+'</strong> '+item.label+'</span>';}).join(' &nbsp;•&nbsp; ');
 }
+function journalScheduleGrowth(dateKey){
+  var weekday=today.getDay(),skills=getSkillEntries();
+  var coding=skills.some(function(entry){return entry.date===dateKey&&(entry.category==='Coding'||entry.category==='Coding / Tech');});
+  var range=skills.some(function(entry){return entry.date===dateKey&&entry.category==='Gun Range';});
+  var video=fvItems().some(function(item){return item.watched&&item.watchedAt&&dk(new Date(item.watchedAt))===dateKey;});
+  if(weekday===0)return{label:'Sermon, Bible Study and weekly planning',done:!!getSermonNotes(dateKey),tab:'bible'};
+  if(weekday===2||weekday===4)return{label:'Financial YouTube learning',done:video,tab:'financial-videos'};
+  if(weekday===6)return{label:'Gun Range or scheduled skill practice',done:range,tab:'skill-log'};
+  return{label:weekday===5?'Coding / Tech or weekly catch-up':'Coding / Tech',done:coding,tab:'skill-log'};
+}
+function renderJournalSchedule(){
+  var body=document.getElementById('journalScheduleBody'),summary=document.getElementById('journalScheduleSummary');if(!body)return;
+  var d=journalViewData(),dateKey=dk(today),foods=Array.isArray(d.foodLog)?d.foodLog:[],water=parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),training=journalTodayTrainingSummary(),growth=journalScheduleGrowth(dateKey);
+  var prioritySet=['pt0t','pt1t','pt2t','dg0t','dg1t','dg2t'].some(function(key){return String(d[key]||'').trim();});
+  var reflected=['jAccomplish','jImprov','jGratitude','jNotes'].some(function(key){return String(d[key]||'').trim();});
+  var restDay=/rest day|no workout scheduled/i.test(training),activityDone=hasActivityOnDate(dateKey)||restDay;
+  var items=[
+    {time:'5:30 AM',mins:330,label:'Wellness check and water',detail:'Weight, sleep and morning metrics',done:!!(d.wWghtVal||d.wSleepVal||d.wBPVal),tab:'wellness'},
+    {time:'5:45 AM',mins:345,label:'Bible reading and prayer',detail:'Daily spiritual anchors',done:d.spBibleAudio==='green'&&d.spAIPrayer==='green',tab:'bible'},
+    {time:'6:15 AM',mins:375,label:'Review priorities, goals and calendar',detail:'Set the direction for the day',done:prioritySet,tab:'daily'},
+    {time:'6:30 AM',mins:390,label:'Today’s training',detail:training,done:activityDone,tab:'activities'},
+    {time:'7:45 AM',mins:465,label:'Recovery meal and hydration',detail:'Refuel after training',done:foods.length>0&&water>0,tab:'nutrition'},
+    {time:'12:30 PM',mins:750,label:'Audiobook or educational listening',detail:'Midday learning block',done:!!parseTimedMins(d.gaAudiobookTime),tab:'library'},
+    {time:'5:30 PM',mins:1050,label:'Dinner and nutrition update',detail:'Record meals and hydration',done:foods.length>0,tab:'nutrition'},
+    {time:'6:30 PM',mins:1110,label:growth.label,detail:'Today’s rotating Growth focus',done:growth.done,tab:growth.tab},
+    {time:'8:00 PM',mins:1200,label:'Review tasks and Daily Check-In',detail:'Resolve unfinished items',done:!!d.reviewCheck,tab:'daily'},
+    {time:'8:15 PM',mins:1215,label:'Journal accomplishments and gratitude',detail:'Capture the day while it is fresh',done:reflected,tab:'daily'},
+    {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:!!d.prepJournalCheck,tab:'daily'},
+    {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:'Protect tomorrow’s recovery',done:!!d.wSleepVal,tab:'wellness'}
+  ];
+  var complete=items.filter(function(item){return item.done;}).length,now=new Date(),isSelectedToday=dk(now)===dateKey,currentMinutes=now.getHours()*60+now.getMinutes(),next=-1;
+  if(isSelectedToday){for(var i=0;i<items.length;i++){if(!items[i].done&&items[i].mins>=currentMinutes){next=i;break;}}if(next<0)next=items.findIndex(function(item){return !item.done;});}
+  if(summary)summary.textContent=complete+'/'+items.length+' complete';
+  var nextText=next>=0?'Next: '+items[next].time+' — '+items[next].label:(complete===items.length?'Schedule complete':'Review remaining items');
+  body.innerHTML='<div class="journal-schedule-status"><strong>'+escHtml(nextText)+'</strong><span>'+complete+' complete • '+(items.length-complete)+' remaining</span></div><div class="journal-schedule-list">'+items.map(function(item,index){return '<button type="button" class="journal-schedule-item '+(item.done?'done ':'')+(index===next?'next':'')+'" onclick="switchTab(\''+item.tab+'\',null)"><span class="journal-schedule-time">'+item.time+'</span><span class="journal-schedule-check">'+(item.done?'&#x2713;':'')+'</span><span class="journal-schedule-name">'+escHtml(item.label)+'<span class="journal-schedule-detail">'+escHtml(item.detail)+'</span></span></button>';}).join('')+'</div>';
+}
 function renderJournalHome(){
   var grid=document.getElementById('journalHomeGrid');if(!grid)return;
   var prefs=journalPrefs(),visible=Array.isArray(prefs.homeCards)?prefs.homeCards:JOURNAL_UI_CONFIG.homeCards;
@@ -12766,6 +12814,7 @@ function renderJournalHome(){
   cards.streaks=journalHomeCard('streaks','Current Streaks',journalHomeStreakSummary());
   grid.innerHTML=visible.map(function(id){return cards[id]||'';}).join('')||'<div class="home-value" style="padding:8px;color:#667085;">Choose Home cards in Settings.</div>';
   var date=document.getElementById('journalHomeDate');if(date)date.textContent=fmtD(today);
+  renderJournalSchedule();
 }
 function refreshJournalNavStatus(){
   document.querySelectorAll('.tab-btn').forEach(function(btn){
