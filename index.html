@@ -12765,14 +12765,18 @@ function journalHomeStreakSummary(){
   return defs.map(function(item){return'<span style="white-space:nowrap;"><strong>'+streak(item.fn,cache)+'</strong> '+item.label+'</span>';}).join(' &nbsp;•&nbsp; ');
 }
 function journalScheduleGrowth(dateKey){
-  var weekday=today.getDay(),skills=getSkillEntries();
+  var weekday=today.getDay(),skills=getSkillEntries(),daily={};
+  try{daily=JSON.parse(localStorage.getItem('planner_'+dateKey)||'{}');}catch(ignore){}
   var coding=skills.some(function(entry){return entry.date===dateKey&&(entry.category==='Coding'||entry.category==='Coding / Tech');});
+  var anySkill=skills.some(function(entry){return entry.date===dateKey;});
   var range=skills.some(function(entry){return entry.date===dateKey&&entry.category==='Gun Range';});
   var video=fvItems().some(function(item){return item.watched&&item.watchedAt&&dk(new Date(item.watchedAt))===dateKey;});
+  var thinking=['ctMentalModels','ctAssumption','ctSecondOrder','ctFinancialModels','ctFrameworks'].some(function(key){return daily[key]==='green';});
   if(weekday===0)return{label:'',done:false,tab:'daily',skip:true};
   if(weekday===2||weekday===4)return{label:'Financial YouTube learning',done:video,tab:'financial-videos'};
-  if(weekday===6)return{label:'Gun Range or scheduled skill practice',done:range,tab:'skill-log'};
-  return{label:weekday===5?'Coding / Tech or weekly catch-up':'Coding / Tech',done:coding,tab:'skill-log'};
+  if(weekday===3)return{label:'Thinking practice',done:thinking,tab:'thinking'};
+  if(weekday===6)return{label:'Gun Range',done:range,tab:'skill-log'};
+  return{label:weekday===5?'Skills session':'Coding / Tech',done:weekday===5?anySkill:coding,tab:'skill-log'};
 }
 function journalToggleScheduleManual(name){
   var key='schedule_'+name+'_'+dk(today),done=localStorage.getItem(key)==='1';
@@ -12783,6 +12787,14 @@ function renderJournalSchedule(){
   var body=document.getElementById('journalScheduleBody'),summary=document.getElementById('journalScheduleSummary');if(!body)return;
   var d=journalViewData(),dateKey=dk(today),foods=Array.isArray(d.foodLog)?d.foodLog:[],water=parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),training=journalTodayTrainingSummary(),growth=journalScheduleGrowth(dateKey);
   var now=new Date(),isSelectedToday=dk(now)===dateKey,currentMinutes=now.getHours()*60+now.getMinutes(),selectedDay=new Date(dateKey+'T00:00:00'),realDay=new Date(now.getFullYear(),now.getMonth(),now.getDate()),isPastDay=selectedDay<realDay;
+  function mealLogged(meal){
+    meal=String(meal||'').toLowerCase();
+    return foods.some(function(item){return String((item&&item.meal)||'').toLowerCase()===meal;});
+  }
+  function mealComplete(meal,mins){
+    var scheduledTimeReached=isPastDay||(isSelectedToday&&currentMinutes>=mins);
+    return scheduledTimeReached&&mealLogged(meal);
+  }
   var reflected=['jAccomplish','jImprov','jGratitude','jNotes'].some(function(key){return String(d[key]||'').trim();});
   var restDay=/rest day|no workout scheduled/i.test(training),activityDone=hasActivityOnDate(dateKey)||restDay;
   var items=[
@@ -12790,10 +12802,11 @@ function renderJournalSchedule(){
     {time:'5:30 AM',mins:330,label:'Wellness check and water',detail:'Weight, sleep and morning metrics',done:!!(d.wWghtVal||d.wSleepVal||d.wBPVal),tab:'wellness'},
     {time:'5:45 AM',mins:345,label:'Bible reading and prayer',detail:'Daily spiritual anchors',done:d.spBibleAudio==='green'&&d.spAIPrayer==='green',tab:'bible'},
     {time:'6:30 AM',mins:390,label:'Today’s training',detail:training,done:activityDone,tab:'activities'},
-    {time:'7:45 AM',mins:465,label:'Recovery meal and hydration',detail:'Refuel after training',done:foods.length>0&&water>0,tab:'nutrition'},
-    {time:'12:30 PM',mins:750,label:'Audiobook or educational listening',detail:'Midday learning block',done:!!parseTimedMins(d.gaAudiobookTime),tab:'library'},
+    {time:'7:45 AM',mins:465,label:'Breakfast',detail:'Recovery meal and hydration after training',done:mealComplete('breakfast',465),tab:'nutrition'},
+    {time:'12:00 PM',mins:720,label:'Lunch',detail:'Midday meal and hydration',done:mealComplete('lunch',720),tab:'nutrition'},
+    {time:'12:30 PM',mins:750,label:'Library learning',detail:'Read, listen to an audiobook, or add book notes',done:!!parseTimedMins(d.gaAudiobookTime),tab:'library'},
     {time:'12:45 PM',mins:765,label:'Learn Spanish for 15 minutes',detail:'Tap this row after completing today’s practice',done:localStorage.getItem('schedule_spanish_'+dateKey)==='1',manual:'spanish'},
-    {time:'5:30 PM',mins:1050,label:'Dinner and nutrition update',detail:'Record meals and hydration',done:foods.length>0,tab:'nutrition'},
+    {time:'5:30 PM',mins:1050,label:'Dinner',detail:'Evening meal and nutrition update',done:mealComplete('dinner',1050),tab:'nutrition'},
     {time:'6:30 PM',mins:1110,label:growth.label,detail:'Today’s rotating Growth focus',done:growth.done,tab:growth.tab,skip:!!growth.skip},
     {time:'8:15 PM',mins:1215,label:'Journal accomplishments and gratitude',detail:'Capture the day while it is fresh',done:reflected,tab:'daily'},
     {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:!!d.prepJournalCheck,tab:'daily'},
