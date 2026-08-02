@@ -96,6 +96,9 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .summary-table th{background:#667eea;color:white;padding:6px 8px;text-align:left;white-space:nowrap;}
 .summary-table td{padding:5px 8px;border-bottom:1px solid #f0f0f0;white-space:nowrap;}
 .summary-table tr:last-child td{font-weight:700;background:#f8f9fa;}
+.day-score-heading{text-align:center;}
+.day-score-table{max-width:760px;margin-left:auto;margin-right:auto;}
+.day-score-table th,.day-score-table td{text-align:center!important;width:50%!important;}
 @media(max-width:768px){
   .summary-table th:last-child,.summary-table td:last-child{width:100%;}
 }
@@ -1425,7 +1428,7 @@ body{
   </div>
   <div id="aiWeeklyBox" class="ai-box"></div>
   <div id="wDigest" class="week-digest"></div>
-  <h2>Day Score</h2><div id="wDayScore"></div>
+  <h2 class="day-score-heading">Day Score</h2><div id="wDayScore"></div>
   <h2>Growth</h2><div id="wGrowth"></div><h2>Critical Thinking</h2><div id="wCritical"></div><h2>Fitness</h2><div id="wFitness"></div><h2>Wellness</h2><div id="wWellness"></div>
 <h2>Nutrition</h2><div id="wNutrition"></div>
 <h2>Micronutrients</h2><div id="wNutritionMicro"></div>
@@ -1452,14 +1455,14 @@ body{
     <div class="heatmap-dow">S</div>
   </div>
 </div>
-<h2>Day Score</h2><div id="mDayScore"></div>
+  <h2 class="day-score-heading">Day Score</h2><div id="mDayScore"></div>
 <h2>Growth</h2><div id="mGrowth"></div><h2>Fitness</h2><div id="mFitness"></div><h2>Wellness</h2><div id="mWellness"></div>
 <h2>Nutrition</h2><div id="mNutrition"></div>
 <h2>Micronutrients</h2><div id="mNutritionMicro"></div>
 <h2>Spirituality</h2><div id="mSpirituality"></div>
 
 </div></div>
-<div id="tab-yearly" class="tab-panel"><div class="panel"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;"><div class="week-nav" style="margin-bottom:0;"><button onclick="changeYearOff(-1)">&#8249; Prev</button><span id="yearLabel"></span><button onclick="changeYearOff(1)">Next &#8250;</button></div></div><h2>Day Score</h2><div id="yDayScore"></div>
+<div id="tab-yearly" class="tab-panel"><div class="panel"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;"><div class="week-nav" style="margin-bottom:0;"><button onclick="changeYearOff(-1)">&#8249; Prev</button><span id="yearLabel"></span><button onclick="changeYearOff(1)">Next &#8250;</button></div></div><h2 class="day-score-heading">Day Score</h2><div id="yDayScore"></div>
 <h2>Growth</h2><div id="yGrowth"></div><h2>Fitness</h2><div id="yFitness"></div><h2>Wellness</h2><div id="yWellness"></div>
 <h2>Nutrition</h2><div id="yNutrition"></div>
 <h2>Micronutrients</h2><div id="yNutritionMicro"></div>
@@ -2848,39 +2851,39 @@ body{
   <div id="mealSections" style="margin-bottom:8px;max-height:55vh;overflow-y:auto;-webkit-overflow-scrolling:touch;">
     <div class="meal-section" id="ms-breakfast" data-meal="breakfast">
       <div class="meal-header" onclick="toggleMealSection('breakfast')">
-        <span>🌅 Breakfast</span><div class="meal-right"><span class="meal-subtotal" id="st-breakfast" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('breakfast')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-breakfast">▸</span></div>
+        <span>🌅 Breakfast</span><div class="meal-right"><span class="meal-subtotal" id="st-breakfast" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('breakfast')" class="meal-action-btn">Create Meal</button><button onclick="event.stopPropagation();addFoodItem('breakfast')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-breakfast">▸</span></div>
       </div>
       <div class="meal-body" id="mb-breakfast" style="display:none;"><div id="foodList-breakfast"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-breakfast" rows="1" placeholder="Breakfast notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('breakfast')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('breakfast')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-breakfast" rows="1" placeholder="Breakfast notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('breakfast')" class="meal-action-btn">&#x1F4C5; Copy to Date</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-lunch" data-meal="lunch">
       <div class="meal-header" onclick="toggleMealSection('lunch')">
-        <span>🥗 Lunch</span><div class="meal-right"><span class="meal-subtotal" id="st-lunch" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('lunch')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-lunch">▸</span></div>
+        <span>🥗 Lunch</span><div class="meal-right"><span class="meal-subtotal" id="st-lunch" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('lunch')" class="meal-action-btn">Create Meal</button><button onclick="event.stopPropagation();addFoodItem('lunch')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-lunch">▸</span></div>
       </div>
       <div class="meal-body" id="mb-lunch" style="display:none;"><div id="foodList-lunch"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-lunch" rows="1" placeholder="Lunch notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('lunch')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('lunch')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-lunch" rows="1" placeholder="Lunch notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('lunch')" class="meal-action-btn">&#x1F4C5; Copy to Date</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-dinner" data-meal="dinner">
       <div class="meal-header" onclick="toggleMealSection('dinner')">
-        <span>🍽️ Dinner</span><div class="meal-right"><span class="meal-subtotal" id="st-dinner" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('dinner')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-dinner">▸</span></div>
+        <span>🍽️ Dinner</span><div class="meal-right"><span class="meal-subtotal" id="st-dinner" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('dinner')" class="meal-action-btn">Create Meal</button><button onclick="event.stopPropagation();addFoodItem('dinner')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-dinner">▸</span></div>
       </div>
       <div class="meal-body" id="mb-dinner" style="display:none;"><div id="foodList-dinner"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-dinner" rows="1" placeholder="Dinner notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('dinner')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('dinner')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-dinner" rows="1" placeholder="Dinner notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('dinner')" class="meal-action-btn">&#x1F4C5; Copy to Date</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-snack" data-meal="snack">
       <div class="meal-header" onclick="toggleMealSection('snack')">
-        <span>🍎 Snacks</span><div class="meal-right"><span class="meal-subtotal" id="st-snack" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('snack')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-snack">▸</span></div>
+        <span>🍎 Snacks</span><div class="meal-right"><span class="meal-subtotal" id="st-snack" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('snack')" class="meal-action-btn">Create Meal</button><button onclick="event.stopPropagation();addFoodItem('snack')" class="meal-add-btn">+ Add</button><span class="meal-chevron" id="chev-snack">▸</span></div>
       </div>
       <div class="meal-body" id="mb-snack" style="display:none;"><div id="foodList-snack"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-snack" rows="1" placeholder="Snack notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('snack')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('snack')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-snack" rows="1" placeholder="Snack notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('snack')" class="meal-action-btn">&#x1F4C5; Copy to Date</button></div></div>
       </div>
     </div>
     <div class="meal-section" id="ms-liquids" data-meal="liquids">
       <div class="meal-header" onclick="toggleMealSection('liquids')" style="border-left-color:#3498db;">
-        <span>💧 Liquids</span><div class="meal-right"><span class="meal-subtotal" id="st-liquids" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('liquids')" style="background:none;border:none;color:#667eea;font-size:0.9rem;cursor:pointer;padding:0 2px;" title="Save liquids as a meal">&#x1F4BE;</button><button onclick="event.stopPropagation();addFoodItem('liquids')" class="meal-add-btn" style="background:#3498db;">+ Add</button><span class="meal-chevron" id="chev-liquids">▸</span></div>
+        <span>💧 Liquids</span><div class="meal-right"><span class="meal-subtotal" id="st-liquids" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('liquids')" class="meal-action-btn">Create Meal</button><button onclick="event.stopPropagation();addFoodItem('liquids')" class="meal-add-btn" style="background:#3498db;">+ Add</button><span class="meal-chevron" id="chev-liquids">▸</span></div>
       </div>
       <div class="meal-body" id="mb-liquids" style="display:none;"><div id="foodList-liquids"></div>
         <div style="padding:6px 8px 8px;"><textarea id="mnotes-liquids" rows="1" placeholder="Liquids notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea></div>
@@ -2888,10 +2891,10 @@ body{
     </div>
     <div class="meal-section" id="ms-sports" data-meal="sports">
       <div class="meal-header" onclick="toggleMealSection('sports')" style="border-left-color:#27ae60;">
-        <span>💪 Sports Nutrition</span><div class="meal-right"><span class="meal-subtotal" id="st-sports" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();addFoodItem('sports')" class="meal-add-btn" style="background:#27ae60;">+ Add</button><span class="meal-chevron" id="chev-sports">▸</span></div>
+        <span>💪 Sports Nutrition</span><div class="meal-right"><span class="meal-subtotal" id="st-sports" style="font-size:0.75rem;color:#888;"></span><button onclick="event.stopPropagation();saveMealFromSection('sports')" class="meal-action-btn">Create Meal</button><button onclick="event.stopPropagation();addFoodItem('sports')" class="meal-add-btn" style="background:#27ae60;">+ Add</button><span class="meal-chevron" id="chev-sports">▸</span></div>
       </div>
       <div class="meal-body" id="mb-sports" style="display:none;"><div id="foodList-sports"></div>
-        <div style="padding:6px 8px 8px;"><textarea id="mnotes-sports" rows="1" placeholder="Sports nutrition notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('sports')" class="meal-action-btn">&#x1F4C5; Copy to Date</button><button onclick="saveMealFromSection('sports')" class="meal-action-btn">&#x1F37D;&#xFE0F; Create Meal</button></div></div>
+        <div style="padding:6px 8px 8px;"><textarea id="mnotes-sports" rows="1" placeholder="Sports nutrition notes..." oninput="save()" style="width:100%;border:1px solid #e9ecef;border-radius:5px;padding:4px 8px;font-size:0.78rem;resize:vertical;font-family:inherit;box-sizing:border-box;background:#fafafa;color:#555;"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"><button onclick="openCopyMealToDate('sports')" class="meal-action-btn">&#x1F4C5; Copy to Date</button></div></div>
       </div>
     </div>
   </div>
@@ -4194,7 +4197,7 @@ const fH='<table class="summary-table"><thead><tr><th>Period</th><th>Miles</th><
 gRow=function(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';const skillCell=m.skillDone?(t?m.skillDone+'d':'&#x2705;'):'-';return`<tr style="${b}"><td>${l}</td><td>${fmtMinsSeconds(m.audiobook)}</td><td>${skillCell}</td></tr>`;};
 fRow=function(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';return`<tr style="${b}"><td>${l}</td><td>${m.miles?m.miles.toFixed(1):'-'}</td><td>${m.pace?fmtPace(m.pace):'-'}</td><td>${m.watts?Math.round(m.watts):'-'}</td><td>${fmtMinsSeconds(m.time)}</td><td>${m.steps?Math.round(m.steps):'-'}</td><td>${m.dogWalk?(Math.round(m.dogWalk*10)/10)%1===0?Math.round(m.dogWalk):+(m.dogWalk.toFixed(1)):'-'}</td><td>${m.walk?(Math.round(m.walk*10)/10)%1===0?Math.round(m.walk):+(m.walk.toFixed(1)):'-'}</td></tr>`;};
 const wH='<table class="summary-table"><thead><tr><th>Period</th><th>Weight</th><th>Sleep</th><th>Sleep Score</th><th>Avg BP</th><th>Pulse</th><th>Headache</th></tr></thead><tbody>';
-const dsH='<table class="summary-table"><thead><tr><th>Period</th><th>Day Score</th></tr></thead><tbody>';
+const dsH='<table class="summary-table day-score-table"><thead><tr><th>Period</th><th>Day Score</th></tr></thead><tbody>';
 function dsRow(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';return`<tr style="${b}"><td>${l}</td><td>${m.score?m.score.toFixed(1)+' / 5':'-'}</td></tr>`;}
 function mkT(h,r,t){return h+r.join('')+t+'</tbody></table>';}
 let weekOff2=0;
