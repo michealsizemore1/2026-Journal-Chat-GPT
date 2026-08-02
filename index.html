@@ -5870,6 +5870,13 @@ function calorieAdvisorActivityCalories(activity,weightLb){
   else if(hours)estimate=5.5*kg*hours;
   return{calories:Math.max(0,estimate),estimated:true};
 }
+function calorieAdvisorActivityDescription(activity,calorieResult){
+  var name=String(activity.title||activity.type||'Activity').trim(),parts=[];
+  if(parseFloat(activity.distance))parts.push(parseFloat(activity.distance).toFixed(2)+' mi');
+  if(activity.duration)parts.push(String(activity.duration));
+  parts.push(Math.round(calorieResult.calories||0).toLocaleString()+' kcal '+(calorieResult.estimated?'estimated':'recorded'));
+  return name+' ('+parts.join(' · ')+')';
+}
 function calculateDailyCalorieTarget(showMessage){
   var result=document.getElementById('calorieAdvisorResult');if(!result)return;
   var dateKey=dk(today),settings=calorieAdvisorSettings(),baseInput=document.getElementById('calorieBaseTarget'),goalInput=document.getElementById('calorieGoal'),refuelInput=document.getElementById('calorieRefuelPct');
@@ -5878,7 +5885,8 @@ function calculateDailyCalorieTarget(showMessage){
   var dateLabel=document.getElementById('calorieAdvisorDate');if(dateLabel)dateLabel.textContent=today.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   var weight=calorieAdvisorLatestWeight(dateKey),manualBase=parseFloat(settings.base)||0,base=manualBase||(weight?Math.round(weight*12.5/50)*50:2200);
   var activities=getActivities().filter(function(a){return a.date===dateKey;}),active=0,estimatedCount=0;
-  activities.forEach(function(a){var c=calorieAdvisorActivityCalories(a,weight);active+=c.calories;if(c.estimated&&c.calories)estimatedCount++;});
+  var activityDetails=[];
+  activities.forEach(function(a){var c=calorieAdvisorActivityCalories(a,weight);active+=c.calories;if(c.estimated&&c.calories)estimatedCount++;activityDetails.push(calorieAdvisorActivityDescription(a,c));});
   active=Math.round(active);var refuel=Math.max(0,Math.min(100,parseInt(settings.refuel||100,10)))/100,goalAdjust=settings.goal==='loss'?-300:(settings.goal==='gain'?250:0);
   var target=Math.max(1200,Math.round((base+active*refuel+goalAdjust)/25)*25),logged=Math.round((window._foodLog||[]).reduce(function(sum,x){return sum+(parseFloat(x.cal)||0)*(parseFloat(x.servings)||1);},0)),remaining=Math.max(0,target-logged),range=Math.max(100,Math.round(target*.05/25)*25);
   var workoutText=activities.length?activities.length+' workout'+(activities.length===1?'':'s')+' • '+active.toLocaleString()+' active kcal':'No workout logged • 0 active kcal';
@@ -5886,6 +5894,7 @@ function calculateDailyCalorieTarget(showMessage){
     +'<div style="margin-top:4px;"><strong>Practical range:</strong> '+Math.max(1200,target-range).toLocaleString()+'–'+(target+range).toLocaleString()+' kcal</div>'
     +'<div><strong>Calculation:</strong> '+base.toLocaleString()+' rest-day target + '+Math.round(active*refuel).toLocaleString()+' workout replacement'+(goalAdjust?' '+(goalAdjust>0?'+ ':'− ')+Math.abs(goalAdjust)+' goal adjustment':'')+'</div>'
     +'<div><strong>Activities:</strong> '+workoutText+(estimatedCount?' ('+estimatedCount+' estimated)':'')+'</div>'
+    +(activityDetails.length?'<div style="margin-top:3px;font-size:.72rem;color:#3f6212;"><strong>Used from Activities:</strong> '+activityDetails.map(escHtml).join('; ')+'</div>':'<div style="margin-top:3px;font-size:.72rem;color:#78716c;">No saved Activities were found for this date.</div>')
     +'<div><strong>Logged so far:</strong> '+logged.toLocaleString()+' kcal • <strong>Remaining:</strong> '+remaining.toLocaleString()+' kcal</div>'
     +(weight&&!manualBase?'<div style="font-size:.7rem;color:#78716c;margin-top:4px;">Automatic rest-day target uses your most recent weight of '+weight.toFixed(1)+' lb. Enter your own rest-day target above if you know it.</div>':'');
   if(showMessage&&typeof v26Toast==='function')v26Toast('Daily calorie target recalculated');
@@ -9622,6 +9631,7 @@ async function hydrateActivitiesStorage(){
     localStorage.removeItem('activities_data');
   }catch(ignore){}
   try{renderActivities();}catch(ignore2){}
+  try{calculateDailyCalorieTarget();}catch(ignore3){}
   return merged;
 }
 async function hydrateBibleReadingArchiveStorage(){
@@ -11257,6 +11267,7 @@ function getActivities(){
 }
 function saveActivities(a){
   _activitiesLargeCache=Array.isArray(a)?a:[];
+  try{calculateDailyCalorieTarget();}catch(ignore0){}
   journalLargeStoreSet('activities_data',_activitiesLargeCache).then(function(){
     try{localStorage.removeItem('activities_data');}catch(ignore){}
     if(journalCloudUser&&journalCloudReady){
