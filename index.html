@@ -12803,13 +12803,16 @@ function renderJournalSchedule(){
     {time:'5:45 AM',mins:345,label:'Bible reading and prayer',detail:'Daily spiritual anchors',done:d.spBibleAudio==='green'&&d.spAIPrayer==='green',tab:'bible'},
     {time:'6:30 AM',mins:390,label:'Today’s training',detail:training,done:activityDone,tab:'activities'},
     {time:'7:45 AM',mins:465,label:'Breakfast',detail:'Recovery meal and hydration after training',done:mealComplete('breakfast',465),tab:'nutrition'},
+    {time:'12:00 PM',mins:720,label:'Water checkpoint: 32 oz',detail:'Drink at least 32 ounces by noon',done:water>=32,tab:'nutrition'},
     {time:'12:00 PM',mins:720,label:'Lunch',detail:'Midday meal and hydration',done:mealComplete('lunch',720),tab:'nutrition'},
     {time:'12:30 PM',mins:750,label:'Library learning',detail:'Read, listen to an audiobook, or add book notes',done:!!parseTimedMins(d.gaAudiobookTime),tab:'library'},
     {time:'12:45 PM',mins:765,label:'Learn Spanish for 15 minutes',detail:'Tap this row after completing today’s practice',done:localStorage.getItem('schedule_spanish_'+dateKey)==='1',manual:'spanish'},
     {time:'5:30 PM',mins:1050,label:'Dinner',detail:'Evening meal and nutrition update',done:mealComplete('dinner',1050),tab:'nutrition'},
+    {time:'6:00 PM',mins:1080,label:'Water checkpoint: 64 oz',detail:'Drink another 32 ounces by 6:00 PM',done:water>=64,tab:'nutrition'},
     {time:'6:30 PM',mins:1110,label:growth.label,detail:'Today’s rotating Growth focus',done:growth.done,tab:growth.tab,skip:!!growth.skip},
     {time:'8:15 PM',mins:1215,label:'Journal accomplishments and gratitude',detail:'Capture the day while it is fresh',done:reflected,tab:'daily'},
     {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:!!d.prepJournalCheck,tab:'daily'},
+    {time:'9:00 PM',mins:1260,label:'Water checkpoint: 96 oz',detail:'Drink another 32 ounces by 9:00 PM',done:water>=96,tab:'nutrition'},
     {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:'Protect tomorrow’s recovery',done:!!d.wSleepVal&&(isPastDay||(isSelectedToday&&currentMinutes>=1290)),tab:'wellness'}
   ].filter(function(item){return !item.skip;});
   var complete=items.filter(function(item){return item.done;}).length,next=-1;
