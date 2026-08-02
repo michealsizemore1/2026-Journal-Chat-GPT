@@ -1106,6 +1106,35 @@ body{
       0 7px 15px rgba(10,49,97,.14),
       0 14px 26px rgba(10,49,97,.06);
   }
+
+  /* Keep every Daily card on the same vertical rails on phones. */
+  #tab-daily .journal-home,
+  #tab-daily .journal-calendar,
+  #tab-daily .check-overview,
+  #tab-daily .daily-prep-card,
+  #tab-daily .day-score-bar,
+  #tab-daily .journaling-section{
+    width:calc(100% - 20px)!important;
+    max-width:none!important;
+    margin-left:10px!important;
+    margin-right:10px!important;
+    box-sizing:border-box!important;
+  }
+  #tab-daily .daily-grid{
+    width:100%!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+    box-sizing:border-box!important;
+  }
+  #tab-daily .daily-grid > .col,
+  #tab-daily .daily-grid .section{
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin-left:0!important;
+    margin-right:0!important;
+    box-sizing:border-box!important;
+  }
 }
 .check-overview-head,.check-overview-summary{color:#0a3161;}
 .check-overview-filters button.active{background:#0a3161;border-color:#0a3161;}
