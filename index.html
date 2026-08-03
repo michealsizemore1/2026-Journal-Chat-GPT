@@ -3315,6 +3315,9 @@ function collectDailyChecks(){
   var hasCoding=skillEntries.some(function(entry){return entry.date===selectedKey&&(entry.category==='Coding'||entry.category==='Coding / Tech');});
   var hasGunRange=skillEntries.some(function(entry){return entry.date===selectedKey&&entry.category==='Gun Range';});
   var hasYouTube=fvItems().some(function(video){return video.watched&&video.watchedAt&&dk(new Date(video.watchedAt))===selectedKey;});
+  var stepsInput=document.getElementById('exSteps'),stepCount=parseFloat(stepsInput&&stepsInput.value)||0;
+  var stepStatus=stepCount>=10000?'green':(stepCount>0?'purple':'blank');
+  items.push({key:'',id:'exSteps',tab:'activities',group:'Activities',status:stepStatus,label:stepCount?'Steps: '+Math.round(stepCount).toLocaleString()+' / 10,000':'Steps (10,000 goal)'});
   items.push({key:'',id:'skillLogContainer',tab:'skill-log',group:'Growth',status:hasCoding?'green':'blank',label:'Coding / Tech'});
   items.push({key:'',id:'skillLogContainer',tab:'skill-log',group:'Growth',status:hasGunRange?'green':'blank',label:'Gun Range'});
   items.push({key:'',id:'fvVideoList',tab:'financial-videos',group:'Growth',status:hasYouTube?'green':'blank',label:'YouTube Financial Video'});
@@ -3876,7 +3879,7 @@ function attachListeners(){
   const rc=document.getElementById('reviewCheck');if(rc)rc.onchange=save;
   const pjc=document.getElementById('prepJournalCheck');if(pjc)pjc.onchange=save;
   TXS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=save;});
-  NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=save;});
+  NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=function(){save();if(id==='exSteps')renderDailyCheckOverview();};});
   renderCustomHabits();
   PTIDS.forEach(id=>{const row=document.getElementById(id);if(row){const tx=row.querySelector('input[type=text]');if(tx)tx.oninput=save;}});
   const jc=document.getElementById('jCombined');if(jc)jc.oninput=function(){syncJournalCombinedToFields();save();};
