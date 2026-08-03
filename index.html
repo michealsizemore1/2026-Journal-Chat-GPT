@@ -12843,7 +12843,7 @@ function journalTodayTrainingSummary(){
   var lines=String(text).split(/\r?\n/).map(function(line){return line.trim();}).filter(Boolean);
   for(var p=0;p<patterns.length;p++){
     var hit=lines.find(function(line){return patterns[p].re.test(line);});
-    if(hit){var distance=hit.match(/\b\d+(?:\.\d+)?\s*(?:miles?|mi)\b/i);return patterns[p].label+(distance?' â€” '+distance[0]:'');}
+    if(hit){var distance=hit.match(/\b\d+(?:\.\d+)?\s*(?:miles?|mi)\b/i);return patterns[p].label+(distance?' - '+distance[0]:'');}
   }
   var useful=lines.find(function(line){return !/^(week|day)\s*\d*|^(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/i.test(line);});
   return useful||lines[0]||'Workout scheduled';
