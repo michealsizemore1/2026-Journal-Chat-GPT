@@ -12743,16 +12743,15 @@ function journalHomeCard(id,title,body){
 function journalTodayTrainingSummary(){
   var dateKey=dk(today);
   var acts=getActivities().filter(function(a){return a.date===dateKey;});
-  var text=localStorage.getItem('workout_cache_'+dateKey)||'';
-  if(!text){
-    try{
-      var raw=localStorage.getItem('current_training_plan'),plan=raw?JSON.parse(raw):null;
-      if(plan&&plan.text&&plan.startDate){
-        var dayNum=Math.floor((new Date(dateKey+'T00:00:00')-new Date(plan.startDate+'T00:00:00'))/86400000)+1;
-        if(dayNum>0)text=extractWorkoutByPosition(plan.text,dayNum)||extractWorkoutSection(plan.text,today)||'';
-      }
-    }catch(e){}
-  }
+  var text='';
+  try{
+    var raw=localStorage.getItem('current_training_plan'),plan=raw?JSON.parse(raw):null;
+    if(plan&&plan.text&&plan.startDate){
+      var dayNum=Math.floor((new Date(dateKey+'T00:00:00')-new Date(plan.startDate+'T00:00:00'))/86400000)+1;
+      if(dayNum>0)text=extractWorkoutByPosition(plan.text,dayNum)||extractWorkoutSection(plan.text,today)||'';
+    }
+  }catch(e){}
+  if(!text)text=localStorage.getItem('workout_cache_'+dateKey)||'';
   if(!text)return acts.length?(acts[0].title||acts[0].type||'Activity logged'):'No workout scheduled';
   var patterns=[
     {re:/\blong\s+run\b/i,label:'Long Run'},{re:/\b(intervals?|repeats?|speed\s*work)\b/i,label:'Interval Run'},
@@ -12789,7 +12788,7 @@ function journalScheduleGrowth(dateKey){
   var thinking=['ctMentalModels','ctAssumption','ctSecondOrder','ctFinancialModels','ctFrameworks'].some(function(key){return daily[key]==='green';});
   if(weekday===0)return{label:'',done:false,tab:'daily',skip:true};
   if(weekday===2||weekday===4)return{label:'Financial YouTube learning',done:video,tab:'financial-videos'};
-  if(weekday===3)return{label:'Thinking practice',done:thinking,tab:'thinking'};
+  if(weekday===3)return{label:'Coding / Tech',done:coding,tab:'skill-log'};
   if(weekday===6)return{label:'Gun Range',done:range,tab:'skill-log'};
   return{label:weekday===5?'Skills session':'Coding / Tech',done:weekday===5?anySkill:coding,tab:'skill-log'};
 }
@@ -12802,6 +12801,8 @@ function renderJournalSchedule(){
   var body=document.getElementById('journalScheduleBody'),summary=document.getElementById('journalScheduleSummary');if(!body)return;
   var d=journalViewData(),dateKey=dk(today),foods=Array.isArray(d.foodLog)?d.foodLog:[],water=parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),training=journalTodayTrainingSummary(),growth=journalScheduleGrowth(dateKey);
   var now=new Date(),isSelectedToday=dk(now)===dateKey,currentMinutes=now.getHours()*60+now.getMinutes(),selectedDay=new Date(dateKey+'T00:00:00'),realDay=new Date(now.getFullYear(),now.getMonth(),now.getDate()),isPastDay=selectedDay<realDay;
+  var thinkingDay=Math.abs(Math.floor(selectedDay.getTime()/86400000))%2===0;
+  var thinkingDone=['ctMentalModels','ctAssumption','ctSecondOrder','ctFinancialModels','ctFrameworks'].some(function(key){return d[key]==='green';});
   function mealLogged(meal){
     meal=String(meal||'').toLowerCase();
     return foods.some(function(item){return String((item&&item.meal)||'').toLowerCase()===meal;});
@@ -12826,6 +12827,7 @@ function renderJournalSchedule(){
     {time:'5:30 PM',mins:1050,label:'Dinner',detail:'Evening meal and nutrition update',done:mealComplete('dinner',1050),tab:'nutrition'},
     {time:'6:00 PM',mins:1080,label:'Water checkpoint: 64 oz',detail:'Drink another 32 ounces by 6:00 PM',done:water>=64,tab:'nutrition'},
     {time:'6:30 PM',mins:1110,label:growth.label,detail:'Today’s rotating Growth focus',done:growth.done,tab:growth.tab,skip:!!growth.skip},
+    {time:'7:00 PM',mins:1140,label:'Thinking practice',detail:'Every-other-day Thinking category',done:thinkingDone,tab:'thinking',skip:!thinkingDay},
     {time:'8:15 PM',mins:1215,label:'Journal accomplishments and gratitude',detail:'Capture the day while it is fresh',done:reflected,tab:'daily'},
     {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:!!d.prepJournalCheck,tab:'daily'},
     {time:'9:00 PM',mins:1260,label:'Water checkpoint: 96 oz',detail:'Drink another 32 ounces by 9:00 PM',done:water>=96,tab:'nutrition'},
