@@ -3701,14 +3701,14 @@ function extractWorkoutFromActivePlan(plan,targetDate,allowPosition){
   var dayNum=0;
   if(plan.startDate)dayNum=Math.floor((new Date(dk(targetDate)+'T00:00:00')-new Date(plan.startDate+'T00:00:00'))/86400000)+1;
   if(dayNum<1)return null;
-  var weekNum=Math.ceil(dayNum/7),weekday=targetDate.toLocaleDateString('en-US',{weekday:'long'}).toLowerCase();
+  var weekNum=Math.ceil(dayNum/7),weekday=targetDate.toLocaleDateString('en-US',{weekday:'long'}).toLowerCase(),weekdayShort=targetDate.toLocaleDateString('en-US',{weekday:'short'}).toLowerCase();
   var lines=String(plan.text).split(/\r?\n/),weekStart=-1,weekEnd=lines.length;
   var weekRe=new RegExp('\\bweek\\s*'+weekNum+'\\b','i');
   for(var i=0;i<lines.length;i++){if(weekRe.test(lines[i])){weekStart=i;break;}}
   if(weekStart>=0){
     for(var j=weekStart+1;j<lines.length;j++){if(/\bweek\s*\d+\b/i.test(lines[j])){weekEnd=j;break;}}
-    var weekdays=/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i,dayStart=-1;
-    for(var k=weekStart+1;k<weekEnd;k++){if(lines[k].toLowerCase().indexOf(weekday)>=0){dayStart=k;break;}}
+    var weekdays=/\b(sun(?:day)?|mon(?:day)?|tue(?:sday)?|wed(?:nesday)?|thu(?:rsday)?|fri(?:day)?|sat(?:urday)?)\b/i,dayStart=-1;
+    for(var k=weekStart+1;k<weekEnd;k++){var lowerLine=lines[k].toLowerCase();if(lowerLine.indexOf(weekday)>=0||new RegExp('\\b'+weekdayShort+'\\b','i').test(lowerLine)){dayStart=k;break;}}
     if(dayStart>=0){
       var dayEnd=weekEnd;
       for(var n=dayStart+1;n<weekEnd;n++){if(weekdays.test(lines[n])){dayEnd=n;break;}}
@@ -12199,6 +12199,11 @@ function loadCurrentPlan(){
   var raw=localStorage.getItem('current_training_plan');
   if(!raw||!sec){if(sec)sec.style.display='none';return;}
   var plan;try{plan=JSON.parse(raw);}catch(e){sec.style.display='none';return;}
+  if(plan.scheduleMode&&(plan.scheduleVersion!==3||!plan.schedule||Object.keys(plan.schedule).length<2)){
+    var rebuiltSchedule=buildUploadedTrainingSchedule(plan.text,plan.startDate||dk(new Date()),plan.weeks);
+    plan.schedule=rebuiltSchedule.schedule;plan.scheduleMode=rebuiltSchedule.mode;plan.scheduleVersion=3;
+    localStorage.setItem('current_training_plan',JSON.stringify(plan));
+  }
   sec.style.display='block';
   // Meta line
   var meta=document.getElementById('tpPersistMeta');
@@ -12309,7 +12314,7 @@ function submitAdjustPlan(){
   aiCall(prompt,5000,function(text){
     plan.text=text;
     plan.adjustedAt=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    if(plan.scheduleMode){var rebuilt=buildUploadedTrainingSchedule(plan.text,plan.startDate,plan.weeks);plan.schedule=rebuilt.schedule;plan.scheduleMode=rebuilt.mode;}
+    if(plan.scheduleMode){var rebuilt=buildUploadedTrainingSchedule(plan.text,plan.startDate,plan.weeks);plan.schedule=rebuilt.schedule;plan.scheduleMode=rebuilt.mode;plan.scheduleVersion=3;}
     localStorage.setItem('current_training_plan',JSON.stringify(plan));
     renderActivePlan();
     closeAdjustPlan();
@@ -12580,7 +12585,7 @@ function trainingPlanDateFromLine(line,fallbackYear){
   m=clean.match(/\b(20\d{2})-(\d{1,2})-(\d{1,2})\b/);
   if(m)date=new Date(+m[1],+m[2]-1,+m[3]);
   if(!date){m=clean.match(/(?:^|\s)(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})(?:\s|$|[:–—-])/);if(m){var y=+m[3];if(y<100)y+=2000;date=new Date(y,+m[1]-1,+m[2]);}}
-  if(!date&&/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i.test(clean)){
+  if(!date&&/\b(sun(?:day)?|mon(?:day)?|tue(?:sday)?|wed(?:nesday)?|thu(?:rsday)?|fri(?:day)?|sat(?:urday)?)\b/i.test(clean)){
     var months={jan:0,january:0,feb:1,february:1,mar:2,march:2,apr:3,april:3,may:4,jun:5,june:5,jul:6,july:6,aug:7,august:7,sep:8,sept:8,september:8,oct:9,october:9,nov:10,november:10,dec:11,december:11};
     m=clean.match(/\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})(?:,?\s+(20\d{2}))?/i);
     if(m)date=new Date(+(m[3]||fallbackYear),months[m[1].toLowerCase()],+m[2]);
@@ -12615,7 +12620,7 @@ function uploadPlanFromFile(evt){
     const datedKeys=Object.keys(structured.schedule);
     const effectiveStart=structured.mode==='dated'&&datedKeys.length?datedKeys.sort()[0]:planStartDate;
     const metaStr='Uploaded text plan'+(weeks?' • '+weeks+' weeks':'');
-    const planObj={text,dist:'',weeks,raceDate:'',startDate:effectiveStart,schedule:structured.schedule,scheduleMode:structured.mode,meta:metaStr,createdAt:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})};
+    const planObj={text,dist:'',weeks,raceDate:'',startDate:effectiveStart,schedule:structured.schedule,scheduleMode:structured.mode,scheduleVersion:3,meta:metaStr,createdAt:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})};
     localStorage.setItem('current_training_plan',JSON.stringify(planObj));
     // Clear stale workout caches so new plan entries load fresh
     const _ck=[];for(let _i=0;_i<localStorage.length;_i++){const _k=localStorage.key(_i);if(_k&&_k.startsWith('workout_cache_'))_ck.push(_k);}
