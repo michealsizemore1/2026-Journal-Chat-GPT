@@ -1930,7 +1930,7 @@ body{
     <div class="task-row"><div class="tri-check" data-key="exMassage" onclick="triClick(this)"></div><label>Massage:</label><input type="text" id="exMassageVal" placeholder="Notes..."></div>
     <div class="task-row"><div class="tri-check" data-key="exWalk" onclick="triClick(this)"></div><label>Walk:</label><input type="text" id="exWalkVal" placeholder="Duration/notes..."></div>
     <div class="task-row"><div class="tri-check" data-key="exDogWalk" onclick="triClick(this)"></div><label>Dog Walk:</label><input type="text" id="exDogWalkVal" placeholder="Duration/notes..."></div>
-    <div class="goal-row"><label>Goal 10,000 steps - Actual:</label><input type="number" id="exSteps" min="0" placeholder="Steps"></div>
+    <div class="goal-row"><div class="tri-check" data-key="exStepsCheck" onclick="triClick(this)"></div><label>Goal 10,000 steps - Actual:</label><input type="number" id="exSteps" min="0" placeholder="Steps"></div>
     </div>
   </div>
   <!-- Mileage Summary -->
@@ -3315,9 +3315,6 @@ function collectDailyChecks(){
   var hasCoding=skillEntries.some(function(entry){return entry.date===selectedKey&&(entry.category==='Coding'||entry.category==='Coding / Tech');});
   var hasGunRange=skillEntries.some(function(entry){return entry.date===selectedKey&&entry.category==='Gun Range';});
   var hasYouTube=fvItems().some(function(video){return video.watched&&video.watchedAt&&dk(new Date(video.watchedAt))===selectedKey;});
-  var stepsInput=document.getElementById('exSteps'),stepCount=parseFloat(stepsInput&&stepsInput.value)||0;
-  var stepStatus=stepCount>=10000?'green':(stepCount>0?'purple':'blank');
-  items.push({key:'',id:'exSteps',tab:'activities',group:'Activities',status:stepStatus,label:stepCount?'Steps: '+Math.round(stepCount).toLocaleString()+' / 10,000':'Steps (10,000 goal)'});
   items.push({key:'',id:'skillLogContainer',tab:'skill-log',group:'Growth',status:hasCoding?'green':'blank',label:'Coding / Tech'});
   items.push({key:'',id:'skillLogContainer',tab:'skill-log',group:'Growth',status:hasGunRange?'green':'blank',label:'Gun Range'});
   items.push({key:'',id:'fvVideoList',tab:'financial-videos',group:'Growth',status:hasYouTube?'green':'blank',label:'YouTube Financial Video'});
@@ -3595,6 +3592,7 @@ function setWorkoutRaceDate(){
   localStorage.setItem('current_training_plan',JSON.stringify(plan));
   const sdr=document.getElementById('twStartDateRow');if(sdr)sdr.style.display='none';
   renderTrainingCard();
+  renderJournalHome();
 }
 function setWorkoutStartDate(){
   const dateVal=(document.getElementById('twStartDateInput')||{}).value||'';
@@ -3612,6 +3610,7 @@ function setWorkoutStartDate(){
   const body=document.getElementById('twBody');
   if(body)body.textContent='Start date saved ('+dateVal+'). Tap Load Workout to get the correct workout for each day.';
   const btn=document.getElementById('twLoadBtn');if(btn)btn.style.display='inline-block';
+  renderJournalHome();
 }
 function refreshTodayWorkout(){
   // Clear cache for viewed day and auto-reload
@@ -3620,6 +3619,7 @@ function refreshTodayWorkout(){
   if(body)body.textContent='⏳ Refreshing…';
   const btn=document.getElementById('twLoadBtn');
   if(btn)btn.style.display='none';
+  renderJournalHome();
   loadTodayWorkout();
 }
 function toggleWorkoutCard(){
@@ -12209,6 +12209,7 @@ function loadCurrentPlan(){
   var archived=[];try{archived=JSON.parse(localStorage.getItem('archived_plans')||'[]');}catch(e){}
   if(archSec)archSec.style.display=archived.length?'block':'none';
   renderArchivedPlans();
+  renderJournalHome();
 }
 function archivePlan(){
   var raw=localStorage.getItem('current_training_plan');
