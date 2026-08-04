@@ -10839,17 +10839,28 @@ function fvRenderWeeklyGrowth(start,end,days,labels){
   var endTime=new Date(end.getFullYear(),end.getMonth(),end.getDate(),23,59,59,999).getTime();
   var skills=getSkillEntries();
   var completed=fvItems().filter(function(video){var time=video.watchedAt?new Date(video.watchedAt).getTime():NaN;return video.watched&&Number.isFinite(time)&&time>=startTime&&time<=endTime;});
-  var codingTotal=0,rangeTotal=0,languageTotal=0,rows=[];
+  function skillCategory(entry){return String(entry&&entry.category||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+  function skillMatches(entry,category){
+    var cat=skillCategory(entry),search=String([entry&&entry.name,entry&&entry.resource,entry&&entry.notes].filter(Boolean).join(' ')).toLowerCase();
+    if(category==='coding')return cat==='coding'||cat==='coding tech'||(!cat&&/coding|programming|software|technology/.test(search));
+    if(category==='range')return cat==='gun range'||cat==='shooting'||(!cat&&/gun range|shooting|firearm/.test(search));
+    return cat==='language'||cat==='spanish'||cat==='language learning'||(!cat&&/language|spanish/.test(search));
+  }
+  function skillDisplay(minutes,count,isTotal){if(minutes)return fmtMinsSeconds(minutes);if(!count)return'-';return isTotal?count+' session'+(count===1?'':'s'):'&#x2705;';}
+  var codingTotal=0,rangeTotal=0,languageTotal=0,codingSessions=0,rangeSessions=0,languageSessions=0,rows=[];
   for(var i=0;i<7;i++){
     var date=new Date(start);date.setDate(start.getDate()+i);var key=dk(date);
-    var coding=skills.filter(function(entry){return entry.date===key&&(entry.category==='Coding'||entry.category==='Coding / Tech');}).reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
-    var range=skills.filter(function(entry){return entry.date===key&&entry.category==='Gun Range';}).reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
-    var language=skills.filter(function(entry){return entry.date===key&&entry.category==='Language';}).reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
+    var codingEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'coding');});
+    var rangeEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'range');});
+    var languageEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'language');});
+    var coding=codingEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
+    var range=rangeEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
+    var language=languageEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
     var videos=completed.filter(function(video){return dk(new Date(video.watchedAt))===key;}).reduce(function(total,video){return total+(Number(video.duration)||0);},0);
-    codingTotal+=coding;rangeTotal+=range;languageTotal+=language;
-    rows.push('<tr><td>'+escHtml(labels[i])+'</td><td>'+fmtMinsSeconds((days[i]||{}).audiobook||0)+'</td><td>'+fmtMinsSeconds(coding)+'</td><td>'+fmtMinsSeconds(range)+'</td><td>'+fmtMinsSeconds(language)+'</td><td>'+fmtMinsSeconds(videos)+'</td></tr>');
+    codingTotal+=coding;rangeTotal+=range;languageTotal+=language;codingSessions+=codingEntries.length;rangeSessions+=rangeEntries.length;languageSessions+=languageEntries.length;
+    rows.push('<tr><td>'+escHtml(labels[i])+'</td><td>'+fmtMinsSeconds((days[i]||{}).audiobook||0)+'</td><td>'+skillDisplay(coding,codingEntries.length,false)+'</td><td>'+skillDisplay(range,rangeEntries.length,false)+'</td><td>'+skillDisplay(language,languageEntries.length,false)+'</td><td>'+fmtMinsSeconds(videos)+'</td></tr>');
   }
-  rows.push('<tr style="background:#f8f9fa;font-weight:700"><td>TOTAL</td><td>'+fmtMinsSeconds(days.reduce(function(total,day){return total+((day||{}).audiobook||0);},0))+'</td><td>'+fmtMinsSeconds(codingTotal)+'</td><td>'+fmtMinsSeconds(rangeTotal)+'</td><td>'+fmtMinsSeconds(languageTotal)+'</td><td>'+fmtMinsSeconds(completed.reduce(function(total,video){return total+(Number(video.duration)||0);},0))+'</td></tr>');
+  rows.push('<tr style="background:#f8f9fa;font-weight:700"><td>TOTAL</td><td>'+fmtMinsSeconds(days.reduce(function(total,day){return total+((day||{}).audiobook||0);},0))+'</td><td>'+skillDisplay(codingTotal,codingSessions,true)+'</td><td>'+skillDisplay(rangeTotal,rangeSessions,true)+'</td><td>'+skillDisplay(languageTotal,languageSessions,true)+'</td><td>'+fmtMinsSeconds(completed.reduce(function(total,video){return total+(Number(video.duration)||0);},0))+'</td></tr>');
   host.innerHTML='<table class="summary-table"><thead><tr><th>Period</th><th>Audiobook</th><th>Coding / Tech</th><th>Gun Range</th><th>Language</th><th>Financial Videos</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
   var minutes=completed.reduce(function(total,video){return total+(Number(video.duration)||0);},0);
   var takeaways=completed.filter(function(video){return String(video.takeaway||'').trim();}).length;
