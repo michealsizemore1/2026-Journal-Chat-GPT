@@ -2446,6 +2446,8 @@ body{
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">
           <button class="btn-secondary" onclick="exportBackup()">Backup Now</button>
           <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Restore</button>
+          <button class="btn-secondary" type="button" onclick="journalCreateAutomaticBackup(true)">Create Recovery Point</button>
+          <button class="btn-secondary" type="button" onclick="openAutomaticBackups()">Daily Recovery Backups</button>
           <button class="btn-secondary" onclick="journalConsistencyCheck()">Check Journal</button>
           <button class="btn-secondary" type="button" onclick="openStorageBreakdown()">Storage Breakdown</button>
         </div>
@@ -2473,6 +2475,18 @@ body{
       <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
       <button class="btn-primary" onclick="saveJournalSettings()">Save Settings</button>
     </div>
+  </div>
+</div>
+
+<!-- Automatic Recovery Backups Modal -->
+<div class="modal-overlay" id="automaticBackupsModal" style="display:none;z-index:10030;">
+  <div class="modal" style="max-width:650px;max-height:88vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px;">
+      <h2 style="margin:0;">&#x1F6DF; Daily Recovery Backups</h2>
+      <button type="button" class="btn-secondary" onclick="closeAutomaticBackups()">Close</button>
+    </div>
+    <p style="font-size:.8rem;color:#667085;line-height:1.45;margin:4px 0 12px;">The journal automatically creates one recovery point per day before cloud synchronization. Seven recent days are retained on this browser.</p>
+    <div id="automaticBackupsList" style="overflow-y:auto;min-height:120px;"><div style="text-align:center;color:#98a2b3;padding:28px;">Loading recovery points...</div></div>
   </div>
 </div>
 
@@ -9796,6 +9810,51 @@ async function journalLargeStoreSet(key,value){
   var db=await journalLargeStoreOpen();
   return new Promise(function(resolve,reject){var tx=db.transaction('journal','readwrite');tx.objectStore('journal').put(value,key);tx.oncomplete=function(){resolve(true);};tx.onerror=function(){reject(tx.error);};});
 }
+async function journalAutomaticBackups(){
+  try{var rows=await journalLargeStoreGet('automatic_daily_backups');return Array.isArray(rows)?rows:[];}catch(error){return[];}
+}
+async function journalCreateAutomaticBackup(force){
+  try{
+    var dateKey=dk(new Date()),backups=await journalAutomaticBackups();
+    if(!force&&backups.some(function(item){return item.date===dateKey;}))return false;
+    var payload=await journalCloudPayload();
+    var plannerCount=Object.keys(payload).filter(function(key){return key.indexOf('planner_')===0;}).length;
+    var snapshot={id:Date.now(),date:dateKey,createdAt:new Date().toISOString(),plannerCount:plannerCount,payload:payload};
+    if(force)backups=backups.filter(function(item){return item.date!==dateKey;});
+    backups.unshift(snapshot);backups=backups.sort(function(a,b){return b.id-a.id;}).slice(0,7);
+    await journalLargeStoreSet('automatic_daily_backups',backups);
+    localStorage.setItem('journal_last_automatic_backup',snapshot.createdAt);
+    if(force){v26Toast('Recovery point created');renderAutomaticBackups();}
+    return true;
+  }catch(error){if(force)alert('The recovery point could not be created. Use Backup Now to save a JSON file instead.');return false;}
+}
+async function openAutomaticBackups(){
+  var modal=document.getElementById('automaticBackupsModal');if(modal)modal.style.display='flex';
+  await renderAutomaticBackups();
+}
+function closeAutomaticBackups(){var modal=document.getElementById('automaticBackupsModal');if(modal)modal.style.display='none';}
+async function renderAutomaticBackups(){
+  var host=document.getElementById('automaticBackupsList');if(!host)return;
+  var backups=await journalAutomaticBackups();
+  if(!backups.length){host.innerHTML='<div style="text-align:center;color:#667085;padding:28px;border:1px dashed #cbd5e1;border-radius:10px;">No automatic recovery points exist yet. One will be created today.</div>';return;}
+  host.innerHTML=backups.map(function(item){var when=new Date(item.createdAt);return '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #dbe3ee;border-radius:10px;margin-bottom:8px;background:#fff;"><div><strong style="display:block;color:#0a3161;">'+escHtml(when.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}))+'</strong><span style="font-size:.72rem;color:#667085;">'+escHtml(when.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}))+' &middot; '+Number(item.plannerCount||0)+' daily entries</span></div><button type="button" class="btn-primary" onclick="journalRestoreAutomaticBackup('+Number(item.id)+')">Restore</button></div>';}).join('');
+}
+async function journalRestoreAutomaticBackup(id){
+  var backups=await journalAutomaticBackups(),snapshot=backups.find(function(item){return Number(item.id)===Number(id);});if(!snapshot)return;
+  if(!confirm('Restore the recovery point from '+new Date(snapshot.createdAt).toLocaleString()+'?\n\nMatching journal information will be restored. Current information not contained in that backup will be preserved.'))return;
+  journalCloudApplying=true;
+  var payload=snapshot.payload||{},bibleArchive=null,activities=null;
+  Object.keys(payload).forEach(function(key){
+    if(key==='bible_reading_archive'){try{bibleArchive=JSON.parse(payload[key]||'[]');}catch(ignore){}return;}
+    if(key==='activities_data'){try{activities=JSON.parse(payload[key]||'[]');}catch(ignore2){}return;}
+    if(journalCloudCanSyncKey(key))localStorage.setItem(key,String(payload[key]));
+  });
+  if(Array.isArray(bibleArchive)){_bibleReadingArchiveLargeCache=bibleArchive;await journalLargeStoreSet('bible_reading_archive',bibleArchive);}
+  if(Array.isArray(activities)){_activitiesLargeCache=activities;await journalLargeStoreSet('activities_data',activities);}
+  localStorage.setItem('journal_cloud_last_sync',new Date().toISOString());
+  localStorage.setItem('journal_cloud_dirty','1');
+  journalCloudApplying=false;location.reload();
+}
 async function hydrateActivitiesStorage(){
   var legacy=[];
   try{legacy=JSON.parse(localStorage.getItem('activities_data')||'[]')||[];}catch(e){}
@@ -13091,7 +13150,7 @@ function journalCloudCanSyncKey(k){
   var lower=String(k).toLowerCase();
   if(journalIsExternalAppKey(k))return false;
   if(lower==='handwriting_2026-07-27'||lower==='handwriting_2026-07-29')return false;
-  if(lower==='ai_key'||lower.indexOf('sb-')===0||lower.indexOf('journal_cloud_')===0)return false;
+  if(lower==='ai_key'||lower.indexOf('sb-')===0||lower.indexOf('journal_cloud_')===0||lower.indexOf('journal_google_')===0)return false;
   if(lower.indexOf('service_role')>=0||lower.indexOf('sb_secret_')>=0||lower.indexOf('password')>=0)return false;
   return true;
 }
@@ -13224,9 +13283,6 @@ async function journalCloudUpload(showMessage,expectedRevision){
 }
 async function journalCloudApply(payload,updatedAt,revision){
   journalCloudApplying=true;
-  var remove=[];
-  for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(journalCloudCanSyncKey(k))remove.push(k);}
-  remove.forEach(function(k){localStorage.removeItem(k);});
   var cloudBibleArchive=null,cloudActivities=null;
   Object.keys(payload||{}).forEach(function(k){
     if(k==='bible_reading_archive'){try{cloudBibleArchive=JSON.parse(payload[k]||'[]');}catch(ignore){}return;}
@@ -13566,6 +13622,7 @@ function v26SavedFeedback(){
   window._v26SaveTimer=setTimeout(function(){el.textContent=journalCloudUser?'Saved locally — cloud sync pending':'Saved on this device';},450);
 }
 window.addEventListener('DOMContentLoaded',function(){
+  journalCreateAutomaticBackup(false);
   journalCloudInit();
   restoreMealPlanningState();
   arrangeActivityTrainingCards();
