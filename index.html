@@ -1577,7 +1577,7 @@ body{
   <button onclick="saveReview()" style="background:#667eea;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:0.85rem;">Save Review</button>
 </div></div>
 </div>
-<div id="tab-habits" class="tab-panel">
+<div id="tab-habits-retired" hidden aria-hidden="true">
   <div class="panel">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
       <div>
@@ -1743,7 +1743,7 @@ body{
         <div><strong>Measure consistency</strong><span>Use completion rate and momentum—not only an unbroken streak.</span></div>
         <div><strong>Recover quickly</strong><span>A missed day is information. Aim to return on the next scheduled day.</span></div>
       </div>
-      <button class="h2-secondary" onclick="h2ImportLegacyHabits()">Import custom habits from current Habits</button>
+      <button class="h2-secondary" onclick="h2ImportLegacyHabits()">Import saved legacy habits</button>
     </details>
   </div>
 </div>
@@ -2645,7 +2645,6 @@ body{
   <!-- Header -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
     <div style="display:flex;align-items:center;gap:8px;">
-      <div class="tri-check" data-key="gaSkill" onclick="triClick(this)" title="Mark today's Skill Building complete"></div>
       <h2 style="margin:0;font-size:1.1rem;color:#8e44ad;">&#x1F6E0;&#xFE0F; Skill Building</h2>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -8037,7 +8036,7 @@ function h2RenderInsights(state){
   var heat=document.getElementById('h2Heatmap');if(!heat)return;var start=new Date();start.setDate(start.getDate()-83);var cells=[];for(var i=0;i<84;i++){var d=new Date(start);d.setDate(d.getDate()+i);var due=state.habits.filter(function(h){return h2IsDue(h,d,state);}),done=due.filter(function(h){return h2IsComplete(h,h2Log(state,h.id,h2Key(d)));}).length,ratio=due.length?done/due.length:0,level=ratio===0?'':ratio<.5?'l1':ratio<1?'l2':'l3';cells.push('<i class="'+level+'" title="'+d.toLocaleDateString()+': '+done+'/'+due.length+'"></i>');}heat.innerHTML=cells.join('');
   var perf=document.getElementById('h2Performance');perf.innerHTML=state.habits.length?state.habits.map(function(h){var s=h2HabitStats(state,h);return'<div class="h2-performance-row"><div class="h2-performance-label"><span>'+escHtml(h.name)+'</span><strong>'+s.rate+'%</strong></div><div class="h2-performance-bar"><i style="width:'+s.rate+'%;background:'+h.color+'"></i></div></div>';}).join(''):'<div style="font-size:.72rem;color:#94a3b8;">Add habits to see performance.</div>';
 }
-function h2ImportLegacyHabits(){var legacy=[];try{legacy=JSON.parse(localStorage.getItem('habit_list')||'[]');}catch(e){}if(!legacy.length){alert('There are no custom habits to import from the current Habits section.');return;}var state=h2State(),names={};state.habits.forEach(function(h){names[h.name.toLowerCase()]=true;});var added=0;legacy.forEach(function(h){if(!h.name||names[h.name.toLowerCase()])return;state.habits.push({id:'h2-'+Date.now()+'-'+added,name:h.name,category:'Growth',color:'#16835d',type:'check',target:1,schedule:'daily',weeklyTarget:3,days:[1,2,3,4,5],why:'',cue:h.stack||'',minimum:'',created:new Date().toISOString()});names[h.name.toLowerCase()]=true;added++;});if(h2SaveState(state)){h2Render();alert(added+' habit'+(added===1?'':'s')+' imported. The original Habits section was not changed.');}}
+function h2ImportLegacyHabits(){var legacy=[];try{legacy=JSON.parse(localStorage.getItem('habit_list')||'[]');}catch(e){}if(!legacy.length){alert('There are no saved legacy habits to import.');return;}var state=h2State(),names={};state.habits.forEach(function(h){names[h.name.toLowerCase()]=true;});var added=0;legacy.forEach(function(h){if(!h.name||names[h.name.toLowerCase()])return;state.habits.push({id:'h2-'+Date.now()+'-'+added,name:h.name,category:'Growth',color:'#16835d',type:'check',target:1,schedule:'daily',weeklyTarget:3,days:[1,2,3,4,5],why:'',cue:h.stack||'',minimum:'',created:new Date().toISOString()});names[h.name.toLowerCase()]=true;added++;});if(h2SaveState(state)){h2Render();alert(added+' saved legacy habit'+(added===1?'':'s')+' imported.');}}
 
 function toggleAtomicHabits(){
   var body=document.getElementById('atomicHabBody');
