@@ -10855,7 +10855,7 @@ function fvRenderWeeklyGrowth(start,end,days,labels){
     var languageEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'language');});
     var coding=codingEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
     var range=rangeEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
-    var language=languageEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
+    var language=languageEntries.reduce(function(total,entry){var minutes=parseSkillTimeMins(entry.time);return total+(minutes||15);},0);
     var videos=completed.filter(function(video){return dk(new Date(video.watchedAt))===key;}).reduce(function(total,video){return total+(Number(video.duration)||0);},0);
     codingTotal+=coding;rangeTotal+=range;languageTotal+=language;codingSessions+=codingEntries.length;rangeSessions+=rangeEntries.length;languageSessions+=languageEntries.length;
     rows.push('<tr><td>'+escHtml(labels[i])+'</td><td>'+fmtMinsSeconds((days[i]||{}).audiobook||0)+'</td><td>'+skillDisplay(coding,codingEntries.length,false)+'</td><td>'+skillDisplay(range,rangeEntries.length,false)+'</td><td>'+skillDisplay(language,languageEntries.length,false)+'</td><td>'+fmtMinsSeconds(videos)+'</td></tr>');
