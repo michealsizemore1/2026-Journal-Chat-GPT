@@ -861,9 +861,11 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-schedule-status{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;font-size:.75rem;color:#667085;}
 .journal-schedule-status strong{color:#172033;font-size:.82rem;}
 .journal-schedule-list{display:grid;gap:6px;}
-.journal-schedule-item{display:grid;grid-template-columns:62px 19px minmax(0,1fr);align-items:center;gap:7px;width:100%;border:0;border-radius:8px;background:#f8fafc;padding:7px 8px;text-align:left;color:#344054;cursor:pointer;font-family:inherit;box-sizing:border-box;}
+.journal-schedule-item{display:grid;grid-template-columns:18px 62px 19px minmax(0,1fr);align-items:center;gap:7px;width:100%;border:0;border-radius:8px;background:#f8fafc;padding:7px 8px;text-align:left;color:#344054;cursor:pointer;font-family:inherit;box-sizing:border-box;touch-action:pan-y;transition:opacity .15s,transform .15s,box-shadow .15s;}
 .journal-schedule-item:hover{background:#eef4ff;}.journal-schedule-item.done{background:#edf9f1;color:#267143;}.journal-schedule-item.next{box-shadow:inset 3px 0 #315a9b;background:#f2f6ff;}
 .journal-schedule-item.fixed{background:#eef2f7;color:#334155;cursor:default;}.journal-schedule-item.fixed:hover{background:#eef2f7;}
+.journal-schedule-item.dragging{opacity:.42;}.journal-schedule-item.drag-before{box-shadow:inset 0 3px #315a9b;transform:translateY(2px);}.journal-schedule-item.drag-after{box-shadow:inset 0 -3px #315a9b;transform:translateY(-2px);}
+.journal-schedule-grip{font-size:1rem;color:#98a2b3;cursor:grab;line-height:1;letter-spacing:-3px;user-select:none;}.journal-schedule-item:active .journal-schedule-grip{cursor:grabbing;}
 .journal-schedule-time{font-size:.68rem;font-weight:800;color:#667085;}.journal-schedule-check{width:16px;height:16px;border:2px solid #b8c0cc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;background:#fff;}.journal-schedule-item.done .journal-schedule-check{border-color:#22a06b;background:#22a06b;color:#fff;}.journal-schedule-item.fixed .journal-schedule-check{border-color:#94a3b8;background:#eef2f7;color:#475569;font-size:9px;}
 .journal-schedule-name{font-size:.76rem;font-weight:700;line-height:1.3;}.journal-schedule-detail{display:block;font-size:.66rem;font-weight:500;color:#7a8494;margin-top:2px;}
 .journal-calendar{margin:10px 16px;border:1px solid #d8def0;border-radius:12px;background:#fff;overflow:hidden;}
@@ -1412,6 +1414,16 @@ body{
         <span id="copyTasksConfirm" style="font-size:0.78rem;color:#16a34a;display:none;">✓ Copied!</span>
       </div>
       </div>
+    </div>
+    <div class="section">
+      <div class="section-title green">&#x1F4AA; Fitness</div>
+      <div class="task-row">
+        <div class="tri-check" data-key="exMassage" onclick="triClick(this)" title="Mark massage complete"></div>
+        <label for="dailyMassageMinutes">Massage:</label>
+        <input type="number" id="dailyMassageMinutes" min="0" step="1" inputmode="numeric" placeholder="Minutes" oninput="syncMassageMinutes('daily')" style="max-width:100px;">
+        <span style="font-size:.78rem;color:#667085;">min</span>
+      </div>
+      <div style="font-size:.68rem;color:#94a3b8;margin-top:4px;">This time is shared with Activities → Daily Movement &amp; Recovery.</div>
     </div>
   </div>
 
@@ -1969,7 +1981,7 @@ body{
     <div class="task-row"><div class="tri-check" data-key="exStrength" onclick="triClick(this)"></div><label>Strength:</label><input type="text" id="exStrengthVal" placeholder="Notes..."></div>
     <div class="task-row" style="display:none;"><div class="tri-check" data-key="exBike" onclick="triClick(this)"></div><label>Bike:</label><input type="text" id="exBikeVal" placeholder="Distance/time..."></div>
     <div class="task-row"><div class="tri-check" data-key="exStretch" onclick="triClick(this)"></div><label>Stretch:</label><input type="text" id="exStretchVal" placeholder="Duration..."></div>
-    <div class="task-row"><div class="tri-check" data-key="exMassage" onclick="triClick(this)"></div><label>Massage:</label><input type="text" id="exMassageVal" placeholder="Notes..."></div>
+    <div class="task-row"><div class="tri-check" data-key="exMassage" onclick="triClick(this)"></div><label for="exMassageMinutes">Massage:</label><input type="number" id="exMassageMinutes" min="0" step="1" inputmode="numeric" placeholder="Minutes" style="max-width:100px;"><span style="font-size:.78rem;color:#667085;">min</span><input type="text" id="exMassageVal" placeholder="Notes (optional)..."></div>
     <div class="task-row"><div class="tri-check" data-key="exWalk" onclick="triClick(this)"></div><label>Walk:</label><input type="text" id="exWalkVal" placeholder="Duration/notes..."></div>
     <div class="task-row"><div class="tri-check" data-key="exDogWalk" onclick="triClick(this)"></div><label>Dog Walk:</label><input type="text" id="exDogWalkVal" placeholder="Duration/notes..."></div>
     <div class="goal-row"><div class="tri-check" data-key="exStepsCheck" onclick="triClick(this)"></div><label>Goal 10,000 steps - Actual:</label><input type="number" id="exSteps" min="0" placeholder="Steps"></div>
@@ -3320,12 +3332,18 @@ function jumpToDailyCheck(btn){
 
 function updateWaterDisplay(){const cups=(waterOz/8).toFixed(1);const el=document.getElementById('waterDisplay');if(el)el.textContent=waterOz+' oz ('+cups+' cups)';}
 function changeWater(delta){waterOz=Math.max(0,waterOz+delta);updateWaterDisplay();save();}
+function syncMassageMinutes(source){
+  var daily=document.getElementById('dailyMassageMinutes'),activities=document.getElementById('exMassageMinutes');
+  if(source==='daily'&&daily&&activities)activities.value=daily.value;
+  else if(activities&&daily)daily.value=activities.value;
+  save();renderJournalSchedule();
+}
 function parseBP(s){if(!s)return{sys:0,dia:0};const m=s.match(/(\d+)\s*\/\s*(\d+)/);return m?{sys:+m[1],dia:+m[2]}:{sys:0,dia:0};}
 function buildStars(){const ss=document.getElementById('scoreStars');if(!ss)return;ss.innerHTML='';for(let i=1;i<=5;i++){const s=document.createElement('span');s.className='star'+(i<=scoreVal?' active':'');s.textContent='★';s.onclick=()=>{scoreVal=(scoreVal===i)?i-1:i;buildStars();save();};ss.appendChild(s);}updateTodayGlance();}
 
 // All text/number fields
 const TXS=['spDailyBreadText','spMeditationText','gaAudiobookText','gaAudiobookTime','gaSkillText','gaSkillTime','wBPVal','wPulseVal','wMedsVal','wWghtVal','wSleepVal','wHeadacheNote','exStrengthVal','exBikeVal','exStretchVal','exMassageVal','exWalkVal','exDogWalkVal','nuCalVal','nuProtVal','nuFatVal','nuCarbsVal','jAccomplish','jImprov','jGratitude','jNotes','habitIdentity','habitReflection','mpBreakfast','mpLunch','mpDinner','mpSnack','mpSports','mnotes-breakfast','mnotes-lunch','mnotes-dinner','mnotes-snack','mnotes-liquids','mnotes-sports'];
-const NMS=['exSteps','wSleepScore'];
+const NMS=['exSteps','wSleepScore','exMassageMinutes'];
 const PTIDS=['pt0','pt1','pt2','dg0','dg1','dg2'];
 
 function save(){
@@ -3779,6 +3797,7 @@ function load(){
     // Text fields
     TXS.forEach(id=>{const e=document.getElementById(id);if(e)e.value=d[id]||'';});
     NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.value=d[id]||'';});
+    const dailyMassage=document.getElementById('dailyMassageMinutes');if(dailyMassage)dailyMassage.value=d.exMassageMinutes||'';
     const jcEl=document.getElementById('jCombined');if(jcEl)jcEl.value=buildJournalCombined();
     waterOz=d.waterOz||(d.waterCount?d.waterCount*8:0);updateWaterDisplay();
     scoreVal=d.score||0;buildStars();
@@ -3830,7 +3849,7 @@ function attachListeners(){
   const rc=document.getElementById('reviewCheck');if(rc)rc.onchange=save;
   const pjc=document.getElementById('prepJournalCheck');if(pjc)pjc.onchange=save;
   TXS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=save;});
-  NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=function(){save();if(id==='exSteps')renderDailyCheckOverview();};});
+  NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=function(){if(id==='exMassageMinutes'){syncMassageMinutes('activities');return;}save();if(id==='exSteps')renderDailyCheckOverview();};});
   renderCustomHabits();
   PTIDS.forEach(id=>{const row=document.getElementById(id);if(row){const tx=row.querySelector('input[type=text]');if(tx)tx.oninput=save;}});
   const jc=document.getElementById('jCombined');if(jc)jc.oninput=function(){syncJournalCombinedToFields();save();};
@@ -7631,7 +7650,7 @@ async function submitAskJournal(){
     if(dd.exStrength==='green'||dd.exStrengthVal)parts.push('Strength: '+(dd.exStrengthVal||'✓'));
     if(dd.exBike==='green'||dd.exBikeVal)parts.push('Bike: '+(dd.exBikeVal||'✓'));
     if(dd.exStretch==='green'||dd.exStretchVal)parts.push('Stretch: '+(dd.exStretchVal||'✓'));
-    if(dd.exMassage==='green'||dd.exMassageVal)parts.push('Massage: '+(dd.exMassageVal||'✓'));
+    if(dd.exMassage==='green'||dd.exMassageVal||dd.exMassageMinutes)parts.push('Massage: '+[dd.exMassageMinutes?dd.exMassageMinutes+' min':'',dd.exMassageVal||''].filter(Boolean).join(' — ')||'✓');
     if(dd.exWalk==='green'||dd.exWalkVal)parts.push('Walk: '+(dd.exWalkVal||'✓'));
     // Nutrition
     if(dd.nuCalVal||dd.nuProtVal)parts.push('Nutrition — Cal: '+(dd.nuCalVal||'?')+' | Prot: '+(dd.nuProtVal||'?')+'g | Fat: '+(dd.nuFatVal||'?')+'g | Carbs: '+(dd.nuCarbsVal||'?')+'g');
@@ -10402,10 +10421,11 @@ function renderWeeklyGrowthTable(start,end,days,labels){
     var cat=skillCategory(entry),search=String([entry&&entry.name,entry&&entry.resource,entry&&entry.notes].filter(Boolean).join(' ')).toLowerCase();
     if(category==='coding')return cat==='coding'||cat==='coding tech'||(!cat&&/coding|programming|software|technology/.test(search));
     if(category==='range')return cat==='gun range'||cat==='shooting'||(!cat&&/gun range|shooting|firearm/.test(search));
-    if(category==='retirement')return cat==='retirement videos'||(!cat&&/retirement video/.test(search));
+    if(category==='retirement')return cat==='retirement videos'||cat==='financial videos'||cat==='finance'||(!cat&&/retirement video|financial video|finance video/.test(search));
     return cat==='language'||cat==='spanish'||cat==='language learning'||(!cat&&/language|spanish/.test(search));
   }
   function skillDisplay(minutes,count,isTotal){if(minutes)return fmtMinsSeconds(minutes);if(!count)return'-';return isTotal?count+' session'+(count===1?'':'s'):'&#x2705;';}
+  function financialVideoTimeDisplay(minutes,count){if(minutes)return fmtMinsSeconds(minutes);return count?'Time not entered':'-';}
   var codingTotal=0,rangeTotal=0,languageTotal=0,retirementTotal=0,codingSessions=0,rangeSessions=0,languageSessions=0,retirementSessions=0,rows=[];
   for(var i=0;i<7;i++){
     var date=new Date(start);date.setDate(start.getDate()+i);var key=dk(date);
@@ -10418,10 +10438,10 @@ function renderWeeklyGrowthTable(start,end,days,labels){
     var language=languageEntries.reduce(function(total,entry){var minutes=parseSkillTimeMins(entry.time);return total+(minutes||15);},0);
     var retirement=retirementEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
     codingTotal+=coding;rangeTotal+=range;languageTotal+=language;retirementTotal+=retirement;codingSessions+=codingEntries.length;rangeSessions+=rangeEntries.length;languageSessions+=languageEntries.length;retirementSessions+=retirementEntries.length;
-    rows.push('<tr><td>'+escHtml(labels[i])+'</td><td>'+fmtMinsSeconds((days[i]||{}).audiobook||0)+'</td><td>'+skillDisplay(coding,codingEntries.length,false)+'</td><td>'+skillDisplay(range,rangeEntries.length,false)+'</td><td>'+skillDisplay(language,languageEntries.length,false)+'</td><td>'+skillDisplay(retirement,retirementEntries.length,false)+'</td></tr>');
+    rows.push('<tr><td>'+escHtml(labels[i])+'</td><td>'+fmtMinsSeconds((days[i]||{}).audiobook||0)+'</td><td>'+skillDisplay(coding,codingEntries.length,false)+'</td><td>'+skillDisplay(range,rangeEntries.length,false)+'</td><td>'+skillDisplay(language,languageEntries.length,false)+'</td><td>'+financialVideoTimeDisplay(retirement,retirementEntries.length)+'</td></tr>');
   }
-  rows.push('<tr style="background:#f8f9fa;font-weight:700"><td>TOTAL</td><td>'+fmtMinsSeconds(days.reduce(function(total,day){return total+((day||{}).audiobook||0);},0))+'</td><td>'+skillDisplay(codingTotal,codingSessions,true)+'</td><td>'+skillDisplay(rangeTotal,rangeSessions,true)+'</td><td>'+skillDisplay(languageTotal,languageSessions,true)+'</td><td>'+skillDisplay(retirementTotal,retirementSessions,true)+'</td></tr>');
-  host.innerHTML='<table class="summary-table"><thead><tr><th>Period</th><th>Audiobook</th><th>Coding / Tech</th><th>Gun Range</th><th>Language</th><th>Retirement Videos</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
+  rows.push('<tr style="background:#f8f9fa;font-weight:700"><td>TOTAL</td><td>'+fmtMinsSeconds(days.reduce(function(total,day){return total+((day||{}).audiobook||0);},0))+'</td><td>'+skillDisplay(codingTotal,codingSessions,true)+'</td><td>'+skillDisplay(rangeTotal,rangeSessions,true)+'</td><td>'+skillDisplay(languageTotal,languageSessions,true)+'</td><td>'+financialVideoTimeDisplay(retirementTotal,retirementSessions)+'</td></tr>');
+  host.innerHTML='<table class="summary-table"><thead><tr><th>Period</th><th>Audiobook</th><th>Coding / Tech</th><th>Gun Range</th><th>Language</th><th>Financial Videos</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
 }
 
 var _hmTabs=['nutrition','habits2','meditate','bible','library','activities','skill-log','wellness','file-uploads'];
@@ -12655,6 +12675,32 @@ function journalToggleScheduleManual(name){
   if(done)localStorage.removeItem(key);else localStorage.setItem(key,'1');
   renderJournalSchedule();
 }
+var _journalScheduleDragged='',_journalScheduleSuppressClick=0;
+function journalScheduleOrderKey(dateKey){return'journal_schedule_order_'+dateKey;}
+function journalScheduleApplyOrder(items,dateKey){
+  var saved=[];try{saved=JSON.parse(localStorage.getItem(journalScheduleOrderKey(dateKey))||'[]');}catch(ignore){}
+  if(!Array.isArray(saved)||!saved.length)return items;
+  var byId={};items.forEach(function(item){byId[item.id]=item;});var ordered=[];
+  saved.forEach(function(id){if(byId[id]){ordered.push(byId[id]);delete byId[id];}});
+  items.forEach(function(item){if(byId[item.id]){ordered.push(item);delete byId[item.id];}});return ordered;
+}
+function journalScheduleDragStart(event,id){
+  _journalScheduleDragged=id;_journalScheduleSuppressClick=Date.now()+600;event.currentTarget.classList.add('dragging');
+  if(event.dataTransfer){event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',id);}
+}
+function journalScheduleDragOver(event){
+  event.preventDefault();var card=event.currentTarget;if(card.dataset.scheduleId===_journalScheduleDragged)return;
+  document.querySelectorAll('.journal-schedule-item.drag-before,.journal-schedule-item.drag-after').forEach(function(el){el.classList.remove('drag-before','drag-after');});
+  var rect=card.getBoundingClientRect(),after=event.clientY>rect.top+rect.height/2;card.classList.add(after?'drag-after':'drag-before');if(event.dataTransfer)event.dataTransfer.dropEffect='move';
+}
+function journalScheduleDrop(event,targetId){
+  event.preventDefault();var sourceId=_journalScheduleDragged||(event.dataTransfer&&event.dataTransfer.getData('text/plain'));if(!sourceId||sourceId===targetId){journalScheduleDragEnd();return;}
+  var cards=Array.from(document.querySelectorAll('#journalScheduleBody .journal-schedule-item')),order=cards.map(function(card){return card.dataset.scheduleId;}),from=order.indexOf(sourceId),to=order.indexOf(targetId);if(from<0||to<0){journalScheduleDragEnd();return;}
+  var rect=event.currentTarget.getBoundingClientRect(),after=event.clientY>rect.top+rect.height/2;order.splice(from,1);to=order.indexOf(targetId)+(after?1:0);order.splice(to,0,sourceId);
+  localStorage.setItem(journalScheduleOrderKey(dk(today)),JSON.stringify(order));journalScheduleDragEnd();renderJournalSchedule();v26Toast('Schedule order saved');
+}
+function journalScheduleDragEnd(){_journalScheduleDragged='';document.querySelectorAll('.journal-schedule-item.dragging,.journal-schedule-item.drag-before,.journal-schedule-item.drag-after').forEach(function(el){el.classList.remove('dragging','drag-before','drag-after');});}
+function journalScheduleCardClick(action){if(Date.now()<_journalScheduleSuppressClick)return;if(action)Function(action)();}
 function renderJournalSchedule(){
   var body=document.getElementById('journalScheduleBody'),summary=document.getElementById('journalScheduleSummary');if(!body)return;
   var d=journalViewData(),dateKey=dk(today),foods=Array.isArray(d.foodLog)?d.foodLog:[],water=parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),training=journalTodayTrainingSummary(),growth=journalScheduleGrowth(dateKey);
@@ -12690,7 +12736,7 @@ function renderJournalSchedule(){
     {time:'5:45 AM',mins:345,label:'Bible reading and prayer',detail:'Daily spiritual anchors',done:d.spBibleAudio==='green'&&d.spAIPrayer==='green',tab:'bible'},
     {time:journalMinsToClock(trainingStartMins),mins:trainingStartMins,label:'Today’s training',detail:training+(trainingMinsEstimate>15?' (~'+trainingMinsEstimate+' min)':''),done:activityDone,tab:'activities'},
     {time:journalMinsToClock(stretchMins),mins:stretchMins,label:'Stretching',detail:'Keep muscles loose and prevent injury',done:d.exStretch==='green',tab:'activities'},
-    {time:journalMinsToClock(stretchMins+20),mins:stretchMins+20,label:'Massage',detail:'Post-run recovery massage',done:d.exMassage==='green',tab:'activities',skip:!runToday},
+    {time:journalMinsToClock(stretchMins+20),mins:stretchMins+20,label:'Massage',detail:d.exMassageMinutes?'Post-run recovery massage — '+d.exMassageMinutes+' min':'Post-run recovery massage',done:d.exMassage==='green',tab:'activities',skip:!runToday},
     {time:journalMinsToClock(breakfastMins),mins:breakfastMins,label:'Breakfast',detail:'Recovery meal and hydration after training',done:mealComplete('breakfast',breakfastMins),tab:'nutrition'},
     {time:'9:30 AM',mins:570,label:'Work',detail:'9:30 AM – 6:00 PM',done:true,tab:'daily',skip:!(today.getDay()>=1&&today.getDay()<=5),fixed:true},
     {time:'12:00 PM',mins:720,label:'Water checkpoint: 32 oz',detail:'Drink at least 32 ounces by noon',done:water>=32,tab:'nutrition'},
@@ -12705,12 +12751,16 @@ function renderJournalSchedule(){
     {time:'9:00 PM',mins:1260,label:'Water checkpoint: 96 oz',detail:'Drink another 32 ounces by 9:00 PM',done:water>=96,tab:'nutrition'},
     {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:'Protect tomorrow’s recovery',done:!!d.wSleepVal&&(isPastDay||(isSelectedToday&&currentMinutes>=1290)),tab:'wellness'}
   ].filter(function(item){return !item.skip;});
+  items.forEach(function(item,index){item.id='schedule-'+String(item.label||index).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');});
+  var scheduleSlots=items.map(function(item){return{time:item.time,mins:item.mins};});
+  items=journalScheduleApplyOrder(items,dateKey);
+  items.forEach(function(item,index){item.time=scheduleSlots[index].time;item.mins=scheduleSlots[index].mins;});
   var trackable=items.filter(function(item){return !item.fixed;});
   var complete=trackable.filter(function(item){return item.done;}).length,next=-1;
   if(isSelectedToday){for(var i=0;i<items.length;i++){if(!items[i].fixed&&!items[i].done&&items[i].mins>=currentMinutes){next=i;break;}}if(next<0)next=items.findIndex(function(item){return !item.fixed&&!item.done;});}
   if(summary)summary.textContent=complete+'/'+trackable.length+' complete';
   var nextText=next>=0?'Next: '+items[next].time+' — '+items[next].label:(complete===trackable.length?'Schedule complete':'Review remaining items');
-  body.innerHTML='<div class="journal-schedule-status"><strong>'+escHtml(nextText)+'</strong><span>'+complete+' complete • '+(trackable.length-complete)+' remaining</span></div><div class="journal-schedule-list">'+items.map(function(item,index){var action=item.fixed?'':(item.manual?'journalToggleScheduleManual(\''+item.manual+'\')':'switchTab(\''+item.tab+'\',null)');return '<button type="button" class="journal-schedule-item '+(item.fixed?'fixed ':(item.done?'done ':''))+(index===next?'next':'')+'" onclick="'+action+'"><span class="journal-schedule-time">'+item.time+'</span><span class="journal-schedule-check">'+(item.fixed?'&#x1F4BC;':(item.done?'&#x2713;':''))+'</span><span class="journal-schedule-name">'+escHtml(item.label)+'<span class="journal-schedule-detail">'+escHtml(item.detail)+'</span></span></button>';}).join('')+'</div>';
+  body.innerHTML='<div class="journal-schedule-status"><strong>'+escHtml(nextText)+'</strong><span>Drag cards to reschedule • '+complete+' complete • '+(trackable.length-complete)+' remaining</span></div><div class="journal-schedule-list">'+items.map(function(item,index){var action=item.fixed?'':(item.manual?'journalToggleScheduleManual(\''+item.manual+'\')':'switchTab(\''+item.tab+'\',null)');var safeAction=JSON.stringify(action).replace(/"/g,'&quot;');return '<button type="button" draggable="true" data-schedule-id="'+escHtml(item.id)+'" class="journal-schedule-item '+(item.fixed?'fixed ':(item.done?'done ':''))+(index===next?'next':'')+'" onclick="journalScheduleCardClick('+safeAction+')" ondragstart="journalScheduleDragStart(event,\''+escHtml(item.id)+'\')" ondragover="journalScheduleDragOver(event)" ondrop="journalScheduleDrop(event,\''+escHtml(item.id)+'\')" ondragend="journalScheduleDragEnd()"><span class="journal-schedule-grip" title="Drag to reschedule" aria-hidden="true">&#x22EE;&#x22EE;</span><span class="journal-schedule-time">'+item.time+'</span><span class="journal-schedule-check">'+(item.fixed?'&#x1F4BC;':(item.done?'&#x2713;':''))+'</span><span class="journal-schedule-name">'+escHtml(item.label)+'<span class="journal-schedule-detail">'+escHtml(item.detail)+'</span></span></button>';}).join('')+'</div>';
 }
 function renderJournalHome(){
   var grid=document.getElementById('journalHomeGrid');if(!grid){renderJournalSchedule();return;}
