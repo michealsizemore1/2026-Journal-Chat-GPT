@@ -9341,7 +9341,7 @@ function meditLoadYT(url){
 }
 
 var _audiblePending={};
-var _bibleSpeechChunks=[],_bibleSpeechIndex=0,_bibleSpeechPaused=false,_bibleSpeechToken=0;
+var _bibleSpeechChunks=[],_bibleSpeechIndex=0,_bibleSpeechPaused=false,_bibleSpeechToken=0,_bibleSpeechUtterance=null;
 function bibleSpeechSupported(){return'speechSynthesis'in window&&'SpeechSynthesisUtterance'in window;}
 function bibleSpeechPopulateVoices(){
   var select=document.getElementById('bibleSpeechVoice');if(!select||!bibleSpeechSupported())return;
@@ -9374,9 +9374,9 @@ function bibleSpeechMakeChunks(text){
   var sentences=text.split(/\n+/),chunks=[];
   sentences.forEach(function(sentence){
     sentence=sentence.trim();if(!sentence)return;
-    if(sentence.length<=240){chunks.push(sentence);return;}
+    if(sentence.length<=160){chunks.push(sentence);return;}
     var words=sentence.split(/\s+/),current='';
-    words.forEach(function(word){if((current+' '+word).trim().length>240&&current){chunks.push(current);current=word;}else current+=(current?' ':'')+word;});if(current)chunks.push(current);
+    words.forEach(function(word){if((current+' '+word).trim().length>160&&current){chunks.push(current);current=word;}else current+=(current?' ':'')+word;});if(current)chunks.push(current);
   });
   return chunks;
 }
@@ -9395,12 +9395,12 @@ function bibleSpeechNoVoiceWarning(){
 }
 function bibleSpeechSpeakNext(token){
   if(token!==_bibleSpeechToken)return;if(_bibleSpeechIndex>=_bibleSpeechChunks.length){bibleSpeechStop(true);return;}
-  var utterance=new SpeechSynthesisUtterance(_bibleSpeechChunks[_bibleSpeechIndex]),voiceId=(document.getElementById('bibleSpeechVoice')||{}).value||'',voice=bibleSpeechPickVoice(voiceId);if(voice){utterance.voice=voice;utterance.lang=voice.lang;}utterance.rate=parseFloat((document.getElementById('bibleSpeechRate')||{}).value)||1;utterance.pitch=1;
+  var utterance=new SpeechSynthesisUtterance(_bibleSpeechChunks[_bibleSpeechIndex]),voiceId=(document.getElementById('bibleSpeechVoice')||{}).value||'',voice=bibleSpeechPickVoice(voiceId);_bibleSpeechUtterance=utterance;if(voice){utterance.voice=voice;utterance.lang=voice.lang;}else{utterance.lang='en-US';}utterance.rate=parseFloat((document.getElementById('bibleSpeechRate')||{}).value)||1;utterance.pitch=1;utterance.volume=1;
   var started=false;
   utterance.onstart=function(){started=true;};
-  utterance.onend=function(){if(token!==_bibleSpeechToken)return;started=true;_bibleSpeechIndex++;setTimeout(function(){bibleSpeechSpeakNext(token);},300);};
-  utterance.onerror=function(e){started=true;if(e.error==='canceled'||e.error==='interrupted')return;bibleSpeechStop(true);var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Reading stopped';};
-  window.speechSynthesis.speak(utterance);
+  utterance.onend=function(){if(token!==_bibleSpeechToken)return;started=true;_bibleSpeechUtterance=null;_bibleSpeechIndex++;setTimeout(function(){bibleSpeechSpeakNext(token);},120);};
+  utterance.onerror=function(e){started=true;_bibleSpeechUtterance=null;if(e.error==='canceled'||e.error==='interrupted')return;bibleSpeechStop(true);var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Voice error: '+(e.error||'playback failed')+'. Try another voice.';};
+  try{window.speechSynthesis.resume();window.speechSynthesis.speak(utterance);}catch(e){_bibleSpeechUtterance=null;bibleSpeechStop(true);var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Voice playback is blocked in this browser.';}
   // Some Android/Chrome + WebView combos accept speak() but the device has no working
   // TTS engine installed — speechSynthesis then does nothing at all, with no event ever
   // firing. Detect that silent-failure case and surface it instead of staying quiet.
@@ -9410,15 +9410,13 @@ function bibleSpeechSpeakNext(token){
       bibleSpeechStop(true);
       bibleSpeechNoVoiceWarning();
     }
-  },1500);
+  },2500);
 }
 function bibleSpeechRead(){
   if(!bibleSpeechSupported()){alert('Text-to-speech is not available in this browser.');return;}var text=bibleSpeechText();if(!text){alert('Create the Bible reading summary first.');return;}
   _bibleSpeechToken++;var token=_bibleSpeechToken;
   _bibleSpeechChunks=bibleSpeechMakeChunks(text);_bibleSpeechIndex=0;_bibleSpeechPaused=false;bibleSpeechSavePrefs();bibleSpeechSetState('speaking');
   if(_bibleSpeechKeepAlive){clearInterval(_bibleSpeechKeepAlive);_bibleSpeechKeepAlive=null;}
-  // Chrome silently drops long utterances (~15s+); a periodic pause/resume "kick" keeps it going.
-  _bibleSpeechKeepAlive=setInterval(function(){if(token!==_bibleSpeechToken){clearInterval(_bibleSpeechKeepAlive);_bibleSpeechKeepAlive=null;return;}if(window.speechSynthesis.speaking&&!_bibleSpeechPaused){window.speechSynthesis.pause();window.speechSynthesis.resume();}},9000);
   // Only defer (and cancel) when something is already speaking/queued — calling speak()
   // synchronously in the click handler is required on iOS/Safari or it plays no audio at all.
   if(window.speechSynthesis.speaking||window.speechSynthesis.pending){
@@ -9429,7 +9427,7 @@ function bibleSpeechRead(){
   }
 }
 function bibleSpeechPauseResume(){if(!bibleSpeechSupported()||!window.speechSynthesis.speaking)return;if(_bibleSpeechPaused){window.speechSynthesis.resume();_bibleSpeechPaused=false;}else{window.speechSynthesis.pause();_bibleSpeechPaused=true;}bibleSpeechSetState('speaking');}
-function bibleSpeechStop(finished){if(bibleSpeechSupported())window.speechSynthesis.cancel();if(_bibleSpeechKeepAlive){clearInterval(_bibleSpeechKeepAlive);_bibleSpeechKeepAlive=null;}_bibleSpeechToken++;_bibleSpeechChunks=[];_bibleSpeechIndex=0;_bibleSpeechPaused=false;bibleSpeechSetState('idle');if(!finished){var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Stopped';}}
+function bibleSpeechStop(finished){if(bibleSpeechSupported())window.speechSynthesis.cancel();if(_bibleSpeechKeepAlive){clearInterval(_bibleSpeechKeepAlive);_bibleSpeechKeepAlive=null;}_bibleSpeechUtterance=null;_bibleSpeechToken++;_bibleSpeechChunks=[];_bibleSpeechIndex=0;_bibleSpeechPaused=false;bibleSpeechSetState('idle');if(!finished){var status=document.getElementById('bibleSpeechStatus');if(status)status.textContent='Stopped';}}
 if(bibleSpeechSupported()){window.speechSynthesis.onvoiceschanged=bibleSpeechPopulateVoices;}
 function audibleSummarize(){
   var passages=(document.getElementById('audiblePassages')||{}).value||'';
