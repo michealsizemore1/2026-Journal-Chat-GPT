@@ -867,6 +867,7 @@ body.v26-compact .journal-col textarea{height:70px;}
 .journal-schedule-item.dragging{opacity:.42;}.journal-schedule-item.drag-before{box-shadow:inset 0 3px #315a9b;transform:translateY(2px);}.journal-schedule-item.drag-after{box-shadow:inset 0 -3px #315a9b;transform:translateY(-2px);}
 .journal-schedule-grip{font-size:1rem;color:#98a2b3;cursor:grab;line-height:1;letter-spacing:-3px;user-select:none;}.journal-schedule-item:active .journal-schedule-grip{cursor:grabbing;}
 .journal-schedule-edit{border:1px solid #cbd5e1;border-radius:6px;background:#fff;color:#315a9b;padding:3px 5px;font-size:.62rem;font-weight:800;text-align:center;cursor:pointer;user-select:none;}.journal-schedule-edit:hover{background:#eaf0ff;}
+.journal-growth-pool{margin:0 12px 12px;padding-top:10px;border-top:2px dashed #c4b5fd;}.journal-growth-pool-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px;color:#6d28d9;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;}.journal-growth-pool-card{display:grid;grid-template-columns:22px 19px minmax(120px,1fr) 90px auto;gap:7px;align-items:center;background:#faf5ff;border:1px solid #ddd6fe;border-radius:9px;padding:8px;color:#4c1d95;}.journal-growth-pool-card input{width:100%;border:1px solid #c4b5fd;border-radius:6px;padding:5px;background:#fff;}.journal-growth-drag{font-size:1rem;cursor:grab;color:#7c3aed;user-select:none;}
 .journal-schedule-time{font-size:.68rem;font-weight:800;color:#667085;}.journal-schedule-check{width:16px;height:16px;border:2px solid #b8c0cc;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;background:#fff;}.journal-schedule-item.done .journal-schedule-check{border-color:#22a06b;background:#22a06b;color:#fff;}.journal-schedule-item.fixed .journal-schedule-check{border-color:#94a3b8;background:#eef2f7;color:#475569;font-size:9px;}
 .journal-schedule-name{font-size:.76rem;font-weight:700;line-height:1.3;}.journal-schedule-detail{display:block;font-size:.66rem;font-weight:500;color:#7a8494;margin-top:2px;}
 .journal-calendar{margin:10px 16px;border:1px solid #d8def0;border-radius:12px;background:#fff;overflow:hidden;}
@@ -1355,6 +1356,17 @@ body{
   <summary>&#x1F552; My Schedule <span id="journalScheduleSummary" style="font-size:.72rem;font-weight:600;color:#98a2b3;"></span></summary>
   <div style="font-size:.66rem;color:#64748b;padding:7px 12px 0;">Sources: Training Plan, Nutrition, Skills, Library, Daily Check-In and journal entries</div>
   <div class="journal-schedule-body" id="journalScheduleBody"></div>
+  <div class="journal-growth-pool">
+    <div class="journal-growth-pool-title"><span>Available Growth Activities</span><span id="financialVideoScheduleStatus" style="font-size:.62rem;color:#7c3aed;text-transform:none;"></span></div>
+    <div class="journal-growth-pool-card">
+      <span class="journal-growth-drag" draggable="true" title="Drag into My Schedule" ondragstart="journalScheduleDragStart(event,'growth-financial-videos')" ondragend="journalScheduleDragEnd()">&#x22EE;&#x22EE;</span>
+      <div class="tri-check" data-key="gaFinancialVideos" onclick="triClick(this)" title="Mark Financial Videos complete"></div>
+      <label for="gaFinancialVideosTime" style="font-size:.76rem;font-weight:800;">Financial Videos</label>
+      <input type="number" id="gaFinancialVideosTime" min="0" step="1" inputmode="numeric" placeholder="Minutes">
+      <span style="font-size:.7rem;color:#7c3aed;">min</span>
+    </div>
+    <div style="font-size:.64rem;color:#7c6f98;margin-top:5px;">Enter time and check it complete for Habits. Drag the dotted handle onto a schedule card to assign it a time.</div>
+  </div>
 </details>
 <details class="journal-calendar" id="journalCalendar" ontoggle="if(this.open)openJournalCalendar()">
   <summary>&#x1F4C5; Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
@@ -1365,6 +1377,7 @@ body{
   </div>
   <div class="journal-calendar-grid" id="journalCalendarGrid"></div>
   <div class="journal-calendar-legend"><span>Information saved</span><span class="partial">Partly completed</span><span class="myevent">Event</span></div>
+  <div class="my-calendar-events" id="myCalendarEvents"></div>
   <div class="my-calendar-add">
     <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent()">+ Add Event</button>
     <label class="my-calendar-import-btn" onclick="event.stopPropagation();" title="Import events from an exported .ics file (Google Calendar, Outlook, Apple Calendar, etc.)">&#x1F4E5; Import .ics<input type="file" accept=".ics,text/calendar" style="display:none" onchange="importCalendarICS(event)"></label>
@@ -1377,7 +1390,6 @@ body{
     <button type="button" onclick="event.stopPropagation();saveCalendarEvent()">Save</button>
     <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent(false)" style="background:#f0f0f0;color:#555;">Cancel</button>
   </div>
-  <div class="my-calendar-events" id="myCalendarEvents"></div>
 </details>
 <div class="check-overview">
   <div class="check-overview-head" id="dailyCheckOverviewToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="dailyCheckOverviewBody" onclick="toggleDailyCheckOverview()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleDailyCheckOverview();}">
@@ -1416,16 +1428,6 @@ body{
       </div>
       </div>
     </div>
-    <div class="section">
-      <div class="section-title green">&#x1F4AA; Fitness</div>
-      <div class="task-row">
-        <div class="tri-check" data-key="exMassage" onclick="triClick(this)" title="Mark massage complete"></div>
-        <label for="dailyMassageMinutes">Massage:</label>
-        <input type="number" id="dailyMassageMinutes" min="0" step="1" inputmode="numeric" placeholder="Minutes" oninput="syncMassageMinutes('daily')" style="max-width:100px;">
-        <span style="font-size:.78rem;color:#667085;">min</span>
-      </div>
-      <div style="font-size:.68rem;color:#94a3b8;margin-top:4px;">This time is shared with Activities → Daily Movement &amp; Recovery.</div>
-    </div>
   </div>
 
   <div class="col">
@@ -1447,16 +1449,6 @@ body{
       </div>
       <div style="font-size:0.68rem;color:#94a3b8;margin-top:4px;">Looks at your last 7 days and picks your weakest areas. Runs automatically each morning if your goals are still blank — tap the button anytime to refresh.</div>
       </div>
-    </div>
-    <div class="section">
-      <div class="section-title purple">&#x1F4C8; Growth</div>
-      <div class="task-row">
-        <div class="tri-check" data-key="gaFinancialVideos" onclick="triClick(this)" title="Mark Financial Videos complete"></div>
-        <label for="gaFinancialVideosTime">Financial Videos:</label>
-        <input type="number" id="gaFinancialVideosTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" style="max-width:100px;">
-        <span style="font-size:.78rem;color:#667085;">min</span>
-      </div>
-      <div style="font-size:.68rem;color:#94a3b8;margin-top:4px;">Tracks video learning time in Habits and the Weekly Growth report.</div>
     </div>
   </div>
 </div>
@@ -3163,6 +3155,7 @@ function triClick(el){
   save();
   updateCompactSectionCounts();
   renderDailyCheckOverview();
+  if(key==='gaFinancialVideos')renderJournalSchedule();
   const wt=document.getElementById('tab-weekly');
   if(wt&&wt.classList.contains('active'))try{renderWeekly();}catch(e){}
 }
@@ -3244,6 +3237,7 @@ function dailyCheckLabel(el){
   return (el.dataset.key||el.id||'Check-in').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[_-]+/g,' ');
 }
 function dailyCheckGroup(el,tab){
+  if(el.closest('.journal-growth-pool'))return'Growth';
   var section=el.closest('.section');
   if(section){
     var title=section.querySelector('.section-title');
@@ -3852,6 +3846,7 @@ function load(){
   try{initHandwritingPad();}catch(e){console.error('handwriting pad:',e);}
   var calendar=document.getElementById('journalCalendar');
   if(calendar&&calendar.open){journalCalendarMonth=new Date(today.getFullYear(),today.getMonth(),1);renderJournalCalendar();}
+  renderMyCalendarEventsForSelectedDay();
   try{aiAutoAttemptDailyGoals();}catch(e){console.error('aiAutoAttemptDailyGoals:',e);}
 }
 
@@ -3859,7 +3854,7 @@ function attachListeners(){
   const rc=document.getElementById('reviewCheck');if(rc)rc.onchange=save;
   const pjc=document.getElementById('prepJournalCheck');if(pjc)pjc.onchange=save;
   TXS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=save;});
-  NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=function(){if(id==='exMassageMinutes'){syncMassageMinutes('activities');return;}save();if(id==='exSteps')renderDailyCheckOverview();};});
+  NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=function(){if(id==='exMassageMinutes'){syncMassageMinutes('activities');return;}save();if(id==='exSteps')renderDailyCheckOverview();if(id==='gaFinancialVideosTime')renderJournalSchedule();};});
   renderCustomHabits();
   PTIDS.forEach(id=>{const row=document.getElementById(id);if(row){const tx=row.querySelector('input[type=text]');if(tx)tx.oninput=save;}});
   const jc=document.getElementById('jCombined');if(jc)jc.oninput=function(){syncJournalCombinedToFields();save();};
@@ -12725,7 +12720,9 @@ function journalScheduleDragOver(event){
 }
 function journalScheduleDrop(event,targetId){
   event.preventDefault();var sourceId=_journalScheduleDragged||(event.dataTransfer&&event.dataTransfer.getData('text/plain'));if(!sourceId||sourceId===targetId){journalScheduleDragEnd();return;}
-  var cards=Array.from(document.querySelectorAll('#journalScheduleBody .journal-schedule-item')),order=cards.map(function(card){return card.dataset.scheduleId;}),from=order.indexOf(sourceId),to=order.indexOf(targetId);if(from<0||to<0){journalScheduleDragEnd();return;}
+  var cards=Array.from(document.querySelectorAll('#journalScheduleBody .journal-schedule-item')),order=cards.map(function(card){return card.dataset.scheduleId;}),from=order.indexOf(sourceId),to=order.indexOf(targetId);
+  if(sourceId==='growth-financial-videos'&&to>=0){var targetRect=event.currentTarget.getBoundingClientRect(),placeAfter=event.clientY>targetRect.top+targetRect.height/2;order.splice(to+(placeAfter?1:0),0,'schedule-financial-videos');localStorage.setItem('journal_schedule_financial_'+dk(today),'1');localStorage.setItem(journalScheduleOrderKey(dk(today)),JSON.stringify(order));journalScheduleDragEnd();renderJournalSchedule();v26Toast('Financial Videos added to schedule');return;}
+  if(from<0||to<0){journalScheduleDragEnd();return;}
   var rect=event.currentTarget.getBoundingClientRect(),after=event.clientY>rect.top+rect.height/2;order.splice(from,1);to=order.indexOf(targetId)+(after?1:0);order.splice(to,0,sourceId);
   localStorage.setItem(journalScheduleOrderKey(dk(today)),JSON.stringify(order));journalScheduleDragEnd();renderJournalSchedule();v26Toast('Schedule order saved');
 }
@@ -12781,6 +12778,7 @@ function renderJournalSchedule(){
     {time:'9:00 PM',mins:1260,label:'Water checkpoint: 96 oz',detail:'Drink another 32 ounces by 9:00 PM',done:water>=96,tab:'nutrition'},
     {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:'Protect tomorrow’s recovery',done:!!d.wSleepVal&&(isPastDay||(isSelectedToday&&currentMinutes>=1290)),tab:'wellness'}
   ].filter(function(item){return !item.skip;});
+  if(localStorage.getItem('journal_schedule_financial_'+dateKey)==='1')items.push({time:'6:30 PM',mins:1110,label:'Financial Videos',detail:d.gaFinancialVideosTime?d.gaFinancialVideosTime+' min planned growth activity':'Planned growth activity',done:d.gaFinancialVideos==='green',tab:'daily'});
   items.forEach(function(item,index){item.id='schedule-'+String(item.label||index).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');});
   var scheduleMoves=journalScheduleMoves();
   items=items.filter(function(item){return !scheduleMoves.some(function(move){return move.sourceDate===dateKey&&move.originalId===item.id;});});
@@ -12791,6 +12789,7 @@ function renderJournalSchedule(){
   var scheduleOverrides={};try{scheduleOverrides=JSON.parse(localStorage.getItem(journalScheduleOverridesKey(dateKey))||'{}');}catch(ignore){}
   items.forEach(function(item){var override=item._moveId?scheduleMoves.find(function(move){return move.id===item._moveId;}):scheduleOverrides[item.id];if(override&&override.time){item.time=override.time;item.mins=Number(override.mins);}});
   _journalScheduleItemsById={};items.forEach(function(item){_journalScheduleItemsById[item.id]=item;});
+  var financialStatus=document.getElementById('financialVideoScheduleStatus');if(financialStatus)financialStatus.textContent=localStorage.getItem('journal_schedule_financial_'+dateKey)==='1'?'Added to this day’s schedule':'Drag into the schedule above';
   var trackable=items.filter(function(item){return !item.fixed;});
   var complete=trackable.filter(function(item){return item.done;}).length,next=-1;
   if(isSelectedToday){for(var i=0;i<items.length;i++){if(!items[i].fixed&&!items[i].done&&items[i].mins>=currentMinutes){next=i;break;}}if(next<0)next=items.findIndex(function(item){return !item.fixed&&!item.done;});}
