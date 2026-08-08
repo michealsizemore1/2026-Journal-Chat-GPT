@@ -1448,6 +1448,16 @@ body{
       <div style="font-size:0.68rem;color:#94a3b8;margin-top:4px;">Looks at your last 7 days and picks your weakest areas. Runs automatically each morning if your goals are still blank — tap the button anytime to refresh.</div>
       </div>
     </div>
+    <div class="section">
+      <div class="section-title purple">&#x1F4C8; Growth</div>
+      <div class="task-row">
+        <div class="tri-check" data-key="gaFinancialVideos" onclick="triClick(this)" title="Mark Financial Videos complete"></div>
+        <label for="gaFinancialVideosTime">Financial Videos:</label>
+        <input type="number" id="gaFinancialVideosTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" style="max-width:100px;">
+        <span style="font-size:.78rem;color:#667085;">min</span>
+      </div>
+      <div style="font-size:.68rem;color:#94a3b8;margin-top:4px;">Tracks video learning time in Habits and the Weekly Growth report.</div>
+    </div>
   </div>
 </div>
 <div class="day-score-bar" style="flex-wrap:wrap;">
@@ -2739,7 +2749,6 @@ body{
         <select id="skCategory" class="act-input">
           <option value="Coding">&#x1F4BB; Coding / Tech</option>
           <option value="Language">&#x1F5E3; Language</option>
-          <option value="Retirement Videos">&#x1F4FA; Retirement Videos</option>
           <option value="Gun Range">&#x1F3AF; Gun Range</option>
           <option value="Finance">&#x1F4B0; Finance / Investing</option>
           <option value="Design">&#x1F3A8; Design</option>
@@ -3344,7 +3353,7 @@ function buildStars(){const ss=document.getElementById('scoreStars');if(!ss)retu
 
 // All text/number fields
 const TXS=['spDailyBreadText','spMeditationText','gaAudiobookText','gaAudiobookTime','gaSkillText','gaSkillTime','wBPVal','wPulseVal','wMedsVal','wWghtVal','wSleepVal','wHeadacheNote','exStrengthVal','exBikeVal','exStretchVal','exMassageVal','exWalkVal','exDogWalkVal','nuCalVal','nuProtVal','nuFatVal','nuCarbsVal','jAccomplish','jImprov','jGratitude','jNotes','habitIdentity','habitReflection','mpBreakfast','mpLunch','mpDinner','mpSnack','mpSports','mnotes-breakfast','mnotes-lunch','mnotes-dinner','mnotes-snack','mnotes-liquids','mnotes-sports'];
-const NMS=['exSteps','wSleepScore','exMassageMinutes'];
+const NMS=['exSteps','wSleepScore','exMassageMinutes','gaFinancialVideosTime'];
 const PTIDS=['pt0','pt1','pt2','dg0','dg1','dg2'];
 
 function save(){
@@ -4303,7 +4312,7 @@ function getDM(d,dateKey){
       if(a.pace&&parsePace(a.pace)){actPace+=parsePace(a.pace);actPaceN++;}
     });
   }
-  const bp=parseBP(d.wBPVal);return{miles:actMiles,pace:actPaceN?actPace/actPaceN:0,watts:actWattsN?actWatts/actWattsN:0,time:actTime,steps:parseFloat(d.exSteps)||0,stretch:parseTimedMins(d.exStretchVal)||0,massage:parseFloat(d.exMassageMinutes)||parseTimedMins(d.exMassageVal)||0,score:parseFloat(d.score)||0,weight:parseFloat(d.wWghtVal)||0,sleep:parseSleepMins(d.wSleepVal),sleepScore:parseFloat(d.wSleepScore)||0,calories:parseFloat(d.nuCalVal)||0,water:parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),audiobook:parseTimedMins(d.gaAudiobookTime),skill:parseMins(d.gaSkillTime),skillName:d.gaSkillText||'',skillDone:d.gaSkill==='green'?1:0,bpSys:bp.sys,bpDia:bp.dia,pulse:parseFloat(d.wPulseVal)||0,dogWalk:parseFloat(d.exDogWalkVal)||(d.exDogWalk==='green'?1:0),walk:parseFloat(d.exWalkVal)||(d.exWalk==='green'?1:0),headache:d.wHeadache==='green'?1:0};}
+  const bp=parseBP(d.wBPVal);return{miles:actMiles,pace:actPaceN?actPace/actPaceN:0,watts:actWattsN?actWatts/actWattsN:0,time:actTime,steps:parseFloat(d.exSteps)||0,stretch:parseTimedMins(d.exStretchVal)||0,massage:parseFloat(d.exMassageMinutes)||parseTimedMins(d.exMassageVal)||0,score:parseFloat(d.score)||0,weight:parseFloat(d.wWghtVal)||0,sleep:parseSleepMins(d.wSleepVal),sleepScore:parseFloat(d.wSleepScore)||0,calories:parseFloat(d.nuCalVal)||0,water:parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),audiobook:parseTimedMins(d.gaAudiobookTime),financialVideos:parseFloat(d.gaFinancialVideosTime)||0,financialVideosDone:d.gaFinancialVideos==='green'?1:0,skill:parseMins(d.gaSkillTime),skillName:d.gaSkillText||'',skillDone:d.gaSkill==='green'?1:0,bpSys:bp.sys,bpDia:bp.dia,pulse:parseFloat(d.wPulseVal)||0,dogWalk:parseFloat(d.exDogWalkVal)||(d.exDogWalk==='green'?1:0),walk:parseFloat(d.exWalkVal)||(d.exWalk==='green'?1:0),headache:d.wHeadache==='green'?1:0};}
 function agg(arr){const t={miles:0,pace:0,watts:0,time:0,steps:0,stretch:0,massage:0,score:0,weight:0,sleep:0,sleepScore:0,calories:0,water:0,audiobook:0,skill:0,skillDone:0,bpSys:0,bpDia:0,pulse:0,dogWalk:0,walk:0,headache:0};const c={pace:0,watts:0,score:0,weight:0,sleep:0,sleepScore:0,bp:0,pulse:0};arr.forEach(m=>{t.miles+=m.miles;t.time+=m.time;t.steps+=m.steps;t.stretch+=(m.stretch||0);t.massage+=(m.massage||0);t.calories+=m.calories;t.water+=m.water;t.audiobook+=m.audiobook;t.skill+=m.skill||0;t.skillDone+=(m.skillDone||0);t.dogWalk+=(m.dogWalk||0);t.walk+=(m.walk||0);t.headache+=(m.headache||0);if(m.pace){t.pace+=m.pace;c.pace++;}if(m.watts){t.watts+=m.watts;c.watts++;}if(m.score){t.score+=m.score;c.score++;}if(m.weight){t.weight+=m.weight;c.weight++;}if(m.sleep){t.sleep+=m.sleep;c.sleep++;}if(m.sleepScore){t.sleepScore+=m.sleepScore;c.sleepScore++;}if(m.bpSys){t.bpSys+=m.bpSys;t.bpDia+=m.bpDia;c.bp++;}if(m.pulse){t.pulse+=m.pulse;c.pulse++;}});return{miles:t.miles,pace:c.pace?t.pace/c.pace:0,watts:c.watts?t.watts/c.watts:0,time:t.time,steps:t.steps,stretch:t.stretch,massage:t.massage,calories:t.calories,water:t.water,score:c.score?t.score/c.score:0,weight:c.weight?t.weight/c.weight:0,sleep:c.sleep?t.sleep/c.sleep:0,sleepScore:c.sleepScore?t.sleepScore/c.sleepScore:0,audiobook:t.audiobook,skill:t.skill,skillDone:t.skillDone,bpSys:c.bp?t.bpSys/c.bp:0,bpDia:c.bp?t.bpDia/c.bp:0,pulse:c.pulse?t.pulse/c.pulse:0,dogWalk:t.dogWalk,walk:t.walk,headache:t.headache};}
 function gRow(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';const skillCell=m.skillDone?(t?m.skillDone+'d':'✅'):'-';return`<tr style="${b}"><td>${l}</td><td>${fmtMins(m.audiobook)}</td><td>${skillCell}</td></tr>`;}
 function fRow(l,m,t){const b=t?'background:#f8f9fa;font-weight:700':'';return`<tr style="${b}"><td>${l}</td><td>${m.miles?m.miles.toFixed(1):'-'}</td><td>${m.pace?fmtPace(m.pace):'-'}</td><td>${m.watts?Math.round(m.watts):'-'}</td><td>${fmtMins(m.time)}</td><td>${m.steps?Math.round(m.steps):'-'}</td><td>${m.dogWalk?(Math.round(m.dogWalk*10)/10)%1===0?Math.round(m.dogWalk):+(m.dogWalk.toFixed(1)):'-'}</td><td>${m.walk?(Math.round(m.walk*10)/10)%1===0?Math.round(m.walk):+(m.walk.toFixed(1)):'-'}</td></tr>`;}
@@ -7941,7 +7950,7 @@ function h2SyncFromJournal(){
     {id:'library',name:'Library Learning',category:'Growth',color:'#2563eb',schedule:'daily',weeklyTarget:7,why:'Learn from reading or audiobooks every day.'},
     {id:'language',name:'Language Lessons',category:'Growth',color:'#0891b2',schedule:'weekdays',weeklyTarget:5,why:'Complete language lessons five days each week.'},
     {id:'coding',name:'Coding / Tech',category:'Growth',color:'#0f766e',schedule:'weekly',weeklyTarget:3,why:'Keep technical skills growing.'},
-    {id:'retirement-videos',name:'Retirement Videos',category:'Growth',color:'#b45309',schedule:'weekly',weeklyTarget:2,why:'Continue retirement and investing education.'}
+    {id:'retirement-videos',name:'Financial Videos',category:'Growth',color:'#b45309',schedule:'weekly',weeklyTarget:2,why:'Build financial knowledge through focused video learning.'}
   ];
   // Build the evidence/firstSeen picture BEFORE any habit gets created or backdated below,
   // so one-time creation migrations can stamp a realistic "created" date instead of "now".
@@ -7950,7 +7959,7 @@ function h2SyncFromJournal(){
   var activityDates={};
   try{(getActivities()||[]).forEach(function(a){if(a&&a.date&&a.type!=='Rest Day'){activityDates[a.date]=true;mark('training',a.date);}});}catch(ignore){}
   var skills=[];try{skills=getSkillEntries()||[];}catch(ignore2){}
-  skills.forEach(function(entry){var key=entry&&entry.date,cat=String(entry&&entry.category||'').toLowerCase();if(!key)return;if(cat==='language')mark('language',key);if(cat==='coding'||cat==='coding / tech')mark('coding',key);if(cat==='retirement videos')mark('retirement-videos',key);});
+  skills.forEach(function(entry){var key=entry&&entry.date,cat=String(entry&&entry.category||'').toLowerCase();if(!key)return;if(cat==='language')mark('language',key);if(cat==='coding'||cat==='coding / tech')mark('coding',key);if(cat==='retirement videos'||cat==='financial videos')mark('retirement-videos',key);});
   for(var offset=89;offset>=0;offset--){
     var date=new Date(todayDate);date.setDate(todayDate.getDate()-offset);var key=h2Key(date),row={};
     try{row=JSON.parse(localStorage.getItem('planner_'+key)||'{}')||{};}catch(ignore4){}
@@ -7962,6 +7971,7 @@ function h2SyncFromJournal(){
     if(row.exStretch==='green')mark('stretch',key);
     if((parseFloat(row.exSteps)||0)>0)mark('steps',key);
     if(parseTimedMins(row.gaAudiobookTime)>0||String(row.gaAudiobookText||'').trim())mark('library',key);
+    if(row.gaFinancialVideos==='green'||parseFloat(row.gaFinancialVideosTime)>0)mark('retirement-videos',key);
   }
   // Thinking section removed — drop any "Thinking Practice" habit card left over from before.
   if(!localStorage.getItem('habits2_thinking_removed_v1')){
@@ -8004,10 +8014,11 @@ function h2SyncFromJournal(){
     state.dismissedAuto=(state.dismissedAuto||[]).filter(function(id){return id!=='stretch';});
   }
   localStorage.setItem('habits2_stretch_link_v1','1');
-  // "Retirement Videos" also gets auto-created if it doesn't exist anywhere yet (once only), so it
+  state.habits.forEach(function(h){if(h.autoSource==='retirement-videos'){h.name='Financial Videos';h.category='Growth';h.why='Build financial knowledge through focused video learning.';}});
+  // "Financial Videos" also gets auto-created if it doesn't exist anywhere yet (once only), so it
   // shows up right away instead of waiting on 3+ days of logged evidence like a normal suggestion.
-  if(!state.habits.some(function(h){return h.autoSource==='retirement-videos';})&&!localStorage.getItem('habits2_retirement_videos_link_v1')){
-    state.habits.push({id:'h2-auto-retirement-videos',name:'Retirement Videos',category:'Growth',color:'#b45309',type:'check',target:1,schedule:'weekly',weeklyTarget:2,days:[0,1,2,3,4,5,6],why:'Continue retirement and investing education.',cue:'',minimum:'',created:(firstSeen['retirement-videos']||todayKey)+'T12:00:00',autoSource:'retirement-videos'});
+  if(!state.habits.some(function(h){return h.autoSource==='retirement-videos';})&&(state.dismissedAuto||[]).indexOf('retirement-videos')===-1){
+    state.habits.push({id:'h2-auto-retirement-videos',name:'Financial Videos',category:'Growth',color:'#b45309',type:'check',target:1,schedule:'weekly',weeklyTarget:2,days:[0,1,2,3,4,5,6],why:'Build financial knowledge through focused video learning.',cue:'',minimum:'Watch one financial video',created:(firstSeen['retirement-videos']||todayKey)+'T12:00:00',autoSource:'retirement-videos'});
     state.dismissedAuto=(state.dismissedAuto||[]).filter(function(id){return id!=='retirement-videos';});
   }
   localStorage.setItem('habits2_retirement_videos_link_v1','1');
@@ -10422,7 +10433,7 @@ function renderWeeklyGrowthTable(start,end,days,labels){
     var cat=skillCategory(entry),search=String([entry&&entry.name,entry&&entry.resource,entry&&entry.notes].filter(Boolean).join(' ')).toLowerCase();
     if(category==='coding')return cat==='coding'||cat==='coding tech'||(!cat&&/coding|programming|software|technology/.test(search));
     if(category==='range')return cat==='gun range'||cat==='shooting'||(!cat&&/gun range|shooting|firearm/.test(search));
-    if(category==='retirement')return cat==='retirement videos'||cat==='financial videos'||cat==='finance'||(!cat&&/retirement video|financial video|finance video/.test(search));
+    if(category==='retirement')return cat==='retirement videos'||cat==='financial videos'||(!cat&&/retirement video|financial video/.test(search));
     return cat==='language'||cat==='spanish'||cat==='language learning'||(!cat&&/language|spanish/.test(search));
   }
   function skillDisplay(minutes,count,isTotal){if(minutes)return fmtMinsSeconds(minutes);if(!count)return'-';return isTotal?count+' session'+(count===1?'':'s'):'&#x2705;';}
@@ -10437,9 +10448,11 @@ function renderWeeklyGrowthTable(start,end,days,labels){
     var coding=codingEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
     var range=rangeEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
     var language=languageEntries.reduce(function(total,entry){var minutes=parseSkillTimeMins(entry.time);return total+(minutes||15);},0);
-    var retirement=retirementEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
-    codingTotal+=coding;rangeTotal+=range;languageTotal+=language;retirementTotal+=retirement;codingSessions+=codingEntries.length;rangeSessions+=rangeEntries.length;languageSessions+=languageEntries.length;retirementSessions+=retirementEntries.length;
-    rows.push('<tr><td>'+escHtml(labels[i])+'</td><td>'+fmtMinsSeconds((days[i]||{}).audiobook||0)+'</td><td>'+skillDisplay(coding,codingEntries.length,false)+'</td><td>'+skillDisplay(range,rangeEntries.length,false)+'</td><td>'+skillDisplay(language,languageEntries.length,false)+'</td><td>'+financialVideoTimeDisplay(retirement,retirementEntries.length)+'</td></tr>');
+    var dedicatedFinancial=(days[i]||{}).financialVideos||0;
+    var retirement=dedicatedFinancial+retirementEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
+    var financialSessions=retirementEntries.length+((days[i]||{}).financialVideosDone?1:0);
+    codingTotal+=coding;rangeTotal+=range;languageTotal+=language;retirementTotal+=retirement;codingSessions+=codingEntries.length;rangeSessions+=rangeEntries.length;languageSessions+=languageEntries.length;retirementSessions+=financialSessions;
+    rows.push('<tr><td>'+escHtml(labels[i])+'</td><td>'+fmtMinsSeconds((days[i]||{}).audiobook||0)+'</td><td>'+skillDisplay(coding,codingEntries.length,false)+'</td><td>'+skillDisplay(range,rangeEntries.length,false)+'</td><td>'+skillDisplay(language,languageEntries.length,false)+'</td><td>'+financialVideoTimeDisplay(retirement,financialSessions)+'</td></tr>');
   }
   rows.push('<tr style="background:#f8f9fa;font-weight:700"><td>TOTAL</td><td>'+fmtMinsSeconds(days.reduce(function(total,day){return total+((day||{}).audiobook||0);},0))+'</td><td>'+skillDisplay(codingTotal,codingSessions,true)+'</td><td>'+skillDisplay(rangeTotal,rangeSessions,true)+'</td><td>'+skillDisplay(languageTotal,languageSessions,true)+'</td><td>'+financialVideoTimeDisplay(retirementTotal,retirementSessions)+'</td></tr>');
   host.innerHTML='<table class="summary-table"><thead><tr><th>Period</th><th>Audiobook</th><th>Coding / Tech</th><th>Gun Range</th><th>Language</th><th>Financial Videos</th></tr></thead><tbody>'+rows.join('')+'</tbody></table>';
