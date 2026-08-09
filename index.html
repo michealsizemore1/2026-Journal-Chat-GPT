@@ -7741,7 +7741,7 @@ function h2IsDue(habit,date,state){
   return true;
 }
 function h2ScheduleLabel(h){if(h.schedule==='weekdays')return'Weekdays';if(h.schedule==='custom')return(h.days||[]).map(function(d){return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d];}).join(', ')||'Custom';if(h.schedule==='weekly')return(h.weeklyTarget||3)+' times/week';return'Every day';}
-function h2TypeLabel(h){if(h.autoSource==='steps')return Number(h.target||10000).toLocaleString()+' steps';if(h.autoSource==='hydration')return Number(h.target||100)+' oz';if(h.autoSource==='sleep-routine')return'4 of 5 routine steps';if(h.type==='duration')return(h.target||1)+' min';if(h.type==='count')return(h.target||1)+' times';return'Done / not done';}
+function h2TypeLabel(h){if(h.autoSource==='steps')return Number(h.target||10000).toLocaleString()+' steps';if(h.autoSource==='hydration')return Number(h.target||100)+' oz';if(h.autoSource==='sleep-routine')return'4 of 6 routine steps';if(h.type==='duration')return(h.target||1)+' min';if(h.type==='count')return(h.target||1)+' times';return'Done / not done';}
 function h2ToggleForm(show,habit){
   var card=document.getElementById('h2FormCard');if(!card)return;card.style.display=show?'block':'none';if(!show){h2EditingId=null;return;}
   h2EditingId=habit&&habit.id||null;document.getElementById('h2FormTitle').textContent=h2EditingId?'Edit Habit':'Create a Habit';
@@ -7932,7 +7932,7 @@ function h2MonthView(state,habit){
   for(var i=29;i>=0;i--){
     var date=new Date(h2ViewDate);date.setDate(date.getDate()-i);var key=h2Key(date),log=h2Log(state,habit.id,key),isDue=h2IsDue(habit,date,state),complete=h2IsComplete(habit,log),cls=!isDue?'not-due':complete?'done':log.status==='partial'?'partial':log.status==='skip'?'skip':'';
     if(isDue){due++;if(complete)done++;else if(log.status==='partial')partial++;else if(log.status==='skip')skipped++;}
-    var result=!isDue?'Not scheduled':complete?'Complete':log.status==='partial'?'In progress':log.status==='skip'?'Skipped':'Not started',value=Number(log.value||0),detail=value>0?' — '+value+(habit.autoSource==='steps'?' steps':habit.autoSource==='hydration'?' oz':habit.autoSource==='sleep-routine'?' of 5 steps':habit.type==='duration'?' min':''):'';
+    var result=!isDue?'Not scheduled':complete?'Complete':log.status==='partial'?'In progress':log.status==='skip'?'Skipped':'Not started',value=Number(log.value||0),detail=value>0?' — '+value+(habit.autoSource==='steps'?' steps':habit.autoSource==='hydration'?' oz':habit.autoSource==='sleep-routine'?' of 6 steps':habit.type==='duration'?' min':''):'';
     cells+='<i class="h2-month-day '+cls+'" title="'+date.toLocaleDateString()+': '+result+detail+'"></i>';
   }
   var rate=due?Math.round(done/due*100):0;
@@ -7949,7 +7949,7 @@ function h2Render(){
   var filtered=state.habits.filter(function(h){var log=h2Log(state,h.id,key),isDue=h2IsDue(h,h2ViewDate,state),isDone=h2IsComplete(h,log);if(category.value!=='all'&&h.category!==category.value)return false;if(h2Filter==='due'&&!isDue)return false;if(h2Filter==='complete'&&!isDone)return false;if(h2Filter==='remaining'&&(!isDue||isDone))return false;return true;});
   var list=document.getElementById('h2HabitList');if(!filtered.length){list.innerHTML='<div class="h2-empty"><strong>'+(state.habits.length?'No habits match this view':'Build your first habit')+'</strong>'+(state.habits.length?'Try a different filter.':'Start small, choose a realistic schedule, and make today your first vote.')+'</div>';}else list.innerHTML=filtered.map(function(h,idx){
     var log=h2Log(state,h.id,key),done=h2IsComplete(h,log),dueNow=h2IsDue(h,h2ViewDate,state),stats=h2HabitStats(state,h),control,statusClass=done?'status-done':log.status==='partial'?'status-partial':log.status==='skip'?'status-skip':'status-open',statusLabel=done?'&#x2713; Complete':log.status==='partial'?'In progress':log.status==='skip'?'Skipped':'Not started';
-    if(h.autoSource==='sleep-routine')control='<div class="h2-value-control"><span style="min-width:165px">'+Number(log.value||0)+' / 5 routine steps</span></div>';
+    if(h.autoSource==='sleep-routine')control='<div class="h2-value-control"><span style="min-width:165px">'+Number(log.value||0)+' / 6 routine steps</span></div>';
     else if(h.type==='check')control='<div class="h2-today-control"><button class="'+(done?'done':'')+'" onclick="h2SetLog(\''+h.id+'\',\'done\')">&#x2713; Complete</button><button class="'+(log.status==='partial'?'partial':'')+'" onclick="h2SetLog(\''+h.id+'\',\'partial\')">Partial</button><button class="'+(log.status==='skip'?'skip':'')+'" onclick="h2SetLog(\''+h.id+'\',\'skip\')">Skip</button></div>';
     else if(h.autoSource==='steps')control='<div class="h2-value-control"><span style="min-width:145px">'+Number(log.value||0).toLocaleString()+' / '+Number(h.target||10000).toLocaleString()+' steps</span></div>';
     else if(h.autoSource==='hydration')control='<div class="h2-value-control"><span style="min-width:145px">'+Number(log.value||0).toLocaleString()+' / '+Number(h.target||100).toLocaleString()+' oz water</span></div>';
@@ -12400,7 +12400,7 @@ function journalToggleScheduleManual(name){
   if(done)localStorage.removeItem(key);else localStorage.setItem(key,'1');
   renderJournalSchedule();
 }
-var JOURNAL_SLEEP_STEPS=['Begin winding down by the target time','Put away phone and computer','Complete nighttime hygiene','Prepare bedroom and set alarm','Get into bed by the target bedtime'];
+var JOURNAL_SLEEP_STEPS=['Begin winding down by the target time','Put away the computer','Complete nighttime hygiene','Prepare bedroom and set alarm','Get into bed by the target bedtime','Finish journaling, then enable Do Not Disturb'];
 var _journalSleepRoutineOpen=false;
 var _journalScheduleOpenDetail='',_journalEndSummaryOpen=false;
 function journalCheckState(data,key){var value=String(data&&data[key]||'');return['green','purple','red','black'].indexOf(value)!==-1?value:'';}
@@ -12422,7 +12422,7 @@ function journalEndSummaryHtml(){
 }
 function journalSleepRoutineState(dateKey){
   var values=null;try{values=JSON.parse(localStorage.getItem('schedule_sleepRoutine_steps_'+dateKey)||'null');}catch(ignore){}
-  if(!Array.isArray(values)){values=localStorage.getItem('schedule_sleepRoutine_'+dateKey)==='1'?[true,true,true,true,true]:[false,false,false,false,false];}
+  if(!Array.isArray(values)){values=localStorage.getItem('schedule_sleepRoutine_'+dateKey)==='1'?[true,true,true,true,true,false]:[false,false,false,false,false,false];}
   values=JOURNAL_SLEEP_STEPS.map(function(_,index){return values[index]===true;});
   return{values:values,count:values.filter(Boolean).length};
 }
@@ -12436,7 +12436,7 @@ function journalToggleSleepRoutineStep(event,index){
 }
 function journalSleepRoutineChecklistHtml(dateKey){
   if(!_journalSleepRoutineOpen)return'';var state=journalSleepRoutineState(dateKey);
-  return'<div class="journal-sleep-checklist">'+JOURNAL_SLEEP_STEPS.map(function(label,index){return'<label><input type="checkbox" '+(state.values[index]?'checked ':'')+'onclick="journalToggleSleepRoutineStep(event,'+index+')"><span>'+escHtml(label)+'</span></label>';}).join('')+'<small>'+state.count+' of 5 completed &bull; Complete the habit with any 4 steps.</small></div>';
+  return'<div class="journal-sleep-checklist">'+JOURNAL_SLEEP_STEPS.map(function(label,index){return'<label><input type="checkbox" '+(state.values[index]?'checked ':'')+'onclick="journalToggleSleepRoutineStep(event,'+index+')"><span>'+escHtml(label)+'</span></label>';}).join('')+'<small>'+state.count+' of 6 completed &bull; Complete the habit with any 4 steps.</small></div>';
 }
 var _journalScheduleDragged='',_journalScheduleSuppressClick=0;
 var _journalScheduleItemsById={};
@@ -12560,7 +12560,7 @@ function renderJournalSchedule(){
     {time:'8:15 PM',mins:1215,label:'Journal accomplishments and gratitude',detail:'Capture the day while it is fresh',done:reflected,tab:'daily'},
     {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:localStorage.getItem('schedule_eveningPlanning_'+dateKey)==='1'||!!d.prepJournalCheck,tab:'daily',manual:'eveningPlanning'},
     {time:'9:00 PM',mins:1260,label:'Water checkpoint: 96 oz',detail:'Drink another 32 ounces by 9:00 PM',done:water>=96,tab:'nutrition'},
-    {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:sleepRoutine.count+' of 5 routine steps completed',done:sleepRoutine.count>=4,tab:'wellness',sleepRoutineChecklist:true}
+    {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:sleepRoutine.count+' of 6 routine steps completed',done:sleepRoutine.count>=4,tab:'wellness',sleepRoutineChecklist:true}
   ].filter(function(item){return !item.skip;});
   if(localStorage.getItem(journalScheduleGrowthKey('financial',dateKey))==='1')items.push({time:'6:30 PM',mins:1110,label:'Financial Videos',detail:d.gaFinancialVideosTime?d.gaFinancialVideosTime+' min planned growth activity':'Planned growth activity',done:d.gaFinancialVideos==='green',tab:'daily',growthKind:'financial'});
   if(localStorage.getItem(journalScheduleGrowthKey('coding',dateKey))==='1')items.push({time:'6:30 PM',mins:1110,label:'Coding / Tech',detail:codingMinutes?fmtMinsSeconds(codingMinutes)+' logged in Skills':'Log the session in Skills',done:codingEntries.length>0,tab:'skill-log',growthKind:'coding'});
