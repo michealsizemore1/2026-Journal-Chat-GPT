@@ -7911,7 +7911,7 @@ function h2IsDue(habit,date,state){
   return true;
 }
 function h2ScheduleLabel(h){if(h.schedule==='weekdays')return'Weekdays';if(h.schedule==='custom')return(h.days||[]).map(function(d){return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d];}).join(', ')||'Custom';if(h.schedule==='weekly')return(h.weeklyTarget||3)+' times/week';return'Every day';}
-function h2TypeLabel(h){if(h.type==='duration')return(h.target||1)+' min';if(h.type==='count')return(h.target||1)+' times';return'Done / not done';}
+function h2TypeLabel(h){if(h.autoSource==='steps')return Number(h.target||10000).toLocaleString()+' steps';if(h.type==='duration')return(h.target||1)+' min';if(h.type==='count')return(h.target||1)+' times';return'Done / not done';}
 function h2ToggleForm(show,habit){
   var card=document.getElementById('h2FormCard');if(!card)return;card.style.display=show?'block':'none';if(!show){h2EditingId=null;return;}
   h2EditingId=habit&&habit.id||null;document.getElementById('h2FormTitle').textContent=h2EditingId?'Edit Habit':'Create a Habit';
@@ -7936,24 +7936,27 @@ function h2GoToday(){h2ViewDate=new Date();h2Render();}
 function h2SetFilter(filter,btn){h2Filter=filter;document.querySelectorAll('#h2Filters button').forEach(function(b){b.classList.toggle('active',b===btn);});h2Render();}
 var h2SuggestionCache=[];
 function h2SyncFromJournal(){
-  var state=h2State(),before=JSON.stringify(state),todayDate=new Date(),todayKey=h2Key(todayDate),evidence={},firstSeen={};
+  var state=h2State(),before=JSON.stringify(state),todayDate=new Date(),todayKey=h2Key(todayDate),evidence={},evidenceValues={},firstSeen={};
   var sources=[
     {id:'bible',name:'Bible Reading',category:'Faith',color:'#8b5e34',schedule:'daily',weeklyTarget:7,why:'Stay grounded in Scripture.'},
     {id:'prayer',name:'Prayer',category:'Faith',color:'#6d28d9',schedule:'daily',weeklyTarget:7,why:'Make time for prayer and reflection.'},
     {id:'meditation',name:'Meditation',category:'Faith',color:'#7c3aed',schedule:'daily',weeklyTarget:7,why:'Practice intentional quiet and reflection.'},
     {id:'hydration',name:'Track Hydration',category:'Health',color:'#0284c7',schedule:'daily',weeklyTarget:7,why:'Keep daily water intake visible.'},
-    {id:'nutrition',name:'Log Nutrition',category:'Health',color:'#16a34a',schedule:'daily',weeklyTarget:7,why:'Build awareness of daily nutrition.'},
+    {id:'nutrition',name:'Log Meals & Nutrition',category:'Health',color:'#16a34a',schedule:'daily',weeklyTarget:7,why:'Build awareness of daily nutrition.'},
     {id:'stretch',name:'Daily Stretching',category:'Health',color:'#0d9488',schedule:'daily',weeklyTarget:7,why:'Keep muscles loose and prevent injury.'},
-    {id:'training',name:'Complete Training',category:'Fitness',color:'#4f46e5',schedule:'weekly',weeklyTarget:4,why:'Follow the active training plan.'},
-    {id:'steps',name:'Track Steps',category:'Fitness',color:'#ea580c',schedule:'daily',weeklyTarget:7,why:'Keep everyday movement visible.'},
-    {id:'library',name:'Library Learning',category:'Growth',color:'#2563eb',schedule:'daily',weeklyTarget:7,why:'Learn from reading or audiobooks every day.'},
+    {id:'training',name:'Follow Training Plan',category:'Fitness',color:'#4f46e5',schedule:'weekly',weeklyTarget:4,why:'Follow the active training plan.'},
+    {id:'steps',name:'Reach 10,000 Steps',category:'Fitness',color:'#ea580c',schedule:'daily',weeklyTarget:7,why:'Build consistent daily movement by reaching 10,000 steps.'},
+    {id:'library',name:'Read or Listen Daily',category:'Growth',color:'#2563eb',schedule:'daily',weeklyTarget:7,why:'Learn from reading or audiobooks every day.'},
     {id:'language',name:'Language Lessons',category:'Growth',color:'#0891b2',schedule:'weekdays',weeklyTarget:5,why:'Complete language lessons five days each week.'},
-    {id:'coding',name:'Coding / Tech',category:'Growth',color:'#0f766e',schedule:'weekly',weeklyTarget:3,why:'Keep technical skills growing.'},
-    {id:'retirement-videos',name:'Financial Videos',category:'Growth',color:'#b45309',schedule:'weekly',weeklyTarget:2,why:'Build financial knowledge through focused video learning.'}
+    {id:'coding',name:'Practice Coding / Tech',category:'Growth',color:'#0f766e',schedule:'weekly',weeklyTarget:3,why:'Keep technical skills growing.'},
+    {id:'retirement-videos',name:'Watch Financial Videos',category:'Growth',color:'#b45309',schedule:'weekly',weeklyTarget:2,why:'Build financial knowledge through focused video learning.'},
+    {id:'evening-planning',name:'Evening Planning',category:'Home',color:'#4f46e5',schedule:'daily',weeklyTarget:7,why:'Close the day with clear priorities for tomorrow.'},
+    {id:'sleep-routine',name:'Sleep Routine',category:'Health',color:'#7c3aed',schedule:'daily',weeklyTarget:7,why:'Protect recovery with a consistent evening wind-down.'},
+    {id:'daily-reflection',name:'Daily Reflection',category:'Growth',color:'#a855f7',schedule:'daily',weeklyTarget:7,why:'Reflect on accomplishments, gratitude, and lessons from the day.'}
   ];
   // Build the evidence/firstSeen picture BEFORE any habit gets created or backdated below,
   // so one-time creation migrations can stamp a realistic "created" date instead of "now".
-  sources.forEach(function(s){evidence[s.id]={};});
+  sources.forEach(function(s){evidence[s.id]={};evidenceValues[s.id]={};});
   function mark(source,key){if(!key||key>todayKey)return;evidence[source][key]=true;if(!firstSeen[source]||key<firstSeen[source])firstSeen[source]=key;}
   var activityDates={};
   try{(getActivities()||[]).forEach(function(a){if(a&&a.date&&a.type!=='Rest Day'){activityDates[a.date]=true;mark('training',a.date);}});}catch(ignore){}
@@ -7968,9 +7971,12 @@ function h2SyncFromJournal(){
     if((parseFloat(row.waterOz)||parseFloat(row.waterCount)*8||0)>0)mark('hydration',key);
     if((Array.isArray(row.foodLog)&&row.foodLog.length)||parseFloat(row.nuCalVal)>0||parseFloat(row.nuProtVal)>0)mark('nutrition',key);
     if(row.exStretch==='green')mark('stretch',key);
-    if((parseFloat(row.exSteps)||0)>0)mark('steps',key);
+    var dailySteps=Math.max(0,parseFloat(row.exSteps)||0);if(dailySteps>0){mark('steps',key);evidenceValues.steps[key]=dailySteps;}
     if(row.gaAudiobook==='green'||parseTimedMins(row.gaAudiobookTime)>0||String(row.gaAudiobookText||'').trim())mark('library',key);
     if(row.gaFinancialVideos==='green'||parseFloat(row.gaFinancialVideosTime)>0)mark('retirement-videos',key);
+    if(row.prepJournalCheck||localStorage.getItem('schedule_eveningPlanning_'+key)==='1')mark('evening-planning',key);
+    if(localStorage.getItem('schedule_sleepRoutine_'+key)==='1')mark('sleep-routine',key);
+    if(['jAccomplish','jImprov','jGratitude','jNotes','jCombined'].some(function(field){return String(row[field]||'').trim();}))mark('daily-reflection',key);
   }
   // Thinking section removed — drop any "Thinking Practice" habit card left over from before.
   if(!localStorage.getItem('habits2_thinking_removed_v1')){
@@ -7991,6 +7997,12 @@ function h2SyncFromJournal(){
     state.dismissedAuto=(state.dismissedAuto||[]).filter(function(id){return id!=='language';});
     localStorage.setItem('habits2_language_lessons_v1','1');
   }
+  ['evening-planning','sleep-routine','daily-reflection'].forEach(function(sourceId){
+    if(state.habits.some(function(h){return h.autoSource===sourceId;})||(state.dismissedAuto||[]).indexOf(sourceId)!==-1)return;
+    var source=sources.find(function(item){return item.id===sourceId;});if(!source)return;
+    state.habits.push({id:'h2-auto-'+sourceId,name:source.name,category:source.category,color:source.color,type:'check',target:1,schedule:'daily',weeklyTarget:7,days:[0,1,2,3,4,5,6],why:source.why,cue:'',minimum:'',created:(firstSeen[sourceId]||todayKey)+'T12:00:00',autoSource:sourceId});
+    state.dismissedAuto=(state.dismissedAuto||[]).filter(function(id){return id!==sourceId;});
+  });
   if(!localStorage.getItem('habits2_training_color_v1')){
     var trainingHabit=state.habits.find(function(h){return h.autoSource==='training';});
     if(trainingHabit&&trainingHabit.color==='#dc2626')trainingHabit.color='#4f46e5';
@@ -8013,11 +8025,12 @@ function h2SyncFromJournal(){
     state.dismissedAuto=(state.dismissedAuto||[]).filter(function(id){return id!=='stretch';});
   }
   localStorage.setItem('habits2_stretch_link_v1','1');
-  state.habits.forEach(function(h){if(h.autoSource==='retirement-videos'){h.name='Financial Videos';h.category='Growth';h.why='Build financial knowledge through focused video learning.';}});
+  var habitRenameMap={nutrition:'Log Meals & Nutrition',training:'Follow Training Plan',steps:'Reach 10,000 Steps',library:'Read or Listen Daily',coding:'Practice Coding / Tech','retirement-videos':'Watch Financial Videos'};
+  state.habits.forEach(function(h){if(habitRenameMap[h.autoSource])h.name=habitRenameMap[h.autoSource];if(h.autoSource==='steps'){h.type='count';h.target=10000;h.schedule='daily';h.weeklyTarget=7;h.category='Fitness';h.why='Build consistent daily movement by reaching 10,000 steps.';}if(h.autoSource==='retirement-videos'){h.category='Growth';h.why='Build financial knowledge through focused video learning.';}});
   // "Financial Videos" also gets auto-created if it doesn't exist anywhere yet (once only), so it
   // shows up right away instead of waiting on 3+ days of logged evidence like a normal suggestion.
   if(!state.habits.some(function(h){return h.autoSource==='retirement-videos';})&&(state.dismissedAuto||[]).indexOf('retirement-videos')===-1){
-    state.habits.push({id:'h2-auto-retirement-videos',name:'Financial Videos',category:'Growth',color:'#b45309',type:'check',target:1,schedule:'weekly',weeklyTarget:2,days:[0,1,2,3,4,5,6],why:'Build financial knowledge through focused video learning.',cue:'',minimum:'Watch one financial video',created:(firstSeen['retirement-videos']||todayKey)+'T12:00:00',autoSource:'retirement-videos'});
+    state.habits.push({id:'h2-auto-retirement-videos',name:'Watch Financial Videos',category:'Growth',color:'#b45309',type:'check',target:1,schedule:'weekly',weeklyTarget:2,days:[0,1,2,3,4,5,6],why:'Build financial knowledge through focused video learning.',cue:'',minimum:'Watch one financial video',created:(firstSeen['retirement-videos']||todayKey)+'T12:00:00',autoSource:'retirement-videos'});
     state.dismissedAuto=(state.dismissedAuto||[]).filter(function(id){return id!=='retirement-videos';});
   }
   localStorage.setItem('habits2_retirement_videos_link_v1','1');
@@ -8048,7 +8061,10 @@ function h2SyncFromJournal(){
       var logDate=new Date(todayDate);logDate.setDate(todayDate.getDate()-i);var logKey=h2Key(logDate),has=!!evidence[source.id][logKey];
       if(!state.logs[logKey]&&has)state.logs[logKey]={};
       var old=state.logs[logKey]&&state.logs[logKey][habit.id];
-      if(has&&(!old||old.autoSource===source.id))state.logs[logKey][habit.id]={status:'done',value:1,at:logKey+'T12:00:00',autoSource:source.id};
+      if(has&&(!old||old.autoSource===source.id)){
+        var trackedValue=source.id==='steps'?Number(evidenceValues.steps[logKey]||0):1;
+        state.logs[logKey][habit.id]={status:source.id==='steps'?(trackedValue>=10000?'done':'partial'):'done',value:trackedValue,at:logKey+'T12:00:00',autoSource:source.id};
+      }
       else if(!has&&old&&old.autoSource===source.id){delete state.logs[logKey][habit.id];if(!Object.keys(state.logs[logKey]).length)delete state.logs[logKey];}
     }
   });
@@ -8087,6 +8103,7 @@ function h2Render(){
   var list=document.getElementById('h2HabitList');if(!filtered.length){list.innerHTML='<div class="h2-empty"><strong>'+(state.habits.length?'No habits match this view':'Build your first habit')+'</strong>'+(state.habits.length?'Try a different filter.':'Start small, choose a realistic schedule, and make today your first vote.')+'</div>';}else list.innerHTML=filtered.map(function(h,idx){
     var log=h2Log(state,h.id,key),done=h2IsComplete(h,log),dueNow=h2IsDue(h,h2ViewDate,state),stats=h2HabitStats(state,h),control;
     if(h.type==='check')control='<div class="h2-today-control"><button class="'+(done?'done':'')+'" onclick="h2SetLog(\''+h.id+'\',\'done\')">&#x2713; Complete</button><button class="'+(log.status==='partial'?'partial':'')+'" onclick="h2SetLog(\''+h.id+'\',\'partial\')">Partial</button><button class="'+(log.status==='skip'?'skip':'')+'" onclick="h2SetLog(\''+h.id+'\',\'skip\')">Skip</button></div>';
+    else if(h.autoSource==='steps')control='<div class="h2-value-control"><span style="min-width:145px">'+Number(log.value||0).toLocaleString()+' / '+Number(h.target||10000).toLocaleString()+' steps</span></div>';
     else control='<div class="h2-value-control"><button onclick="h2Adjust(\''+h.id+'\',-1)">−</button><span>'+Number(log.value||0)+' / '+Number(h.target||1)+(h.type==='duration'?' min':'')+'</span><button onclick="h2Adjust(\''+h.id+'\',1)">+</button></div>';
     var moveUpBtn='<button onclick="h2MoveHabit(\''+h.id+'\',-1)" title="Move up"'+(idx===0?' disabled style="opacity:.3;cursor:not-allowed;"':'')+'>&#x25B2;</button>';
     var moveDownBtn='<button onclick="h2MoveHabit(\''+h.id+'\',1)" title="Move down"'+(idx===filtered.length-1?' disabled style="opacity:.3;cursor:not-allowed;"':'')+'>&#x25BC;</button>';
@@ -12804,9 +12821,9 @@ function renderJournalSchedule(){
     {time:'6:00 PM',mins:1080,label:'Water checkpoint: 64 oz',detail:'Drink another 32 ounces by 6:00 PM',done:water>=64,tab:'nutrition'},
     {time:'6:30 PM',mins:1110,label:growth.label,detail:'Today’s rotating Growth focus',done:growth.done,tab:growth.tab,skip:!!growth.skip||growth.label!=='Gun Range'},
     {time:'8:15 PM',mins:1215,label:'Journal accomplishments and gratitude',detail:'Capture the day while it is fresh',done:reflected,tab:'daily'},
-    {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:!!d.prepJournalCheck,tab:'daily'},
+    {time:'8:30 PM',mins:1230,label:'Prepare priorities for tomorrow',detail:'Close the day intentionally',done:localStorage.getItem('schedule_eveningPlanning_'+dateKey)==='1'||!!d.prepJournalCheck,tab:'daily',manual:'eveningPlanning'},
     {time:'9:00 PM',mins:1260,label:'Water checkpoint: 96 oz',detail:'Drink another 32 ounces by 9:00 PM',done:water>=96,tab:'nutrition'},
-    {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:'Protect tomorrow’s recovery',done:!!d.wSleepVal&&(isPastDay||(isSelectedToday&&currentMinutes>=1290)),tab:'wellness'}
+    {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:'Protect tomorrow’s recovery',done:localStorage.getItem('schedule_sleepRoutine_'+dateKey)==='1',tab:'wellness',manual:'sleepRoutine'}
   ].filter(function(item){return !item.skip;});
   if(localStorage.getItem(journalScheduleGrowthKey('financial',dateKey))==='1')items.push({time:'6:30 PM',mins:1110,label:'Financial Videos',detail:d.gaFinancialVideosTime?d.gaFinancialVideosTime+' min planned growth activity':'Planned growth activity',done:d.gaFinancialVideos==='green',tab:'daily',growthKind:'financial'});
   if(localStorage.getItem(journalScheduleGrowthKey('coding',dateKey))==='1')items.push({time:'6:30 PM',mins:1110,label:'Coding / Tech',detail:codingMinutes?fmtMinsSeconds(codingMinutes)+' logged in Skills':'Log the session in Skills',done:codingEntries.length>0,tab:'skill-log',growthKind:'coding'});
