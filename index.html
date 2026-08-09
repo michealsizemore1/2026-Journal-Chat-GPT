@@ -6945,9 +6945,15 @@ function saveBibleEntry(manualSave){
     transcript:previousBibleEntry.transcript||'',
     transcriptFileName:previousBibleEntry.transcriptFileName||'',
     savedAt:new Date().toISOString(),
-    archived:manualSave?true:!!previousBibleEntry.archived
+    archived:!!manualSave
   };
-  localStorage.setItem('bible_'+dateKey, JSON.stringify(entry));
+  if(manualSave){
+    var archiveKey=bibleArchiveViewingKey||('bible_sermon_'+dateKey+'_'+Date.now());
+    localStorage.setItem(archiveKey,JSON.stringify(entry));
+    localStorage.setItem('bible_'+dateKey,JSON.stringify({archived:true,hasArchivedSermons:true,savedAt:entry.savedAt}));
+    bibleArchiveViewingKey='';
+    bibleArchiveViewingDate='';
+  }else localStorage.setItem('bible_'+dateKey, JSON.stringify(entry));
   updateTranscriptSummary(entry.transcriptFileName,entry.transcript);
   const transcriptStatus=document.getElementById('bTranscriptStatus');
   if(transcriptStatus&&entry.transcript){transcriptStatus.style.display='inline';transcriptStatus.style.color='#27ae60';transcriptStatus.textContent='Transcript saved with this Sermon date';}
@@ -6962,24 +6968,27 @@ function saveBibleEntry(manualSave){
   }
 }
 let bibleAutoSaveTimer=null;
-let bibleArchiveViewingDate='';
+let bibleArchiveViewingDate='',bibleArchiveViewingKey='';
 function queueBibleAutoSave(){
   clearTimeout(bibleAutoSaveTimer);
   var status=document.getElementById('bBibleAutoSaveStatus');if(status)status.textContent='Saving…';
   bibleAutoSaveTimer=setTimeout(saveBibleEntry,550);
 }
 function monthlySermonEntries(){
-  var prefix=dk(new Date(today.getFullYear(),today.getMonth(),1)).slice(0,7)+'-';
+  var month=dk(new Date(today.getFullYear(),today.getMonth(),1)).slice(0,7),legacyPrefix='bible_'+month+'-',archivePrefix='bible_sermon_'+month+'-';
   var entries=[];
   for(var i=0;i<localStorage.length;i++){
-    var key=localStorage.key(i)||'';if(key.indexOf('bible_'+prefix)!==0)continue;
+    var key=localStorage.key(i)||'',date='';
+    if(key.indexOf(archivePrefix)===0)date=key.slice(13,23);
+    else if(key.indexOf(legacyPrefix)===0)date=key.slice(6,16);
+    else continue;
     try{
       var data=JSON.parse(localStorage.getItem(key)||'{}')||{};
       var meaningful=[data.sermonTitle,data.sermonSpeaker,data.sermonURL,data.sermonNotes,data.scripture,data.keyVerse,data.theme].some(function(value){return String(value||'').trim();});
-       if(meaningful&&data.archived!==false)entries.push({date:key.slice(6),data:data});
+       if(meaningful&&data.archived!==false)entries.push({storageKey:key,date:date,data:data});
     }catch(ignore){}
   }
-  return entries.sort(function(a,b){return b.date.localeCompare(a.date);});
+  return entries.sort(function(a,b){return b.date.localeCompare(a.date)||(String(b.data.savedAt||'').localeCompare(String(a.data.savedAt||'')));});
 }
 function renderMonthlySermonArchive(){
   var list=document.getElementById('monthlySermonArchiveList'),title=document.getElementById('monthlySermonArchiveTitle'),count=document.getElementById('monthlySermonArchiveCount'),deleteBtn=document.getElementById('deleteMonthlySermonsBtn');
@@ -6990,17 +6999,18 @@ function renderMonthlySermonArchive(){
   if(deleteBtn)deleteBtn.style.display=entries.length?'inline-block':'none';
   if(!entries.length){list.innerHTML='<div style="font-size:.76rem;color:#98a2b3;padding:9px 0;">No Sermon &amp; Bible Study entries saved for this month.</div>';return;}
   list.innerHTML=entries.map(function(entry){
-    var data=entry.data,date=new Date(entry.date+'T00:00:00'),label=date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),entryTitle=data.sermonTitle||data.theme||data.scripture||'Sermon & Bible Study';
+    var data=entry.data,date=new Date(entry.date+'T00:00:00'),label=date.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),savedTime=data.savedAt?new Date(data.savedAt).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'',entryTitle=data.sermonTitle||data.theme||data.scripture||'Sermon & Bible Study';
     return '<div style="display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid #f3e8dc;">'
-      +'<button type="button" onclick="openMonthlySermonEntry(&quot;'+entry.date+'&quot;)" style="flex:1;text-align:left;background:none;border:none;padding:0;cursor:pointer;min-width:0;"><span style="display:block;font-size:.76rem;font-weight:800;color:#9a5a24;">'+escHtml(label)+'</span><span style="display:block;font-size:.82rem;color:#344054;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escHtml(entryTitle)+'</span></button>'
-      +'<button type="button" onclick="deleteMonthlySermonEntry(&quot;'+entry.date+'&quot;)" title="Delete this saved entry" style="background:#fff1f2;color:#b42318;border:none;border-radius:5px;padding:5px 7px;font-size:.72rem;cursor:pointer;">Delete</button></div>';
+      +'<button type="button" onclick="openMonthlySermonEntry(&quot;'+entry.storageKey+'&quot;,&quot;'+entry.date+'&quot;)" style="flex:1;text-align:left;background:none;border:none;padding:0;cursor:pointer;min-width:0;"><span style="display:block;font-size:.76rem;font-weight:800;color:#9a5a24;">'+escHtml(label+(savedTime?' • '+savedTime:''))+'</span><span style="display:block;font-size:.82rem;color:#344054;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+escHtml(entryTitle)+'</span></button>'
+      +'<button type="button" onclick="deleteMonthlySermonEntry(&quot;'+entry.storageKey+'&quot;,&quot;'+entry.date+'&quot;)" title="Delete this saved entry" style="background:#fff1f2;color:#b42318;border:none;border-radius:5px;padding:5px 7px;font-size:.72rem;cursor:pointer;">Delete</button></div>';
   }).join('');
 }
-function openMonthlySermonEntry(dateKey){
+function openMonthlySermonEntry(storageKey,dateKey){
   var entry={};
-  try{entry=JSON.parse(localStorage.getItem('bible_'+dateKey)||'{}')||{};}catch(ignore){}
+  try{entry=JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch(ignore){}
   if(!Object.keys(entry).length){alert('This saved sermon could not be found.');renderMonthlySermonArchive();return;}
   bibleArchiveViewingDate=dateKey;
+  bibleArchiveViewingKey=storageKey;
   var fieldMap={
     bSermonTitle:'sermonTitle',
     bSermonSpeaker:'sermonSpeaker',
@@ -7022,18 +7032,19 @@ function openMonthlySermonEntry(dateKey){
   if(sermonSection)setTimeout(function(){sermonSection.scrollIntoView({behavior:'smooth',block:'center'});sermonSection.focus({preventScroll:true});},0);
   v26Toast('Saved sermon opened');
 }
-function deleteMonthlySermonEntry(dateKey){
-  var data={};try{data=JSON.parse(localStorage.getItem('bible_'+dateKey)||'{}')||{};}catch(ignore){}
+function deleteMonthlySermonEntry(storageKey,dateKey){
+  var data={};try{data=JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch(ignore){}
   var name=data.sermonTitle||'this Sermon & Bible Study entry';
   if(!confirm('Delete '+name+' from '+new Date(dateKey+'T00:00:00').toLocaleDateString()+'?'))return;
-  localStorage.removeItem('bible_'+dateKey);
-  if(dateKey===dk(today))loadBibleEntry();else renderMonthlySermonArchive();
+  localStorage.removeItem(storageKey);
+  if(storageKey===bibleArchiveViewingKey){bibleArchiveViewingKey='';bibleArchiveViewingDate='';clearBibleEntry();}
+  renderMonthlySermonArchive();renderBibleHistory();
 }
 function deleteCurrentMonthSermons(){
   var entries=monthlySermonEntries();if(!entries.length)return;
   var monthLabel=new Date(today.getFullYear(),today.getMonth(),1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
   if(!confirm('Delete all '+entries.length+' Sermon & Bible Study entries from '+monthLabel+'?\n\nThis cannot be undone unless you restore a backup.'))return;
-  entries.forEach(function(entry){localStorage.removeItem('bible_'+entry.date);});
+  entries.forEach(function(entry){localStorage.removeItem(entry.storageKey);});
   loadBibleEntry();
 }
 function loadBibleEntry(){
@@ -7064,6 +7075,7 @@ function loadBibleEntry(){
   }
   const transcriptFile=document.getElementById('bTranscriptFile');if(transcriptFile)transcriptFile.value='';
   bibleArchiveViewingDate='';
+  bibleArchiveViewingKey='';
   const transcriptStatus=document.getElementById('bTranscriptStatus');if(transcriptStatus){transcriptStatus.style.display='inline';transcriptStatus.style.color='#528062';transcriptStatus.textContent='Transcript is temporary and will not be saved.';}
   toggleSermonTranscript(false);
   renderBibleHistory();
@@ -7076,7 +7088,7 @@ function renderBibleHistory(){
   const entries=[];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
-    if(k&&k.startsWith('bible_')){
+    if(k&&k.startsWith('bible_')&&!k.startsWith('bible_sermon_')){
       const dateKey=k.slice(6);
       try{
         const e=JSON.parse(localStorage.getItem(k));
