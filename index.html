@@ -12811,6 +12811,10 @@ function renderJournalSchedule(){
   items.forEach(function(item,index){item.time=scheduleSlots[index].time;item.mins=scheduleSlots[index].mins;});
   var scheduleOverrides={};try{scheduleOverrides=JSON.parse(localStorage.getItem(journalScheduleOverridesKey(dateKey))||'{}');}catch(ignore){}
   items.forEach(function(item){var override=item._moveId?scheduleMoves.find(function(move){return move.id===item._moveId;}):scheduleOverrides[item.id];if(override&&override.time){item.time=override.time;item.mins=Number(override.mins);}});
+  // A manual time override should immediately place the card in chronological order.
+  // Modern JavaScript uses a stable sort, so cards sharing the same time retain their
+  // existing drag order.
+  items.sort(function(a,b){var am=Number(a.mins),bm=Number(b.mins);if(!Number.isFinite(am))am=1440;if(!Number.isFinite(bm))bm=1440;return am-bm;});
   _journalScheduleItemsById={};items.forEach(function(item){_journalScheduleItemsById[item.id]=item;});
   var financialStatus=document.getElementById('financialVideoScheduleStatus');if(financialStatus)financialStatus.textContent='Drag into the schedule above or tap Add';
   var codingStatus=document.getElementById('growthCodingStatus');if(codingStatus)codingStatus.textContent=(codingMinutes?fmtMinsSeconds(codingMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('coding',dateKey))==='1'?' • scheduled':'');
