@@ -1611,102 +1611,6 @@ body{
   <button onclick="saveReview()" style="background:#667eea;color:white;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:0.85rem;">Save Review</button>
 </div></div>
 </div>
-<template id="retiredHabitsTemplate">
-  <div class="panel">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
-      <div>
-        <h2 style="margin:0;color:#27ae60;font-size:1.15rem;">&#x1F501; Atomic Habits Guide</h2>
-        <div style="font-size:0.75rem;color:#888;margin-top:2px;font-style:italic;">Based on James Clear&#39;s <em>Atomic Habits</em> — Small habits, remarkable results</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-        <div id="habitTabDate" style="font-size:0.82rem;color:#888;"></div>
-      </div>
-    </div>
-
-    <!-- Identity Statement -->
-    <div style="background:#f0fff4;border:1px solid #a9dfbf;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-      <div style="font-size:0.78rem;font-weight:700;color:#27ae60;margin-bottom:6px;">&#x1F464; IDENTITY — Who am I becoming?</div>
-      <div style="font-size:0.88rem;color:#2c3e50;font-style:italic;line-height:1.5;">Use identity-based habits: decide the type of person you want to become, then let each small action serve as evidence of that identity.</div>
-      <div style="font-size:0.7rem;color:#888;margin-top:5px;">&#x1F4A1; Focus on identity, not outcomes. &quot;I am a runner&quot; not &quot;I want to run.&quot; Every action is a vote for the person you want to become.</div>
-    </div>
-
-    <!-- 4 Laws Grid -->
-    <div id="habitLawsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <!-- Law 1 -->
-      <div style="background:#ebf5fb;border:1px solid #aed6f1;border-radius:10px;padding:14px 16px;">
-        <div style="font-size:0.82rem;font-weight:700;color:#2980b9;margin-bottom:4px;">&#x1F441; LAW 1 · Make It Obvious</div>
-        <div style="font-size:0.7rem;color:#5d8aa8;margin-bottom:10px;font-style:italic;">&quot;You don&#39;t rise to the level of your goals; you fall to the level of your systems.&quot;</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_cue1" onclick="triClick(this)"></div><label>Implementation intention set<br><span style="font-size:0.7rem;color:#888;">When [situation] I will [behavior] at [location]</span></label></div>
-        <div style="font-size:0.68rem;color:#2980b9;background:#dbeafe;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. "When I pour my morning coffee, I will put on my running shoes at the front door."</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_cue2" onclick="triClick(this)"></div><label>Environment designed for cues<br><span style="font-size:0.7rem;color:#888;">Visible reminders placed strategically</span></label></div>
-        <div style="font-size:0.68rem;color:#2980b9;background:#dbeafe;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. Bible left on the pillow, running shoes by the bed, fruit bowl on the counter.</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_cue3" onclick="triClick(this)"></div><label>Habit stacking used<br><span style="font-size:0.7rem;color:#888;">After [current habit] I will [new habit]</span></label></div>
-        <div style="font-size:0.68rem;color:#2980b9;background:#dbeafe;border-radius:5px;padding:3px 8px;margin:0 0 0 28px;">e.g. "After I sit down with coffee, I will read my Bible for 10 minutes."</div>
-      </div>
-      <!-- Law 2 -->
-      <div style="background:#fef9e7;border:1px solid #f9e79f;border-radius:10px;padding:14px 16px;">
-        <div style="font-size:0.82rem;font-weight:700;color:#d4a017;margin-bottom:4px;">&#x2728; LAW 2 · Make It Attractive</div>
-        <div style="font-size:0.7rem;color:#9a7d0a;margin-bottom:10px;font-style:italic;">&quot;The more attractive an opportunity is, the more likely it is to become habit-forming.&quot;</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_att1" onclick="triClick(this)"></div><label>Temptation bundling applied<br><span style="font-size:0.7rem;color:#888;">Pair a want-to with a need-to</span></label></div>
-        <div style="font-size:0.68rem;color:#92640a;background:#fef3c7;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. Only listen to your favourite podcast while running. Only watch Netflix while folding laundry.</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_att2" onclick="triClick(this)"></div><label>Motivation ritual performed<br><span style="font-size:0.7rem;color:#888;">Pre-habit routine signals brain to start</span></label></div>
-        <div style="font-size:0.68rem;color:#92640a;background:#fef3c7;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. Put on your running playlist before every workout — your brain learns the cue = time to perform.</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_att3" onclick="triClick(this)"></div><label>Culture/community reinforced<br><span style="font-size:0.7rem;color:#888;">Surrounded by those I want to become</span></label></div>
-        <div style="font-size:0.68rem;color:#92640a;background:#fef3c7;border-radius:5px;padding:3px 8px;margin:0 0 0 28px;">e.g. Running group, Bible study, mastermind circle — join people for whom the habit is normal.</div>
-      </div>
-      <!-- Law 3 -->
-      <div style="background:#f0fff4;border:1px solid #a9dfbf;border-radius:10px;padding:14px 16px;">
-        <div style="font-size:0.82rem;font-weight:700;color:#27ae60;margin-bottom:4px;">&#x26A1; LAW 3 · Make It Easy</div>
-        <div style="font-size:0.7rem;color:#1e8449;margin-bottom:10px;font-style:italic;">&quot;Motion vs. action — planning feels productive but only action produces results.&quot;</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_easy1" onclick="triClick(this)"></div><label>2-minute rule applied<br><span style="font-size:0.7rem;color:#888;">Start tiny — show up, then scale up</span></label></div>
-        <div style="font-size:0.68rem;color:#1a6b3c;background:#d1fae5;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. "Read one page." "Do one push-up." "Lace up your shoes." Master the habit of showing up first.</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_easy2" onclick="triClick(this)"></div><label>Good habit friction reduced<br><span style="font-size:0.7rem;color:#888;">Environment prepared in advance</span></label></div>
-        <div style="font-size:0.68rem;color:#1a6b3c;background:#d1fae5;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. Lay out workout clothes the night before. Pre-load the water bottle. Keep the book on the nightstand open.</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_easy3" onclick="triClick(this)"></div><label>Bad habit friction added<br><span style="font-size:0.7rem;color:#888;">Obstacles placed for unwanted habits</span></label></div>
-        <div style="font-size:0.68rem;color:#1a6b3c;background:#d1fae5;border-radius:5px;padding:3px 8px;margin:0 0 0 28px;">e.g. Delete social media apps (reinstall to use). Unplug the TV after watching. Put junk food on the highest shelf.</div>
-      </div>
-      <!-- Law 4 -->
-      <div style="background:#f5eef8;border:1px solid #d7bde2;border-radius:10px;padding:14px 16px;">
-        <div style="font-size:0.82rem;font-weight:700;color:#8e44ad;margin-bottom:4px;">&#x1F3C6; LAW 4 · Make It Satisfying</div>
-        <div style="font-size:0.7rem;color:#6c3483;margin-bottom:10px;font-style:italic;">&quot;What is immediately rewarded is repeated. What is immediately punished is avoided.&quot;</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_sat1" onclick="triClick(this)"></div><label>Habit tracked today &#x2714;<br><span style="font-size:0.7rem;color:#888;">Don&#39;t break the chain — paper clip strategy</span></label></div>
-        <div style="font-size:0.68rem;color:#5b21b6;background:#ede9fe;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. Mark an X on a calendar, move a paper clip jar, check this box — visual progress is satisfying.</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_sat2" onclick="triClick(this)"></div><label>Never missed twice rule kept<br><span style="font-size:0.7rem;color:#888;">Miss once = human. Miss twice = new habit forming.</span></label></div>
-        <div style="font-size:0.68rem;color:#5b21b6;background:#ede9fe;border-radius:5px;padding:3px 8px;margin:0 0 8px 28px;">e.g. Missed your run yesterday? Non-negotiable: get out today even if just 10 min. Protect the streak identity.</div>
-        <div class="task-row" style="margin:0 0 2px;"><div class="tri-check" data-key="hab_sat3" onclick="triClick(this)"></div><label>Immediate reward given<br><span style="font-size:0.7rem;color:#888;">Celebrate — reinforce the habit loop</span></label></div>
-        <div style="font-size:0.68rem;color:#5b21b6;background:#ede9fe;border-radius:5px;padding:3px 8px;margin:0 0 0 28px;">e.g. Say "yes!" after finishing. Enjoy your favourite tea after reading. Let the feeling of success be the reward.</div>
-      </div>
-    </div>
-
-    <!-- My Habits & Streaks -->
-    <div style="display:none;background:#fafafa;border:1px solid #e9ecef;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:0.85rem;font-weight:700;color:#555;">&#x1F4CB; MY HABITS &amp; STREAKS</div>
-        <div id="habitStreakSummary" style="font-size:0.75rem;color:#888;"></div>
-      </div>
-      <div id="customHabitList"></div>
-      <div id="habitProgressBar" style="margin-top:10px;"></div>
-    </div>
-
-    <!-- Daily Reflection -->
-    <div style="display:none;background:#fffbf0;border:1px solid #fde8a0;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-      <div style="font-size:0.82rem;font-weight:700;color:#b7950b;margin-bottom:6px;">&#x1F4D6; DAILY HABIT REFLECTION</div>
-      <div style="font-size:0.72rem;color:#888;margin-bottom:6px;">What habit did I build on today? What worked? What will I adjust?</div>
-      <textarea id="habitReflection" rows="3" placeholder="e.g. I ran before checking my phone. Stacked it with coffee. Identity: I am a disciplined athlete who prioritizes movement..." style="width:100%;border:1px solid #fde8a0;border-radius:7px;padding:8px 10px;font-size:0.85rem;box-sizing:border-box;resize:vertical;font-family:inherit;outline:none;"></textarea>
-      <div style="font-size:0.7rem;color:#b7950b;margin-top:5px;">&#x1F4A1; &quot;Habits are the compound interest of self-improvement. Getting 1% better every day counts for a lot in the long run.&quot; — James Clear</div>
-    </div>
-
-    <!-- Habit Scorecard (weekly view) -->
-    <div style="display:none;background:#fff;border:1px solid #e9ecef;border-radius:10px;padding:14px 16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-size:0.82rem;font-weight:700;color:#555;">&#x1F4CA; HABIT SCORECARD — Last 7 Days</div>
-        <button onclick="renderHabitScorecard()" style="font-size:0.72rem;background:#667eea;color:#fff;border:none;border-radius:5px;padding:3px 9px;cursor:pointer;">&#x1F504; Refresh</button>
-      </div>
-      <div id="habitScorecard" style="overflow-x:auto;"></div>
-    </div>
-  </div>
-</template>
-
 <div id="tab-habits2" class="tab-panel">
   <div class="panel habits2-shell">
     <div class="h2-header">
@@ -1788,7 +1692,6 @@ body{
         <div><strong>Measure consistency</strong><span>Use completion rate and momentum—not only an unbroken streak.</span></div>
         <div><strong>Recover quickly</strong><span>A missed day is information. Aim to return on the next scheduled day.</span></div>
       </div>
-      <button class="h2-secondary" onclick="h2ImportLegacyHabits()">Import saved legacy habits</button>
     </details>
   </div>
 </div>
@@ -2561,38 +2464,6 @@ body{
     <p style="font-size:.8rem;color:#667085;line-height:1.45;margin:4px 0 12px;">Approximate space used on this device. Cloud copies are not included. Large files use the browser's expanded file storage; daily journal data uses the smaller local journal storage.</p>
     <div id="storageBreakdownBody" style="overflow-y:auto;min-height:180px;"><div style="text-align:center;color:#98a2b3;padding:34px;">Calculating storage...</div></div>
     <div style="display:flex;justify-content:flex-end;margin-top:12px;"><button type="button" class="btn-primary" onclick="renderStorageBreakdown()">Refresh</button></div>
-  </div>
-</div>
-
-<!-- Add Habit Modal -->
-<div id="addHabitModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:14px;padding:22px 24px;width:min(92vw,400px);box-shadow:0 8px 32px rgba(0,0,0,0.2);">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <h3 style="margin:0;color:#27ae60;font-size:1rem;">&#x1F501; Add Custom Habit</h3>
-      <button onclick="closeAddHabitModal()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:#aaa;">&#x2715;</button>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label style="font-size:0.78rem;font-weight:600;color:#555;display:block;margin-bottom:3px;">Habit Name *</label>
-      <input type="text" id="newHabitName" placeholder="e.g. Read 10 pages, Meditate 5 min..." style="width:100%;border:1px solid #ddd;border-radius:7px;padding:8px 10px;font-size:0.88rem;box-sizing:border-box;outline:none;" onkeydown="if(event.key==='Enter')saveNewHabit()">
-    </div>
-    <div style="margin-bottom:10px;">
-      <label style="font-size:0.78rem;font-weight:600;color:#555;display:block;margin-bottom:3px;">Atomic Law</label>
-      <select id="newHabitLaw" style="width:100%;border:1px solid #ddd;border-radius:7px;padding:7px 10px;font-size:0.85rem;outline:none;background:#fff;">
-        <option value="1">&#x1F441; Law 1 — Make It Obvious</option>
-        <option value="2">&#x2728; Law 2 — Make It Attractive</option>
-        <option value="3">&#x26A1; Law 3 — Make It Easy</option>
-        <option value="4">&#x1F3C6; Law 4 — Make It Satisfying</option>
-      </select>
-    </div>
-    <div style="margin-bottom:16px;">
-      <label style="font-size:0.78rem;font-weight:600;color:#555;display:block;margin-bottom:3px;">Habit Stack (optional)</label>
-      <input type="text" id="newHabitStack" placeholder="After [trigger], I will do this habit..." style="width:100%;border:1px solid #ddd;border-radius:7px;padding:8px 10px;font-size:0.85rem;box-sizing:border-box;outline:none;">
-      <div style="font-size:0.67rem;color:#aaa;margin-top:3px;">e.g. After I pour my morning coffee, I will read 10 pages</div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="saveNewHabit()" style="flex:1;background:#27ae60;color:#fff;border:none;border-radius:8px;padding:10px;font-size:0.9rem;font-weight:700;cursor:pointer;">&#x2714; Save Habit</button>
-      <button onclick="closeAddHabitModal()" style="flex:0.4;background:#f0f0f0;color:#555;border:none;border-radius:8px;padding:10px;font-size:0.9rem;cursor:pointer;">Cancel</button>
-    </div>
   </div>
 </div>
 
@@ -3837,7 +3708,6 @@ function attachListeners(){
   const pjc=document.getElementById('prepJournalCheck');if(pjc)pjc.onchange=save;
   TXS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=save;});
   NMS.forEach(id=>{const e=document.getElementById(id);if(e)e.oninput=function(){if(id==='exMassageMinutes'){syncMassageMinutes('activities');return;}save();if(id==='exSteps')renderDailyCheckOverview();if(id==='gaFinancialVideosTime')renderJournalSchedule();};});
-  renderCustomHabits();
   PTIDS.forEach(id=>{const row=document.getElementById(id);if(row){const tx=row.querySelector('input[type=text]');if(tx)tx.oninput=save;}});
   const jc=document.getElementById('jCombined');if(jc)jc.oninput=function(){syncJournalCombinedToFields();save();};
   // spDailyBreadText also doubles as the Scripture Focus verse field — keep
@@ -7839,8 +7709,7 @@ function renderRunMetrics(){
     +runs10html;
 }
 
-// ── Atomic Habits ─────────────────────────────────────────────────────
-// Habits 2 — experimental flexible habit tracker
+// ── Habits tracker ────────────────────────────────────────────────────
 var h2ViewDate=new Date(),h2Filter='all',h2EditingId=null;
 function h2State(){
   try{var parsed=JSON.parse(localStorage.getItem('habits2_state')||'{}');return{habits:Array.isArray(parsed.habits)?parsed.habits:[],logs:parsed.logs&&typeof parsed.logs==='object'?parsed.logs:{},dismissedAuto:Array.isArray(parsed.dismissedAuto)?parsed.dismissedAuto:[]};}catch(e){return{habits:[],logs:{},dismissedAuto:[]};}
@@ -8123,161 +7992,6 @@ function h2MoveHabit(id,dir){
 function h2RenderInsights(state){
   var heat=document.getElementById('h2Heatmap');if(!heat)return;var start=new Date();start.setDate(start.getDate()-83);var cells=[];for(var i=0;i<84;i++){var d=new Date(start);d.setDate(d.getDate()+i);var due=state.habits.filter(function(h){return h2IsDue(h,d,state);}),done=due.filter(function(h){return h2IsComplete(h,h2Log(state,h.id,h2Key(d)));}).length,ratio=due.length?done/due.length:0,level=ratio===0?'':ratio<.5?'l1':ratio<1?'l2':'l3';cells.push('<i class="'+level+'" title="'+d.toLocaleDateString()+': '+done+'/'+due.length+'"></i>');}heat.innerHTML=cells.join('');
   var perf=document.getElementById('h2Performance');perf.innerHTML=state.habits.length?state.habits.map(function(h){var s=h2HabitStats(state,h);return'<div class="h2-performance-row"><div class="h2-performance-label"><span>'+escHtml(h.name)+'</span><strong>'+s.rate+'%</strong></div><div class="h2-performance-bar"><i style="width:'+s.rate+'%;background:#16835d"></i></div></div>';}).join(''):'<div style="font-size:.72rem;color:#94a3b8;">Add habits to see performance.</div>';
-}
-function h2ImportLegacyHabits(){var legacy=[];try{legacy=JSON.parse(localStorage.getItem('habit_list')||'[]');}catch(e){}if(!legacy.length){alert('There are no saved legacy habits to import.');return;}var state=h2State(),names={};state.habits.forEach(function(h){names[h.name.toLowerCase()]=true;});var added=0;legacy.forEach(function(h){if(!h.name||names[h.name.toLowerCase()])return;state.habits.push({id:'h2-'+Date.now()+'-'+added,name:h.name,category:'Growth',color:'#16835d',type:'check',target:1,schedule:'daily',weeklyTarget:3,days:[1,2,3,4,5],why:'',cue:h.stack||'',minimum:'',created:new Date().toISOString()});names[h.name.toLowerCase()]=true;added++;});if(h2SaveState(state)){h2Render();alert(added+' saved legacy habit'+(added===1?'':'s')+' imported.');}}
-
-function toggleAtomicHabits(){
-  var body=document.getElementById('atomicHabBody');
-  var chev=document.getElementById('atomicHabChev');
-  if(!body)return;
-  var open=body.style.display!=='none';
-  body.style.display=open?'none':'block';
-  if(chev)chev.innerHTML=open?'&#x25B6;':'&#x25BC;';
-}
-
-function getHabitList(){return JSON.parse(localStorage.getItem('habit_list')||'[]');}
-function saveHabitList(list){localStorage.setItem('habit_list',JSON.stringify(list));}
-
-function habitStreak(habitKey){
-  // Count consecutive days (backwards from yesterday) where this key === 'green'
-  var streak=0;
-  var d=new Date(today);
-  // check today too
-  for(var i=0;i<365;i++){
-    var raw=localStorage.getItem('planner_'+dk(d));
-    if(!raw)break;
-    var dd=JSON.parse(raw);
-    if((dd[habitKey]||'')!=='green')break;
-    streak++;
-    d.setDate(d.getDate()-1);
-  }
-  return streak;
-}
-
-function renderCustomHabits(){
-  var el=document.getElementById('customHabitList');
-  var sumEl=document.getElementById('habitProgressBar')||document.getElementById('habitStreakSummary');
-  if(!el)return;
-  var list=getHabitList();
-  if(!list.length){
-    el.innerHTML='<div style="color:#aaa;font-size:0.8rem;text-align:center;padding:6px;">No custom habits yet — tap + Add Habit</div>';
-    if(sumEl)sumEl.textContent='';
-    return;
-  }
-  var totalStreak=0,perfectToday=0;
-  var raw=localStorage.getItem('planner_'+dk(today));
-  var todayData=raw?JSON.parse(raw):{};
-  var html='';
-  list.forEach(function(h){
-    var streak=habitStreak('chab_'+h.id);
-    totalStreak+=streak;
-    var done=(todayData['chab_'+h.id]||'')==='green';
-    if(done)perfectToday++;
-    var flame=streak>=7?'&#x1F525;':streak>=3?'&#x2B50;':'';
-    html+='<div style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid #f0f0f0;">'
-      +'<div class="tri-check'+(done?' green':'')+'" data-key="chab_'+h.id+'" data-state="'+(done?'green':'')+'" onclick="triClick(this)" style="flex-shrink:0;'+(done?'border-color:#27ae60;color:#27ae60;background:#eafaf1;':'')+'">'+(done?'✓':'')+'</div>'
-      +'<div style="flex:1;min-width:0;">'
-      +'<div style="font-size:0.82rem;font-weight:600;color:#2c3e50;">'+escHtml(h.name)+'</div>'
-      +(h.law?'<div style="font-size:0.68rem;color:#aaa;">Law '+h.law+(h.stack?' · Stack: '+escHtml(h.stack):'')+'</div>':'')
-      +'</div>'
-      +'<div style="text-align:right;flex-shrink:0;">'
-      +'<div style="font-size:0.78rem;font-weight:700;color:'+(streak>=7?'#e67e22':streak>=3?'#f39c12':'#aaa')+';">'+flame+' '+streak+'d</div>'
-      +'<div style="font-size:0.65rem;color:#aaa;">streak</div>'
-      +'</div>'
-      +'<button onclick="deleteCustomHabit('+h.id+')" style="background:none;border:none;color:#e74c3c;cursor:pointer;font-size:0.75rem;padding:2px 4px;flex-shrink:0;">&#x1F5D1;</button>'
-      +'</div>';
-  });
-  el.innerHTML=html;
-  if(sumEl){
-    var pct=list.length?Math.round(perfectToday/list.length*100):0;
-    var bar='<div style="height:6px;background:#e9ecef;border-radius:3px;margin-top:4px;"><div style="height:6px;background:'+(pct===100?'#27ae60':pct>=50?'#f39c12':'#e74c3c')+';border-radius:3px;width:'+pct+'%;transition:width 0.3s;"></div></div>';
-    sumEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;">'
-      +'<span>Today: <strong style="color:'+(pct===100?'#27ae60':pct>=50?'#f39c12':'#e74c3c')+';">'+perfectToday+'/'+list.length+'</strong> habits completed ('+pct+'%)</span>'
-      +'<span style="color:#888;">Avg streak: '+(list.length?Math.round(totalStreak/list.length):0)+'d</span>'
-      +'</div>'+bar;
-  }
-}
-
-function deleteCustomHabit(id){
-  if(!confirm('Delete this habit?'))return;
-  var list=getHabitList().filter(function(h){return h.id!==id;});
-  saveHabitList(list);
-  renderCustomHabits();
-}
-
-function openAddHabitModal(){
-  document.getElementById('addHabitModal').style.display='flex';
-  document.getElementById('newHabitName').value='';
-  document.getElementById('newHabitLaw').value='1';
-  document.getElementById('newHabitStack').value='';
-  setTimeout(function(){document.getElementById('newHabitName').focus();},50);
-}
-function closeAddHabitModal(){document.getElementById('addHabitModal').style.display='none';}
-function saveNewHabit(){
-  var name=(document.getElementById('newHabitName').value||'').trim();
-  if(!name){alert('Enter a habit name.');return;}
-  var list=getHabitList();
-  var id=Date.now();
-  list.push({id:id,name:name,law:document.getElementById('newHabitLaw').value,stack:(document.getElementById('newHabitStack').value||'').trim()});
-  saveHabitList(list);
-  closeAddHabitModal();
-  renderCustomHabits();
-}
-
-// ── Habit Scorecard ────────────────────────────────────────────────────────
-function renderHabitScorecard(){
-  var el=document.getElementById('habitScorecard');
-  if(!el)return;
-  var list=getHabitList();
-  var builtIn=[
-    {id:'hab_cue1',name:'Implementation Intention'},
-    {id:'hab_cue2',name:'Environment Design'},
-    {id:'hab_cue3',name:'Habit Stacking'},
-    {id:'hab_att1',name:'Temptation Bundling'},
-    {id:'hab_att2',name:'Motivation Ritual'},
-    {id:'hab_att3',name:'Culture/Community'},
-    {id:'hab_easy1',name:'2-Minute Rule'},
-    {id:'hab_easy2',name:'Friction Reduced'},
-    {id:'hab_easy3',name:'Friction Added'},
-    {id:'hab_sat1',name:'Habit Tracked'},
-    {id:'hab_sat2',name:'Never Missed Twice'},
-    {id:'hab_sat3',name:'Reward Given'},
-  ];
-  var customItems=list.map(function(h){return{id:'chab_'+h.id,name:h.name};});
-  var allHabits=builtIn.concat(customItems);
-  // Build 7 day columns
-  var days=[];
-  for(var i=6;i>=0;i--){var d=new Date(today);d.setDate(d.getDate()-i);days.push(d);}
-  var dayData=days.map(function(d){
-    var raw=localStorage.getItem('planner_'+dk(d));
-    return raw?JSON.parse(raw):{};
-  });
-  var dayLabels=days.map(function(d){return d.toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'});});
-  // Table
-  var t='<table style="width:100%;border-collapse:collapse;font-size:0.75rem;min-width:500px;">';
-  t+='<thead><tr><th style="text-align:left;padding:4px 6px;color:#555;font-weight:600;border-bottom:2px solid #e9ecef;min-width:140px;">Habit</th>';
-  days.forEach(function(d,i){
-    var isToday=dk(d)===dk(today);
-    t+='<th style="text-align:center;padding:4px 4px;color:'+(isToday?'#27ae60':'#555')+';font-weight:'+(isToday?'700':'600')+';border-bottom:2px solid #e9ecef;white-space:nowrap;">'+dayLabels[i]+'</th>';
-  });
-  t+='<th style="text-align:center;padding:4px 6px;color:#555;font-weight:600;border-bottom:2px solid #e9ecef;">Score</th></tr></thead><tbody>';
-  allHabits.forEach(function(h,ri){
-    var bg=ri%2===0?'#fafafa':'#fff';
-    t+='<tr style="background:'+bg+'"><td style="padding:5px 6px;color:#333;font-weight:500;border-bottom:1px solid #f0f0f0;">'+escHtml(h.name)+'</td>';
-    var weekScore=0;
-    dayData.forEach(function(dd){
-      var done=(dd[h.id]||'')==='green';
-      if(done)weekScore++;
-      t+='<td style="text-align:center;padding:5px 4px;border-bottom:1px solid #f0f0f0;">'
-        +(done?'<span style="color:#27ae60;font-size:0.9rem;font-weight:700;">&#x2714;</span>':'<span style="color:#ddd;font-size:0.75rem;">&#x25CB;</span>')
-        +'</td>';
-    });
-    var pct=Math.round(weekScore/7*100);
-    var scoreColor=pct>=80?'#27ae60':pct>=50?'#f39c12':'#e74c3c';
-    t+='<td style="text-align:center;padding:5px 6px;border-bottom:1px solid #f0f0f0;"><span style="font-weight:700;color:'+scoreColor+';">'+weekScore+'/7</span></td></tr>';
-  });
-  t+='</tbody></table>';
-  el.innerHTML=t;
 }
 
 // ── Ask Journal Follow-up ────────────────────────────────────────
