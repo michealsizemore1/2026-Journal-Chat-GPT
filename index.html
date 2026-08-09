@@ -2283,6 +2283,7 @@ body{
       <div class="task-row" style="gap:6px;flex-wrap:wrap;">
         <label style="min-width:90px;font-weight:600;">&#x1F517; URL <span style="font-size:.68rem;color:#98a2b3;">(optional)</span>:</label>
         <input type="url" id="bSermonURL" placeholder="https://…" style="flex:1;min-width:180px;border:1px solid #e9ecef;border-radius:6px;padding:5px 8px;font-size:0.85rem;">
+        <button type="button" id="bYouTubeFillBtn" onclick="youtubeTranscriptFill()" style="background:#dc2626;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:0.8rem;font-weight:700;cursor:pointer;white-space:nowrap;">&#x25B6; Fill from YouTube</button>
         <button onclick="openBibleSermonLink()" style="background:#667eea;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:0.8rem;cursor:pointer;white-space:nowrap;">&#x25B6; Watch</button>
       </div>
       <div style="font-size:0.72rem;font-weight:800;color:#9a5a24;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 2px;">Scripture &amp; message</div>
@@ -6843,15 +6844,16 @@ function clearTranscript(){
   updateTranscriptSummary('','');
 }
 async function youtubeTranscriptFill(){
-  var url=((document.getElementById('bTranscriptYouTubeURL')||{}).value||'').trim();
+  var url=((document.getElementById('bSermonURL')||{}).value||'').trim();
   if(!url){alert('Paste the YouTube sermon link first.');return;}
+  if(!/(?:youtube\.com|youtu\.be)/i.test(url)){alert('Please enter a valid YouTube link.');return;}
   var btn=document.getElementById('bYouTubeFillBtn'),status=document.getElementById('bTranscriptStatus');
   if(btn){btn.disabled=true;btn.textContent='Getting captions...';}
   if(status){status.style.display='inline';status.style.color='#667eea';status.textContent='Retrieving available YouTube captions...';}
   try{
     var data=await journalProtectedFunction({action:'youtube-transcript',url:url});
     var text=data.transcript||'';
-    if(!text)throw new Error('No transcript text was returned.');
+    if(!text)throw new Error('This video does not have accessible YouTube captions. Upload or paste a transcript instead.');
     var ta=document.getElementById('bTranscriptText');
     var label='YouTube captions'+(data.title?' — '+data.title:'');
     if(ta){ta.value=text;ta.dataset.fileName=label;}
@@ -6867,7 +6869,7 @@ async function youtubeTranscriptFill(){
   }catch(error){
     if(status){status.style.color='#e74c3c';status.textContent=error.message||String(error);}
   }finally{
-    setTimeout(function(){if(btn){btn.disabled=false;btn.innerHTML='&#x25B6; Get Transcript &amp; Fill Fields';}},900);
+    setTimeout(function(){if(btn){btn.disabled=false;btn.innerHTML='&#x25B6; Fill from YouTube';}},900);
   }
 }
 async function aiTranscriptFill(){
