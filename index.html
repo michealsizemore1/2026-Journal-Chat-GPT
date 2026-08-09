@@ -1885,7 +1885,10 @@ body{
 
 <div id="tab-library" class="tab-panel"><div class="panel">
   <div id="libraryChartsGrid" class="dash-grid" style="padding:0 0 16px;"></div>
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><h2 style="margin:0;font-size:1.1rem;color:#667eea;">&#x1F4DA; Audiobook Library</h2></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+    <div class="tri-check" data-key="gaAudiobook" onclick="triClick(this)" title="Mark today's Reading / Audiobook complete"></div>
+    <h2 style="margin:0;font-size:1.1rem;color:#667eea;">&#x1F4DA; Audiobook Library</h2>
+  </div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
     <label for="gaAudiobookTime" style="font-size:0.85rem;font-weight:600;color:#555;white-space:nowrap;">&#x23F1; Reading/Listening Time:</label>
     <input type="text" id="gaAudiobookTime" inputmode="text" placeholder="45 min or 1h 30m" title="Enter minutes with a unit, for example 45 min or 1h 30m" style="flex:1;max-width:220px;border:1px solid #e9ecef;border-radius:6px;padding:6px 10px;font-size:0.85rem;">
