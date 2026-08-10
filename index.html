@@ -1368,10 +1368,10 @@ body{
       <input type="number" id="gaFinancialVideosTime" min="0" step="1" inputmode="numeric" placeholder="Minutes">
       <button type="button" class="journal-growth-add" id="growthFinancialAdd" onclick="journalScheduleAddGrowth('financial')">Add</button>
     </div>
-    <div class="journal-growth-pool-card" data-growth-kind="udemy"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'udemy')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaUdemy" onclick="triClick(this)" title="Mark Udemy complete"></div><strong style="font-size:.76rem;">Udemy</strong><span class="journal-growth-status" id="growthUdemyStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('udemy')">Add</button></div>
-    <div class="journal-growth-pool-card" data-growth-kind="gun"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'gun')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaGunRange" onclick="triClick(this)" title="Mark Gun Range complete"></div><strong style="font-size:.76rem;">Gun Range</strong><span class="journal-growth-status" id="growthGunStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('gun')">Add</button></div>
-    <div class="journal-growth-pool-card" data-growth-kind="language"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'language')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaLanguage" onclick="triClick(this)" title="Mark Language Practice complete"></div><strong style="font-size:.76rem;">Language Practice</strong><span class="journal-growth-status" id="growthLanguageStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('language')">Add</button></div>
-    <div class="journal-growth-pool-card" data-growth-kind="reading"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'reading')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaAudiobook" onclick="triClick(this)" title="Mark Reading / Audiobook complete"></div><strong style="font-size:.76rem;">Reading / Audiobook</strong><span class="journal-growth-status" id="growthReadingStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('reading')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="udemy"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'udemy')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaUdemy" onclick="triClick(this)" title="Mark Udemy complete"></div><strong style="font-size:.76rem;">Udemy</strong><input type="number" id="growthUdemyTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Udemy minutes" onchange="journalQuickGrowthTime('udemy',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('udemy')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="gun"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'gun')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaGunRange" onclick="triClick(this)" title="Mark Gun Range complete"></div><strong style="font-size:.76rem;">Gun Range</strong><input type="number" id="growthGunTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Gun Range minutes" onchange="journalQuickGrowthTime('gun',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('gun')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="language"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'language')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaLanguage" onclick="triClick(this)" title="Mark Language Practice complete"></div><strong style="font-size:.76rem;">Language Practice</strong><input type="number" id="growthLanguageTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Language minutes" onchange="journalQuickGrowthTime('language',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('language')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="reading"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'reading')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaAudiobook" onclick="triClick(this)" title="Mark Reading / Audiobook complete"></div><strong style="font-size:.76rem;">Reading / Audiobook</strong><input type="number" id="growthReadingTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Reading or audiobook minutes" onchange="journalQuickGrowthTime('reading',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('reading')">Add</button></div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:7px;"><span style="font-size:.64rem;color:#7c6f98;">Drag a dotted handle onto a schedule card, or use Add. Logged time appears under Growth / Skills in the Weekly screen.</span><button type="button" class="journal-growth-add" onclick="journalOpenGrowthLog('')">+ Log Details &amp; Link</button></div>
   </div>
 </details>
@@ -1396,11 +1396,14 @@ body{
     <div class="journal-calendar-title" id="journalCalendarTitle"></div>
     <button type="button" onclick="event.stopPropagation();shiftJournalCalendar(1)">Next &#x203A;</button>
   </div>
+  <div class="my-calendar-add" style="border-top:0;border-bottom:1px solid #e8ebf2;">
+    <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent(true)">+ Add Manual Event</button>
+    <span style="font-size:.66rem;color:#667085;">Choose any date, time, title and note</span>
+  </div>
   <div class="journal-calendar-grid" id="journalCalendarGrid"></div>
   <div class="journal-calendar-legend"><span>Information saved</span><span class="partial">Partly completed</span><span class="myevent">Event</span></div>
   <div class="my-calendar-events" id="myCalendarEvents"></div>
   <div class="my-calendar-add">
-    <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent()">+ Add Manual Event</button>
     <label class="my-calendar-import-btn" onclick="event.stopPropagation();" title="Import events from an exported .ics file (Google Calendar, Outlook, Apple Calendar, etc.)">&#x1F4E5; Import .ics<input type="file" accept=".ics,text/calendar" style="display:none" onchange="importCalendarICS(event)"></label>
     <span style="font-size:.66rem;color:#667085;">for <strong id="myCalendarEventDateLabel"></strong></span>
   </div>
@@ -3871,7 +3874,7 @@ function toggleAddCalendarEvent(show){
   var form=document.getElementById('myCalendarEventForm');if(!form)return;
   var next=show===undefined?form.style.display==='none':show;
   form.style.display=next?'flex':'none';
-  if(next){var dateInput=document.getElementById('myCalendarEventDate');if(dateInput)dateInput.value=dk(today);setTimeout(function(){var t=document.getElementById('myCalendarEventTitle');if(t)t.focus();},50);}
+  if(next){var dateInput=document.getElementById('myCalendarEventDate');if(dateInput)dateInput.value=dk(today);setTimeout(function(){form.scrollIntoView({behavior:'smooth',block:'center'});var t=document.getElementById('myCalendarEventTitle');if(t)t.focus();},50);}
 }
 function saveCalendarEvent(){
   var dateEl=document.getElementById('myCalendarEventDate'),titleEl=document.getElementById('myCalendarEventTitle'),timeEl=document.getElementById('myCalendarEventTime'),noteEl=document.getElementById('myCalendarEventNote');
@@ -12516,6 +12519,16 @@ function journalSaveGrowthLog(){
   var rawLink=(document.getElementById('journalGrowthLogLink').value||'').trim(),link=skillSafeLink(rawLink);if(rawLink&&!link){alert('Please enter a valid website link.');return;}
   var entries=getSkillEntries();entries.push({id:'sk_'+Date.now(),date:dk(today),category:document.getElementById('journalGrowthLogCategory').value||'Udemy',name:name,time:time,resource:(document.getElementById('journalGrowthLogResource').value||'').trim(),link:link,notes:(document.getElementById('journalGrowthLogNotes').value||'').trim()});saveSkillEntries(entries);journalCloseGrowthLog();renderSkillLog();renderSkillSectionCharts();renderJournalSchedule();var weekly=document.getElementById('tab-weekly');if(weekly&&weekly.classList.contains('active'))renderWeekly();v26Toast('Learning session saved');
 }
+function journalQuickGrowthTime(kind,value){
+  var minutes=Math.max(0,Math.round(Number(value)||0)),dateKey=dk(today);
+  if(kind==='reading'){
+    var readingInput=document.getElementById('gaAudiobookTime');if(readingInput)readingInput.value=minutes?minutes+' min':'';save();renderJournalSchedule();var weeklyReading=document.getElementById('tab-weekly');if(weeklyReading&&weeklyReading.classList.contains('active'))renderWeekly();v26Toast(minutes?'Reading time saved':'Reading time cleared');return;
+  }
+  var definitions={udemy:{category:'Udemy',name:'Udemy Course',resource:'Udemy'},gun:{category:'Gun Range',name:'Gun Range Session',resource:''},language:{category:'Language',name:'Language Practice',resource:''}},definition=definitions[kind];if(!definition)return;
+  var id='quick-growth-'+kind+'-'+dateKey,entries=getSkillEntries(),index=entries.findIndex(function(entry){return entry.id===id;});
+  if(!minutes){if(index>=0)entries.splice(index,1);}else{var quick={id:id,date:dateKey,category:definition.category,name:definition.name,time:minutes+' min',resource:definition.resource,link:index>=0?entries[index].link||'':'',notes:index>=0?entries[index].notes||'':''};if(index>=0)entries[index]=quick;else entries.push(quick);}
+  saveSkillEntries(entries);renderSkillLog();renderSkillSectionCharts();renderJournalSchedule();var weekly=document.getElementById('tab-weekly');if(weekly&&weekly.classList.contains('active'))renderWeekly();v26Toast(minutes?definition.name+' time saved':definition.name+' time cleared');
+}
 function journalScheduleAddGrowth(kind,targetId,after){
   var dateKey=dk(today),id=journalScheduleGrowthId(kind);if(!id)return;localStorage.setItem(journalScheduleGrowthKey(kind,dateKey),'1');
   var cards=Array.from(document.querySelectorAll('#journalScheduleBody .journal-schedule-item')),order=cards.map(function(card){return card.dataset.scheduleId;}).filter(function(value){return value!==id;});
@@ -12589,6 +12602,7 @@ function renderJournalSchedule(){
   var udemyEntries=getSkillEntries().filter(function(entry){return entry.date===dateKey&&/\budemy\b/i.test([entry.resource,entry.name,entry.notes].filter(Boolean).join(' '));});
   var gunEntries=getSkillEntries().filter(function(entry){return entry.date===dateKey&&/^(gun range|shooting)$/i.test(String(entry.category||''));});
   var udemyMinutes=udemyEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),gunMinutes=gunEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),languageMinutes=languageEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),readingMinutes=parseTimedMins(d.gaAudiobookTime);
+  var quickGrowth={};['udemy','gun','language'].forEach(function(kind){quickGrowth[kind]=getSkillEntries().find(function(entry){return entry.id==='quick-growth-'+kind+'-'+dateKey;});});
   var now=new Date(),isSelectedToday=dk(now)===dateKey,currentMinutes=now.getHours()*60+now.getMinutes(),selectedDay=new Date(dateKey+'T00:00:00'),realDay=new Date(now.getFullYear(),now.getMonth(),now.getDate()),isPastDay=selectedDay<realDay;
   function mealLogged(meal){
     meal=String(meal||'').toLowerCase();
@@ -12661,6 +12675,7 @@ function renderJournalSchedule(){
   var gunStatus=document.getElementById('growthGunStatus');if(gunStatus)gunStatus.textContent=(gunMinutes?fmtMinsSeconds(gunMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('gun',dateKey))==='1'?' • scheduled':'');
   var languageStatus=document.getElementById('growthLanguageStatus');if(languageStatus)languageStatus.textContent=(languageMinutes?fmtMinsSeconds(languageMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('language',dateKey))==='1'?' • scheduled':'');
   var readingStatus=document.getElementById('growthReadingStatus');if(readingStatus)readingStatus.textContent=(readingMinutes?fmtMinsSeconds(readingMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('reading',dateKey))==='1'?' • scheduled':'');
+  [['growthUdemyTime','udemy'],['growthGunTime','gun'],['growthLanguageTime','language']].forEach(function(pair){var input=document.getElementById(pair[0]),entry=quickGrowth[pair[1]];if(input&&document.activeElement!==input)input.value=entry?parseSkillTimeMins(entry.time):'';});var readingQuick=document.getElementById('growthReadingTime');if(readingQuick&&document.activeElement!==readingQuick)readingQuick.value=readingMinutes||'';
   // Keep completed growth activities first, scheduled activities second, and
   // unscheduled activities last while preserving the requested order in each group.
   var growthPool=document.querySelector('.journal-growth-pool');if(growthPool){
