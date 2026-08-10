@@ -1390,7 +1390,7 @@ body{
   </div>
 </div>
 <details class="journal-calendar" id="journalCalendar" ontoggle="if(this.open)openJournalCalendar()">
-  <summary>&#x1F4C5; Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
+  <summary>&#x1F4C5; My Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
   <div class="journal-calendar-controls">
     <button type="button" onclick="event.stopPropagation();shiftJournalCalendar(-1)">&#x2039; Previous</button>
     <div class="journal-calendar-title" id="journalCalendarTitle"></div>
@@ -1400,11 +1400,12 @@ body{
   <div class="journal-calendar-legend"><span>Information saved</span><span class="partial">Partly completed</span><span class="myevent">Event</span></div>
   <div class="my-calendar-events" id="myCalendarEvents"></div>
   <div class="my-calendar-add">
-    <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent()">+ Add Event</button>
+    <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent()">+ Add Manual Event</button>
     <label class="my-calendar-import-btn" onclick="event.stopPropagation();" title="Import events from an exported .ics file (Google Calendar, Outlook, Apple Calendar, etc.)">&#x1F4E5; Import .ics<input type="file" accept=".ics,text/calendar" style="display:none" onchange="importCalendarICS(event)"></label>
     <span style="font-size:.66rem;color:#667085;">for <strong id="myCalendarEventDateLabel"></strong></span>
   </div>
   <div id="myCalendarEventForm" class="my-calendar-event-form" style="display:none;">
+    <input type="date" id="myCalendarEventDate" class="my-calendar-input" title="Event date">
     <input type="time" id="myCalendarEventTime" class="my-calendar-input" title="Time (optional)">
     <input type="text" id="myCalendarEventTitle" class="my-calendar-input" placeholder="Event title" style="flex:1;min-width:120px;">
     <input type="text" id="myCalendarEventNote" class="my-calendar-input" placeholder="Note (optional)" style="flex:1;min-width:100px;">
@@ -3870,18 +3871,20 @@ function toggleAddCalendarEvent(show){
   var form=document.getElementById('myCalendarEventForm');if(!form)return;
   var next=show===undefined?form.style.display==='none':show;
   form.style.display=next?'flex':'none';
-  if(next)setTimeout(function(){var t=document.getElementById('myCalendarEventTitle');if(t)t.focus();},50);
+  if(next){var dateInput=document.getElementById('myCalendarEventDate');if(dateInput)dateInput.value=dk(today);setTimeout(function(){var t=document.getElementById('myCalendarEventTitle');if(t)t.focus();},50);}
 }
 function saveCalendarEvent(){
-  var titleEl=document.getElementById('myCalendarEventTitle'),timeEl=document.getElementById('myCalendarEventTime'),noteEl=document.getElementById('myCalendarEventNote');
+  var dateEl=document.getElementById('myCalendarEventDate'),titleEl=document.getElementById('myCalendarEventTitle'),timeEl=document.getElementById('myCalendarEventTime'),noteEl=document.getElementById('myCalendarEventNote');
   var title=(titleEl&&titleEl.value||'').trim();
   if(!title){alert('Please enter an event title.');return;}
+  var eventDate=dateEl&&dateEl.value||dk(today);if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)){alert('Please choose a valid event date.');return;}
   var events=journalCalendarEventsAll();
-  events.push({id:'ev-'+Date.now(),date:dk(today),time:timeEl?timeEl.value:'',title:title,note:(noteEl&&noteEl.value||'').trim()});
+  events.push({id:'ev-'+Date.now(),date:eventDate,time:timeEl?timeEl.value:'',title:title,note:(noteEl&&noteEl.value||'').trim(),manual:true});
   journalCalendarEventsSave(events);
-  if(titleEl)titleEl.value='';if(timeEl)timeEl.value='';if(noteEl)noteEl.value='';
+  if(titleEl)titleEl.value='';if(timeEl)timeEl.value='';if(noteEl)noteEl.value='';if(dateEl)dateEl.value=dk(today);
   toggleAddCalendarEvent(false);
   decorateMyCalendarEvents();
+  v26Toast('Manual event saved for '+eventDate);
 }
 function deleteCalendarEvent(id){
   if(!confirm('Delete this event?'))return;
