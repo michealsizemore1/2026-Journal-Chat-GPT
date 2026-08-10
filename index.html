@@ -1389,27 +1389,34 @@ body{
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button type="button" class="btn-secondary" onclick="journalCloseGrowthLog()">Cancel</button><button type="button" class="btn-primary" onclick="journalSaveGrowthLog()">Save Session</button></div>
   </div>
 </div>
-<button type="button" onclick="openManualCalendarEvent()" style="display:block;width:calc(100% - 24px);margin:10px 12px 0;border:1px solid #4f46e5;background:#eef2ff;color:#3730a3;border-radius:8px;padding:9px 12px;font-size:.8rem;font-weight:800;cursor:pointer;text-align:left;">&#x2795; Add a Manual Event to My Calendar</button>
+<div class="modal-overlay" id="journalManualScheduleModal" style="display:none;">
+  <div class="modal" style="max-width:500px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;"><h2 style="margin:0;font-size:1.05rem;">Add to My Schedule</h2><button type="button" class="btn-secondary" onclick="journalCloseManualScheduleItem()">Close</button></div>
+    <div class="lib-form-grid" style="margin-top:14px;">
+      <div><label>Date</label><input type="date" id="journalManualScheduleDate" class="act-input"></div>
+      <div><label>Time</label><input type="time" id="journalManualScheduleTime" class="act-input"></div>
+    </div>
+    <div style="margin-top:9px;"><label>Schedule item</label><input type="text" id="journalManualScheduleTitle" class="act-input" placeholder="Appointment, errand, reminder…"></div>
+    <div style="margin-top:9px;"><label>Note (optional)</label><textarea id="journalManualScheduleNote" class="act-input" rows="3" style="resize:vertical;font-family:inherit;"></textarea></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button type="button" class="btn-secondary" onclick="journalCloseManualScheduleItem()">Cancel</button><button type="button" class="btn-primary" onclick="journalSaveManualScheduleItem()">Add to Schedule</button></div>
+  </div>
+</div>
 <details class="journal-calendar" id="journalCalendar" ontoggle="if(this.open)openJournalCalendar()">
-  <summary>&#x1F4C5; My Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
+  <summary>&#x1F4C5; Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
   <div class="journal-calendar-controls">
     <button type="button" onclick="event.stopPropagation();shiftJournalCalendar(-1)">&#x2039; Previous</button>
     <div class="journal-calendar-title" id="journalCalendarTitle"></div>
     <button type="button" onclick="event.stopPropagation();shiftJournalCalendar(1)">Next &#x203A;</button>
   </div>
-  <div class="my-calendar-add" style="border-top:0;border-bottom:1px solid #e8ebf2;">
-    <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent(true)">+ Add Manual Event</button>
-    <span style="font-size:.66rem;color:#667085;">Choose any date, time, title and note</span>
-  </div>
   <div class="journal-calendar-grid" id="journalCalendarGrid"></div>
   <div class="journal-calendar-legend"><span>Information saved</span><span class="partial">Partly completed</span><span class="myevent">Event</span></div>
   <div class="my-calendar-events" id="myCalendarEvents"></div>
   <div class="my-calendar-add">
+    <button type="button" onclick="event.stopPropagation();toggleAddCalendarEvent()">+ Add Event</button>
     <label class="my-calendar-import-btn" onclick="event.stopPropagation();" title="Import events from an exported .ics file (Google Calendar, Outlook, Apple Calendar, etc.)">&#x1F4E5; Import .ics<input type="file" accept=".ics,text/calendar" style="display:none" onchange="importCalendarICS(event)"></label>
     <span style="font-size:.66rem;color:#667085;">for <strong id="myCalendarEventDateLabel"></strong></span>
   </div>
   <div id="myCalendarEventForm" class="my-calendar-event-form" style="display:none;">
-    <input type="date" id="myCalendarEventDate" class="my-calendar-input" title="Event date">
     <input type="time" id="myCalendarEventTime" class="my-calendar-input" title="Time (optional)">
     <input type="text" id="myCalendarEventTitle" class="my-calendar-input" placeholder="Event title" style="flex:1;min-width:120px;">
     <input type="text" id="myCalendarEventNote" class="my-calendar-input" placeholder="Note (optional)" style="flex:1;min-width:100px;">
@@ -3875,24 +3882,18 @@ function toggleAddCalendarEvent(show){
   var form=document.getElementById('myCalendarEventForm');if(!form)return;
   var next=show===undefined?form.style.display==='none':show;
   form.style.display=next?'flex':'none';
-  if(next){var dateInput=document.getElementById('myCalendarEventDate');if(dateInput)dateInput.value=dk(today);setTimeout(function(){form.scrollIntoView({behavior:'smooth',block:'center'});var t=document.getElementById('myCalendarEventTitle');if(t)t.focus();},50);}
-}
-function openManualCalendarEvent(){
-  var calendar=document.getElementById('journalCalendar');if(calendar&&!calendar.open){calendar.open=true;openJournalCalendar();}
-  toggleAddCalendarEvent(true);
+  if(next)setTimeout(function(){var t=document.getElementById('myCalendarEventTitle');if(t)t.focus();},50);
 }
 function saveCalendarEvent(){
-  var dateEl=document.getElementById('myCalendarEventDate'),titleEl=document.getElementById('myCalendarEventTitle'),timeEl=document.getElementById('myCalendarEventTime'),noteEl=document.getElementById('myCalendarEventNote');
+  var titleEl=document.getElementById('myCalendarEventTitle'),timeEl=document.getElementById('myCalendarEventTime'),noteEl=document.getElementById('myCalendarEventNote');
   var title=(titleEl&&titleEl.value||'').trim();
   if(!title){alert('Please enter an event title.');return;}
-  var eventDate=dateEl&&dateEl.value||dk(today);if(!/^\d{4}-\d{2}-\d{2}$/.test(eventDate)){alert('Please choose a valid event date.');return;}
   var events=journalCalendarEventsAll();
-  events.push({id:'ev-'+Date.now(),date:eventDate,time:timeEl?timeEl.value:'',title:title,note:(noteEl&&noteEl.value||'').trim(),manual:true});
+  events.push({id:'ev-'+Date.now(),date:dk(today),time:timeEl?timeEl.value:'',title:title,note:(noteEl&&noteEl.value||'').trim()});
   journalCalendarEventsSave(events);
-  if(titleEl)titleEl.value='';if(timeEl)timeEl.value='';if(noteEl)noteEl.value='';if(dateEl)dateEl.value=dk(today);
+  if(titleEl)titleEl.value='';if(timeEl)timeEl.value='';if(noteEl)noteEl.value='';
   toggleAddCalendarEvent(false);
   decorateMyCalendarEvents();
-  v26Toast('Manual event saved for '+eventDate);
 }
 function deleteCalendarEvent(id){
   if(!confirm('Delete this event?'))return;
@@ -12528,6 +12529,18 @@ function journalSaveGrowthLog(){
   var rawLink=(document.getElementById('journalGrowthLogLink').value||'').trim(),link=skillSafeLink(rawLink);if(rawLink&&!link){alert('Please enter a valid website link.');return;}
   var entries=getSkillEntries();entries.push({id:'sk_'+Date.now(),date:dk(today),category:document.getElementById('journalGrowthLogCategory').value||'Udemy',name:name,time:time,resource:(document.getElementById('journalGrowthLogResource').value||'').trim(),link:link,notes:(document.getElementById('journalGrowthLogNotes').value||'').trim()});saveSkillEntries(entries);journalCloseGrowthLog();renderSkillLog();renderSkillSectionCharts();renderJournalSchedule();var weekly=document.getElementById('tab-weekly');if(weekly&&weekly.classList.contains('active'))renderWeekly();v26Toast('Learning session saved');
 }
+function journalManualScheduleItems(){try{var items=JSON.parse(localStorage.getItem('journal_manual_schedule_items')||'[]');return Array.isArray(items)?items:[];}catch(ignore){return[];}}
+function journalOpenManualScheduleItem(){
+  var modal=document.getElementById('journalManualScheduleModal');if(!modal)return;document.getElementById('journalManualScheduleDate').value=dk(today);document.getElementById('journalManualScheduleTime').value='';document.getElementById('journalManualScheduleTitle').value='';document.getElementById('journalManualScheduleNote').value='';modal.style.display='flex';setTimeout(function(){document.getElementById('journalManualScheduleTitle').focus();},40);
+}
+function journalCloseManualScheduleItem(){var modal=document.getElementById('journalManualScheduleModal');if(modal)modal.style.display='none';}
+function journalSaveManualScheduleItem(){
+  var date=document.getElementById('journalManualScheduleDate').value,time=document.getElementById('journalManualScheduleTime').value,title=(document.getElementById('journalManualScheduleTitle').value||'').trim(),note=(document.getElementById('journalManualScheduleNote').value||'').trim();if(!date){alert('Please choose a date.');return;}if(!time){alert('Please choose a time.');return;}if(!title){alert('Please enter a schedule item.');return;}var mins=journalScheduleParseTime(time);if(mins===null){alert('Please choose a valid time.');return;}
+  var items=journalManualScheduleItems();items.push({id:'manual-'+Date.now(),date:date,time:journalMinsToClock(mins),mins:mins,title:title,note:note});localStorage.setItem('journal_manual_schedule_items',JSON.stringify(items));journalCloseManualScheduleItem();renderJournalSchedule();v26Toast('Added to My Schedule for '+date);
+}
+function journalDeleteManualScheduleItem(event,id,moveId){
+  event.preventDefault();event.stopPropagation();if(!confirm('Remove this item from My Schedule?'))return;if(moveId){var moves=journalScheduleMoves().filter(function(move){return move.id!==moveId;});localStorage.setItem('journal_schedule_moves',JSON.stringify(moves));}var items=journalManualScheduleItems().filter(function(item){return item.id!==id;});localStorage.setItem('journal_manual_schedule_items',JSON.stringify(items));renderJournalSchedule();v26Toast('Schedule item removed');
+}
 function journalScheduleAddGrowth(kind,targetId,after){
   var dateKey=dk(today),id=journalScheduleGrowthId(kind);if(!id)return;localStorage.setItem(journalScheduleGrowthKey(kind,dateKey),'1');
   var cards=Array.from(document.querySelectorAll('#journalScheduleBody .journal-schedule-item')),order=cards.map(function(card){return card.dataset.scheduleId;}).filter(function(value){return value!==id;});
@@ -12562,7 +12575,7 @@ function journalScheduleEdit(event,id){
   var enteredTime=prompt('Set the time for "'+item.label+'". Use 6:30 PM or 18:30.',item.time);if(enteredTime===null)return;var mins=journalScheduleParseTime(enteredTime);if(mins===null){alert('Please enter a valid time, such as 6:30 PM or 18:30.');return;}
   var currentDate=dk(today),tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);var targetDate=prompt('Keep '+currentDate+' or enter another date as YYYY-MM-DD.\nTomorrow is '+dk(tomorrow)+'.',currentDate);if(targetDate===null)return;targetDate=String(targetDate).trim();if(!/^\d{4}-\d{2}-\d{2}$/.test(targetDate)||isNaN(new Date(targetDate+'T12:00:00').getTime())){alert('Please enter a valid date in YYYY-MM-DD format.');return;}
   if(item._moveId){var existingMoves=journalScheduleMoves(),existing=existingMoves.find(function(move){return move.id===item._moveId;});if(existing){existing.targetDate=targetDate;existing.time=journalMinsToClock(mins);existing.mins=mins;localStorage.setItem('journal_schedule_moves',JSON.stringify(existingMoves));}}
-  else if(targetDate!==currentDate){var moves=journalScheduleMoves();moves.push({id:'moved-'+Date.now()+'-'+item.id,sourceDate:currentDate,targetDate:targetDate,originalId:item.id,time:journalMinsToClock(mins),mins:mins,item:{label:item.label,detail:item.detail,tab:item.tab,fixed:!!item.fixed,manual:item.manual||'',sleepRoutineChecklist:!!item.sleepRoutineChecklist,detailKind:item.detailKind||'',growthKind:item.growthKind||''}});localStorage.setItem('journal_schedule_moves',JSON.stringify(moves));}
+  else if(targetDate!==currentDate){var moves=journalScheduleMoves();moves.push({id:'moved-'+Date.now()+'-'+item.id,sourceDate:currentDate,targetDate:targetDate,originalId:item.id,time:journalMinsToClock(mins),mins:mins,item:{label:item.label,detail:item.detail,tab:item.tab,fixed:!!item.fixed,manual:item.manual||'',sleepRoutineChecklist:!!item.sleepRoutineChecklist,detailKind:item.detailKind||'',growthKind:item.growthKind||'',manualCreated:!!item.manualCreated,manualItemId:item.manualItemId||''}});localStorage.setItem('journal_schedule_moves',JSON.stringify(moves));}
   else{var overrides={};try{overrides=JSON.parse(localStorage.getItem(journalScheduleOverridesKey(currentDate))||'{}');}catch(ignore){}overrides[item.id]={time:journalMinsToClock(mins),mins:mins};localStorage.setItem(journalScheduleOverridesKey(currentDate),JSON.stringify(overrides));}
   renderJournalSchedule();v26Toast(targetDate===currentDate?'Schedule time updated':'Moved to '+targetDate);
 }
@@ -12654,7 +12667,8 @@ function renderJournalSchedule(){
   if(localStorage.getItem(journalScheduleGrowthKey('gun',dateKey))==='1')items.push({time:'7:00 PM',mins:1140,label:'Gun Range',detail:gunMinutes?fmtMinsSeconds(gunMinutes)+' logged':'Log range time and takeaways',done:d.gaGunRange==='green'||gunEntries.length>0,tab:'skill-log',growthKind:'gun'});
   if(localStorage.getItem(journalScheduleGrowthKey('language',dateKey))==='1')items.push({time:'12:45 PM',mins:765,label:'Language Practice',detail:languageMinutes?fmtMinsSeconds(languageMinutes)+' logged':'Tap to log the language session',done:d.gaLanguage==='green'||languageDone,tab:'skill-log',growthKind:'language'});
   if(localStorage.getItem(journalScheduleGrowthKey('reading',dateKey))==='1')items.push({time:'12:30 PM',mins:750,label:'Reading / Audiobook',detail:readingMinutes?fmtMinsSeconds(readingMinutes)+' logged in Library':'Log reading or listening in Library',done:d.gaAudiobook==='green'||readingMinutes>0,tab:'library',growthKind:'reading'});
-  items.forEach(function(item,index){item.id='schedule-'+String(item.label||index).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');});
+  journalManualScheduleItems().filter(function(entry){return entry.date===dateKey;}).forEach(function(entry){items.push({id:'schedule-'+entry.id,time:entry.time,mins:Number(entry.mins),label:entry.title,detail:entry.note||'Manual schedule item',done:localStorage.getItem('schedule_manualSchedule_'+entry.id+'_'+dateKey)==='1',tab:'daily',manual:'manualSchedule_'+entry.id,manualCreated:true,manualItemId:entry.id});});
+  items.forEach(function(item,index){if(!item.id)item.id='schedule-'+String(item.label||index).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');});
   var scheduleMoves=journalScheduleMoves();
   items=items.filter(function(item){return !scheduleMoves.some(function(move){return move.sourceDate===dateKey&&move.originalId===item.id;});});
   scheduleMoves.filter(function(move){return move.targetDate===dateKey;}).forEach(function(move){var moved=Object.assign({},move.item||{});moved.id=move.id;moved._moveId=move.id;moved.time=move.time;moved.mins=move.mins;moved.done=false;items.push(moved);});
@@ -12689,7 +12703,7 @@ function renderJournalSchedule(){
   if(isSelectedToday){for(var i=0;i<items.length;i++){if(!items[i].fixed&&!items[i].done&&items[i].mins>=currentMinutes){next=i;break;}}if(next<0)next=items.findIndex(function(item){return !item.fixed&&!item.done;});}
   if(summary)summary.textContent=complete+'/'+trackable.length+' complete';
   var nextText=next>=0?'Next: '+items[next].time+' — '+items[next].label:(complete===trackable.length?'Schedule complete':'Review remaining items');
-  body.innerHTML='<div class="journal-schedule-status"><strong>'+escHtml(nextText)+'</strong><span>Drag to reorder • Edit time or day • '+complete+' complete • '+(trackable.length-complete)+' remaining</span></div><div class="journal-schedule-list">'+items.map(function(item,index){var inlineGrowth=['language','udemy','gun'].indexOf(item.growthKind)!==-1,action=item.fixed?'':inlineGrowth?'journalOpenGrowthLog(\''+item.growthKind+'\')':item.detailKind?'journalToggleScheduleDetail(\''+item.detailKind+'\')':item.sleepRoutineChecklist?'journalToggleSleepRoutinePanel()':(item.manual?'journalToggleScheduleManual(\''+item.manual+'\')':'switchTab(\''+item.tab+'\',null)');var safeAction=JSON.stringify(action).replace(/"/g,'&quot;'),removeAction=item.growthKind?'<span class="journal-schedule-remove" role="button" tabindex="0" onclick="journalScheduleRemoveGrowth(event,\''+item.growthKind+'\',\''+escHtml(item.id)+'\')">Remove</span>':'',linkedKey=item.growthKind==='reading'?'gaAudiobook':item.growthKind==='financial'?'gaFinancialVideos':item.growthKind==='udemy'?'gaUdemy':item.growthKind==='gun'?'gaGunRange':item.growthKind==='language'?'gaLanguage':'',checkClick=linkedKey?' onclick="journalScheduleToggleLinkedCheck(event,\''+linkedKey+'\')" title="Toggle completion"':'';return '<button type="button" draggable="true" data-schedule-id="'+escHtml(item.id)+'" class="journal-schedule-item '+(item.fixed?'fixed ':(item.done?'done ':''))+(index===next?'next':'')+'" onclick="journalScheduleCardClick('+safeAction+')" ondragstart="journalScheduleDragStart(event,\''+escHtml(item.id)+'\')" ondragover="journalScheduleDragOver(event)" ondrop="journalScheduleDrop(event,\''+escHtml(item.id)+'\')" ondragend="journalScheduleDragEnd()"><span class="journal-schedule-grip" title="Drag to reschedule" aria-hidden="true">&#x22EE;&#x22EE;</span><span class="journal-schedule-time">'+item.time+'</span><span class="journal-schedule-check"'+checkClick+'>'+(item.fixed?'&#x1F4BC;':(item.done?'&#x2713;':''))+'</span><span class="journal-schedule-name">'+escHtml(item.label)+'<span class="journal-schedule-detail">'+escHtml(item.detail)+'</span></span><span class="journal-schedule-actions"><span class="journal-schedule-edit" role="button" tabindex="0" onclick="journalScheduleEdit(event,\''+escHtml(item.id)+'\')">Edit</span>'+removeAction+'</span></button>'+(item.detailKind?journalScheduleDetailHtml(item.detailKind,d):'')+(item.sleepRoutineChecklist?journalSleepRoutineChecklistHtml(dateKey):'');}).join('')+'</div>'+journalEndSummaryHtml();
+  body.innerHTML='<div class="journal-schedule-status"><strong>'+escHtml(nextText)+'</strong><span>Drag to reorder • Edit time or day • '+complete+' complete • '+(trackable.length-complete)+' remaining</span><button type="button" onclick="event.preventDefault();event.stopPropagation();journalOpenManualScheduleItem()" style="border:1px solid #4f46e5;background:#4f46e5;color:#fff;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;">+ Schedule Item</button></div><div class="journal-schedule-list">'+items.map(function(item,index){var inlineGrowth=['language','udemy','gun'].indexOf(item.growthKind)!==-1,action=item.fixed?'':inlineGrowth?'journalOpenGrowthLog(\''+item.growthKind+'\')':item.detailKind?'journalToggleScheduleDetail(\''+item.detailKind+'\')':item.sleepRoutineChecklist?'journalToggleSleepRoutinePanel()':(item.manual?'journalToggleScheduleManual(\''+item.manual+'\')':'switchTab(\''+item.tab+'\',null)');var safeAction=JSON.stringify(action).replace(/"/g,'&quot;'),removeAction=item.manualCreated?'<span class="journal-schedule-remove" role="button" tabindex="0" onclick="journalDeleteManualScheduleItem(event,\''+item.manualItemId+'\',\''+(item._moveId||'')+'\')">Remove</span>':item.growthKind?'<span class="journal-schedule-remove" role="button" tabindex="0" onclick="journalScheduleRemoveGrowth(event,\''+item.growthKind+'\',\''+escHtml(item.id)+'\')">Remove</span>':'',linkedKey=item.growthKind==='reading'?'gaAudiobook':item.growthKind==='financial'?'gaFinancialVideos':item.growthKind==='udemy'?'gaUdemy':item.growthKind==='gun'?'gaGunRange':item.growthKind==='language'?'gaLanguage':'',checkClick=linkedKey?' onclick="journalScheduleToggleLinkedCheck(event,\''+linkedKey+'\')" title="Toggle completion"':'';return '<button type="button" draggable="true" data-schedule-id="'+escHtml(item.id)+'" class="journal-schedule-item '+(item.fixed?'fixed ':(item.done?'done ':''))+(index===next?'next':'')+'" onclick="journalScheduleCardClick('+safeAction+')" ondragstart="journalScheduleDragStart(event,\''+escHtml(item.id)+'\')" ondragover="journalScheduleDragOver(event)" ondrop="journalScheduleDrop(event,\''+escHtml(item.id)+'\')" ondragend="journalScheduleDragEnd()"><span class="journal-schedule-grip" title="Drag to reschedule" aria-hidden="true">&#x22EE;&#x22EE;</span><span class="journal-schedule-time">'+item.time+'</span><span class="journal-schedule-check"'+checkClick+'>'+(item.fixed?'&#x1F4BC;':(item.done?'&#x2713;':''))+'</span><span class="journal-schedule-name">'+escHtml(item.label)+'<span class="journal-schedule-detail">'+escHtml(item.detail)+'</span></span><span class="journal-schedule-actions"><span class="journal-schedule-edit" role="button" tabindex="0" onclick="journalScheduleEdit(event,\''+escHtml(item.id)+'\')">Edit</span>'+removeAction+'</span></button>'+(item.detailKind?journalScheduleDetailHtml(item.detailKind,d):'')+(item.sleepRoutineChecklist?journalSleepRoutineChecklistHtml(dateKey):'');}).join('')+'</div>'+journalEndSummaryHtml();
 }
 function renderJournalHome(){
   var grid=document.getElementById('journalHomeGrid');if(!grid){renderJournalSchedule();return;}
