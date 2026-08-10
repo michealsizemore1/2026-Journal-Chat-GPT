@@ -1364,14 +1364,14 @@ body{
     <div class="journal-growth-pool-card" data-growth-kind="financial">
       <span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'financial')">&#x22EE;&#x22EE;</span>
       <div class="tri-check" data-key="gaFinancialVideos" onclick="triClick(this)" title="Mark Financial Videos complete"></div>
-      <label for="gaFinancialVideosTime" style="font-size:.76rem;font-weight:800;">Financial Videos</label>
-      <input type="number" id="gaFinancialVideosTime" min="0" step="1" inputmode="numeric" placeholder="Minutes">
+      <strong style="font-size:.76rem;">Financial Videos</strong>
+      <span class="journal-growth-status" id="growthFinancialStatus"></span>
       <button type="button" class="journal-growth-add" id="growthFinancialAdd" onclick="journalScheduleAddGrowth('financial')">Add</button>
     </div>
-    <div class="journal-growth-pool-card" data-growth-kind="udemy"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'udemy')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaUdemy" onclick="triClick(this)" title="Mark Udemy complete"></div><strong style="font-size:.76rem;">Udemy</strong><input type="number" id="growthUdemyTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Udemy minutes" onchange="journalQuickGrowthTime('udemy',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('udemy')">Add</button></div>
-    <div class="journal-growth-pool-card" data-growth-kind="gun"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'gun')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaGunRange" onclick="triClick(this)" title="Mark Gun Range complete"></div><strong style="font-size:.76rem;">Gun Range</strong><input type="number" id="growthGunTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Gun Range minutes" onchange="journalQuickGrowthTime('gun',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('gun')">Add</button></div>
-    <div class="journal-growth-pool-card" data-growth-kind="language"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'language')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaLanguage" onclick="triClick(this)" title="Mark Language Practice complete"></div><strong style="font-size:.76rem;">Language Practice</strong><input type="number" id="growthLanguageTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Language minutes" onchange="journalQuickGrowthTime('language',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('language')">Add</button></div>
-    <div class="journal-growth-pool-card" data-growth-kind="reading"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'reading')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaAudiobook" onclick="triClick(this)" title="Mark Reading / Audiobook complete"></div><strong style="font-size:.76rem;">Reading / Audiobook</strong><input type="number" id="growthReadingTime" min="0" step="1" inputmode="numeric" placeholder="Minutes" title="Reading or audiobook minutes" onchange="journalQuickGrowthTime('reading',this.value)"><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('reading')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="udemy"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'udemy')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaUdemy" onclick="triClick(this)" title="Mark Udemy complete"></div><strong style="font-size:.76rem;">Udemy</strong><span class="journal-growth-status" id="growthUdemyStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('udemy')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="gun"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'gun')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaGunRange" onclick="triClick(this)" title="Mark Gun Range complete"></div><strong style="font-size:.76rem;">Gun Range</strong><span class="journal-growth-status" id="growthGunStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('gun')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="language"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'language')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaLanguage" onclick="triClick(this)" title="Mark Language Practice complete"></div><strong style="font-size:.76rem;">Language Practice</strong><span class="journal-growth-status" id="growthLanguageStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('language')">Add</button></div>
+    <div class="journal-growth-pool-card" data-growth-kind="reading"><span class="journal-growth-drag" title="Drag into My Schedule" onpointerdown="journalGrowthPointerStart(event,'reading')">&#x22EE;&#x22EE;</span><div class="tri-check" data-key="gaAudiobook" onclick="triClick(this)" title="Mark Reading / Audiobook complete"></div><strong style="font-size:.76rem;">Reading / Audiobook</strong><span class="journal-growth-status" id="growthReadingStatus"></span><button type="button" class="journal-growth-add" onclick="journalScheduleAddGrowth('reading')">Add</button></div>
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:7px;"><span style="font-size:.64rem;color:#7c6f98;">Drag a dotted handle onto a schedule card, or use Add. Logged time appears under Growth / Skills in the Weekly screen.</span><button type="button" class="journal-growth-add" onclick="journalOpenGrowthLog('')">+ Log Details &amp; Link</button></div>
   </div>
 </details>
@@ -1389,6 +1389,7 @@ body{
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button type="button" class="btn-secondary" onclick="journalCloseGrowthLog()">Cancel</button><button type="button" class="btn-primary" onclick="journalSaveGrowthLog()">Save Session</button></div>
   </div>
 </div>
+<button type="button" onclick="openManualCalendarEvent()" style="display:block;width:calc(100% - 24px);margin:10px 12px 0;border:1px solid #4f46e5;background:#eef2ff;color:#3730a3;border-radius:8px;padding:9px 12px;font-size:.8rem;font-weight:800;cursor:pointer;text-align:left;">&#x2795; Add a Manual Event to My Calendar</button>
 <details class="journal-calendar" id="journalCalendar" ontoggle="if(this.open)openJournalCalendar()">
   <summary>&#x1F4C5; My Calendar <span id="journalCalendarSummary" style="font-size:.7rem;font-weight:600;color:#98a2b3;"></span></summary>
   <div class="journal-calendar-controls">
@@ -3875,6 +3876,10 @@ function toggleAddCalendarEvent(show){
   var next=show===undefined?form.style.display==='none':show;
   form.style.display=next?'flex':'none';
   if(next){var dateInput=document.getElementById('myCalendarEventDate');if(dateInput)dateInput.value=dk(today);setTimeout(function(){form.scrollIntoView({behavior:'smooth',block:'center'});var t=document.getElementById('myCalendarEventTitle');if(t)t.focus();},50);}
+}
+function openManualCalendarEvent(){
+  var calendar=document.getElementById('journalCalendar');if(calendar&&!calendar.open){calendar.open=true;openJournalCalendar();}
+  toggleAddCalendarEvent(true);
 }
 function saveCalendarEvent(){
   var dateEl=document.getElementById('myCalendarEventDate'),titleEl=document.getElementById('myCalendarEventTitle'),timeEl=document.getElementById('myCalendarEventTime'),noteEl=document.getElementById('myCalendarEventNote');
@@ -7148,6 +7153,9 @@ function deleteBibleEntry(dateKey){
 var _editingSkillId=null;
 function getSkillEntries(){try{return JSON.parse(localStorage.getItem('skill_log_data')||'[]');}catch(e){return[];}}
 function saveSkillEntries(arr){localStorage.setItem('skill_log_data',JSON.stringify(arr));}
+function removeObsoleteQuickGrowthEntries(){
+  if(localStorage.getItem('growth_quick_time_removed_v1')==='1')return;var entries=getSkillEntries(),clean=entries.filter(function(entry){return !/^quick-growth-(udemy|gun|language)-/.test(String(entry&&entry.id||''));});if(clean.length!==entries.length)saveSkillEntries(clean);localStorage.setItem('growth_quick_time_removed_v1','1');
+}
 
 function toggleAddSkill(){
   var f=document.getElementById('addSkillForm');
@@ -10194,6 +10202,7 @@ function meditInitTab(){
 
 function renderWeeklyGrowthTable(start,end,days,labels){
   var host=document.getElementById('wGrowth');if(!host)return;
+  removeObsoleteQuickGrowthEntries();
   var skills=getSkillEntries();
   function skillCategory(entry){return String(entry&&entry.category||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
   function skillMatches(entry,category){
@@ -10211,12 +10220,12 @@ function renderWeeklyGrowthTable(start,end,days,labels){
     var date=new Date(start);date.setDate(start.getDate()+i);var key=dk(date);
     var udemyEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'udemy');});
     var rangeEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'range');});
-    var languageEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'language');});
+    var languageEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'language');});if(languageEntries.length>1)languageEntries=[languageEntries[languageEntries.length-1]];
     var retirementEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'retirement');});
     var readingEntries=skills.filter(function(entry){return entry.date===key&&skillMatches(entry,'reading');});
     var udemy=udemyEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
     var range=rangeEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
-    var language=languageEntries.reduce(function(total,entry){var minutes=parseSkillTimeMins(entry.time);return total+(minutes||15);},0);
+    var language=languageEntries.length?(parseSkillTimeMins(languageEntries[0].time)||15):0;
     var dedicatedFinancial=(days[i]||{}).financialVideos||0;
     var legacyFinancial=retirementEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0);
     // The dedicated Daily tracker is now the authoritative Financial Videos source.
@@ -12519,16 +12528,6 @@ function journalSaveGrowthLog(){
   var rawLink=(document.getElementById('journalGrowthLogLink').value||'').trim(),link=skillSafeLink(rawLink);if(rawLink&&!link){alert('Please enter a valid website link.');return;}
   var entries=getSkillEntries();entries.push({id:'sk_'+Date.now(),date:dk(today),category:document.getElementById('journalGrowthLogCategory').value||'Udemy',name:name,time:time,resource:(document.getElementById('journalGrowthLogResource').value||'').trim(),link:link,notes:(document.getElementById('journalGrowthLogNotes').value||'').trim()});saveSkillEntries(entries);journalCloseGrowthLog();renderSkillLog();renderSkillSectionCharts();renderJournalSchedule();var weekly=document.getElementById('tab-weekly');if(weekly&&weekly.classList.contains('active'))renderWeekly();v26Toast('Learning session saved');
 }
-function journalQuickGrowthTime(kind,value){
-  var minutes=Math.max(0,Math.round(Number(value)||0)),dateKey=dk(today);
-  if(kind==='reading'){
-    var readingInput=document.getElementById('gaAudiobookTime');if(readingInput)readingInput.value=minutes?minutes+' min':'';save();renderJournalSchedule();var weeklyReading=document.getElementById('tab-weekly');if(weeklyReading&&weeklyReading.classList.contains('active'))renderWeekly();v26Toast(minutes?'Reading time saved':'Reading time cleared');return;
-  }
-  var definitions={udemy:{category:'Udemy',name:'Udemy Course',resource:'Udemy'},gun:{category:'Gun Range',name:'Gun Range Session',resource:''},language:{category:'Language',name:'Language Practice',resource:''}},definition=definitions[kind];if(!definition)return;
-  var id='quick-growth-'+kind+'-'+dateKey,entries=getSkillEntries(),index=entries.findIndex(function(entry){return entry.id===id;});
-  if(!minutes){if(index>=0)entries.splice(index,1);}else{var quick={id:id,date:dateKey,category:definition.category,name:definition.name,time:minutes+' min',resource:definition.resource,link:index>=0?entries[index].link||'':'',notes:index>=0?entries[index].notes||'':''};if(index>=0)entries[index]=quick;else entries.push(quick);}
-  saveSkillEntries(entries);renderSkillLog();renderSkillSectionCharts();renderJournalSchedule();var weekly=document.getElementById('tab-weekly');if(weekly&&weekly.classList.contains('active'))renderWeekly();v26Toast(minutes?definition.name+' time saved':definition.name+' time cleared');
-}
 function journalScheduleAddGrowth(kind,targetId,after){
   var dateKey=dk(today),id=journalScheduleGrowthId(kind);if(!id)return;localStorage.setItem(journalScheduleGrowthKey(kind,dateKey),'1');
   var cards=Array.from(document.querySelectorAll('#journalScheduleBody .journal-schedule-item')),order=cards.map(function(card){return card.dataset.scheduleId;}).filter(function(value){return value!==id;});
@@ -12595,14 +12594,15 @@ function journalScheduleDragEnd(){_journalScheduleDragged='';document.querySelec
 function journalScheduleCardClick(action){if(Date.now()<_journalScheduleSuppressClick)return;if(action)Function(action)();}
 function renderJournalSchedule(){
   var body=document.getElementById('journalScheduleBody'),summary=document.getElementById('journalScheduleSummary');if(!body)return;
+  removeObsoleteQuickGrowthEntries();
   var d=journalViewData(),dateKey=dk(today),foods=Array.isArray(d.foodLog)?d.foodLog:[],water=parseFloat(d.waterOz)||(parseFloat(d.waterCount)*8||0),training=journalTodayTrainingSummary(),growth=journalScheduleGrowth(dateKey);
-  var languageEntries=getSkillEntries().filter(function(entry){return entry.date===dateKey&&entry.category==='Language';});
+  var languageEntries=getSkillEntries().filter(function(entry){return entry.date===dateKey&&entry.category==='Language';});if(languageEntries.length>1)languageEntries=[languageEntries[languageEntries.length-1]];
   var languageDone=languageEntries.length>0;
   var languageDetail=languageDone?languageEntries.map(function(entry){return entry.name+(entry.time?' ('+entry.time+')':'');}).join(', '):'Add today\'s language practice from My Schedule';
   var udemyEntries=getSkillEntries().filter(function(entry){return entry.date===dateKey&&/\budemy\b/i.test([entry.resource,entry.name,entry.notes].filter(Boolean).join(' '));});
   var gunEntries=getSkillEntries().filter(function(entry){return entry.date===dateKey&&/^(gun range|shooting)$/i.test(String(entry.category||''));});
-  var udemyMinutes=udemyEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),gunMinutes=gunEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),languageMinutes=languageEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),readingMinutes=parseTimedMins(d.gaAudiobookTime);
-  var quickGrowth={};['udemy','gun','language'].forEach(function(kind){quickGrowth[kind]=getSkillEntries().find(function(entry){return entry.id==='quick-growth-'+kind+'-'+dateKey;});});
+  var financialEntries=getSkillEntries().filter(function(entry){return entry.date===dateKey&&(/^(financial videos|retirement videos)$/i.test(String(entry.category||''))||/financial video|retirement video/i.test([entry.name,entry.resource,entry.notes].filter(Boolean).join(' ')));});
+  var udemyMinutes=udemyEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),gunMinutes=gunEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),languageMinutes=languageEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),financialMinutes=financialEntries.reduce(function(total,entry){return total+parseSkillTimeMins(entry.time);},0),readingMinutes=parseTimedMins(d.gaAudiobookTime);
   var now=new Date(),isSelectedToday=dk(now)===dateKey,currentMinutes=now.getHours()*60+now.getMinutes(),selectedDay=new Date(dateKey+'T00:00:00'),realDay=new Date(now.getFullYear(),now.getMonth(),now.getDate()),isPastDay=selectedDay<realDay;
   function mealLogged(meal){
     meal=String(meal||'').toLowerCase();
@@ -12649,7 +12649,7 @@ function renderJournalSchedule(){
     {time:'9:00 PM',mins:1260,label:'Water checkpoint: 96 oz',detail:'Drink another 32 ounces by 9:00 PM',done:water>=96,tab:'nutrition'},
     {time:'9:30 PM',mins:1290,label:'Begin sleep routine',detail:sleepRoutine.count+' of 6 routine steps completed',done:sleepRoutine.count>=4,tab:'wellness',sleepRoutineChecklist:true}
   ].filter(function(item){return !item.skip;});
-  if(localStorage.getItem(journalScheduleGrowthKey('financial',dateKey))==='1')items.push({time:'6:30 PM',mins:1110,label:'Financial Videos',detail:d.gaFinancialVideosTime?d.gaFinancialVideosTime+' min planned growth activity':'Planned growth activity',done:d.gaFinancialVideos==='green',tab:'daily',growthKind:'financial'});
+  if(localStorage.getItem(journalScheduleGrowthKey('financial',dateKey))==='1')items.push({time:'6:30 PM',mins:1110,label:'Financial Videos',detail:financialMinutes?fmtMinsSeconds(financialMinutes)+' logged':'Tap Log Details & Link to record time',done:d.gaFinancialVideos==='green'||financialEntries.length>0,tab:'daily',growthKind:'financial'});
   if(localStorage.getItem(journalScheduleGrowthKey('udemy',dateKey))==='1')items.push({time:'7:00 PM',mins:1140,label:'Udemy',detail:udemyMinutes?fmtMinsSeconds(udemyMinutes)+' logged':'Tap to log the Udemy course session',done:d.gaUdemy==='green'||udemyEntries.length>0,tab:'skill-log',growthKind:'udemy'});
   if(localStorage.getItem(journalScheduleGrowthKey('gun',dateKey))==='1')items.push({time:'7:00 PM',mins:1140,label:'Gun Range',detail:gunMinutes?fmtMinsSeconds(gunMinutes)+' logged':'Log range time and takeaways',done:d.gaGunRange==='green'||gunEntries.length>0,tab:'skill-log',growthKind:'gun'});
   if(localStorage.getItem(journalScheduleGrowthKey('language',dateKey))==='1')items.push({time:'12:45 PM',mins:765,label:'Language Practice',detail:languageMinutes?fmtMinsSeconds(languageMinutes)+' logged':'Tap to log the language session',done:d.gaLanguage==='green'||languageDone,tab:'skill-log',growthKind:'language'});
@@ -12671,15 +12671,15 @@ function renderJournalSchedule(){
   var financialStatus=document.getElementById('financialVideoScheduleStatus');if(financialStatus)financialStatus.textContent='Drag into the schedule above or tap Add';
   ['udemy','gun','language','reading'].forEach(function(kind){var card=document.querySelector('.journal-growth-pool-card[data-growth-kind="'+kind+'"]'),scheduled=localStorage.getItem(journalScheduleGrowthKey(kind,dateKey))==='1';if(card){card.style.display='grid';var add=card.querySelector('.journal-growth-add');if(add){add.textContent=scheduled?'Scheduled':'Add';add.disabled=scheduled;}}});
   var financialAdd=document.getElementById('growthFinancialAdd'),financialScheduled=localStorage.getItem(journalScheduleGrowthKey('financial',dateKey))==='1';if(financialAdd){financialAdd.textContent=financialScheduled?'Scheduled':'Add';financialAdd.disabled=financialScheduled;}
+  var financialGrowthStatus=document.getElementById('growthFinancialStatus');if(financialGrowthStatus)financialGrowthStatus.textContent=(financialMinutes?fmtMinsSeconds(financialMinutes):'No time logged')+(financialScheduled?' • scheduled':'');
   var udemyStatus=document.getElementById('growthUdemyStatus');if(udemyStatus)udemyStatus.textContent=(udemyMinutes?fmtMinsSeconds(udemyMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('udemy',dateKey))==='1'?' • scheduled':'');
   var gunStatus=document.getElementById('growthGunStatus');if(gunStatus)gunStatus.textContent=(gunMinutes?fmtMinsSeconds(gunMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('gun',dateKey))==='1'?' • scheduled':'');
   var languageStatus=document.getElementById('growthLanguageStatus');if(languageStatus)languageStatus.textContent=(languageMinutes?fmtMinsSeconds(languageMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('language',dateKey))==='1'?' • scheduled':'');
   var readingStatus=document.getElementById('growthReadingStatus');if(readingStatus)readingStatus.textContent=(readingMinutes?fmtMinsSeconds(readingMinutes):'No time logged')+(localStorage.getItem(journalScheduleGrowthKey('reading',dateKey))==='1'?' • scheduled':'');
-  [['growthUdemyTime','udemy'],['growthGunTime','gun'],['growthLanguageTime','language']].forEach(function(pair){var input=document.getElementById(pair[0]),entry=quickGrowth[pair[1]];if(input&&document.activeElement!==input)input.value=entry?parseSkillTimeMins(entry.time):'';});var readingQuick=document.getElementById('growthReadingTime');if(readingQuick&&document.activeElement!==readingQuick)readingQuick.value=readingMinutes||'';
   // Keep completed growth activities first, scheduled activities second, and
   // unscheduled activities last while preserving the requested order in each group.
   var growthPool=document.querySelector('.journal-growth-pool');if(growthPool){
-    var growthOrder=['financial','udemy','gun','language','reading'],growthComplete={financial:d.gaFinancialVideos==='green',udemy:d.gaUdemy==='green'||udemyEntries.length>0,gun:d.gaGunRange==='green'||gunEntries.length>0,language:d.gaLanguage==='green'||languageDone,reading:d.gaAudiobook==='green'||readingMinutes>0};
+    var growthOrder=['financial','udemy','gun','language','reading'],growthComplete={financial:d.gaFinancialVideos==='green'||financialEntries.length>0,udemy:d.gaUdemy==='green'||udemyEntries.length>0,gun:d.gaGunRange==='green'||gunEntries.length>0,language:d.gaLanguage==='green'||languageDone,reading:d.gaAudiobook==='green'||readingMinutes>0};
     function growthRank(kind){if(growthComplete[kind])return 0;if(localStorage.getItem(journalScheduleGrowthKey(kind,dateKey))==='1')return 1;return 2;}
     var growthCards=Array.from(growthPool.querySelectorAll('.journal-growth-pool-card'));growthCards.sort(function(a,b){var ak=a.dataset.growthKind,bk=b.dataset.growthKind;return growthRank(ak)-growthRank(bk)||growthOrder.indexOf(ak)-growthOrder.indexOf(bk);});
     var growthHelp=growthPool.lastElementChild;growthCards.forEach(function(card){card.classList.toggle('completed',!!growthComplete[card.dataset.growthKind]);growthPool.insertBefore(card,growthHelp);});
