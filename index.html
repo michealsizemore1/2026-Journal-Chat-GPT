@@ -208,6 +208,9 @@ body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;paddi
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:12px;padding:24px;max-width:420px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+#journalGrowthLogModal{overflow-y:auto;align-items:flex-start;padding:12px 0;box-sizing:border-box;}
+#journalGrowthLogModal .modal{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-sizing:border-box;margin:auto 0;}
+#journalGrowthLogModal .journal-growth-actions{position:sticky;bottom:-24px;background:#fff;border-top:1px solid #e5e7eb;padding:12px 0 4px;z-index:2;}
 .modal h2{font-size:1.1rem;color:#333;margin-bottom:6px;}
 .modal p{font-size:0.85rem;color:#666;margin-bottom:14px;line-height:1.5;}
 .modal input[type="text"],.modal input[type="password"]{width:100%;border:1px solid #e9ecef;border-radius:6px;padding:10px;font-size:0.95rem;outline:none;margin-bottom:10px;}
@@ -1386,7 +1389,7 @@ body{
     <div style="margin-top:9px;"><label>Resource</label><input id="journalGrowthLogResource" class="act-input" placeholder="Udemy course, website, book, instructor…"></div>
     <div style="margin-top:9px;"><label>Link</label><input type="url" id="journalGrowthLogLink" class="act-input" inputmode="url" placeholder="https://example.com/course-or-video"></div>
     <div style="margin-top:9px;"><label>Notes or Key Takeaways</label><textarea id="journalGrowthLogNotes" class="act-input" rows="4" style="resize:vertical;font-family:inherit;"></textarea></div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button type="button" class="btn-secondary" onclick="journalCloseGrowthLog()">Cancel</button><button type="button" class="btn-primary" onclick="journalSaveGrowthLog()">Save Session</button></div>
+    <div class="journal-growth-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button type="button" class="btn-secondary" onclick="journalCloseGrowthLog()">Cancel</button><button type="button" class="btn-primary" onclick="journalSaveGrowthLog()">Save Session</button></div>
   </div>
 </div>
 <div class="modal-overlay" id="journalManualScheduleModal" style="display:none;">
