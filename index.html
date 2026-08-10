@@ -4094,6 +4094,12 @@ function streak(fn,cache){
 function hasActivityOnDate(dateKey){
   return getActivities().some(function(a){return a.date===dateKey;});
 }
+function isRunningActivity(activity){var type=String(activity&&activity.type||'').toLowerCase().trim();return type==='run'||type==='running'||type.indexOf('run')!==-1;}
+function hasRunOnDate(dateKey){return getActivities().some(function(activity){return activity.date===dateKey&&isRunningActivity(activity);});}
+function uniqueRunActivities(startDate,endDate){
+  var start=typeof startDate==='string'?startDate:dk(startDate),end=typeof endDate==='string'?endDate:dk(endDate),seen={};return getActivities().filter(function(activity){if(!activity||activity.date<start||activity.date>end||!isRunningActivity(activity))return false;var signature=[activity.date,Number(activity.distance||0).toFixed(3),String(activity.duration||'').trim()].join('|');if(seen[signature])return false;seen[signature]=true;return true;});
+}
+function hasExerciseOnDate(dateKey,planner){var activity=getActivities().some(function(item){return item.date===dateKey&&!/rest day/i.test(String(item.type||''));});return activity||!!(planner&&(planner.exRun==='green'||planner.exStrength==='green'||planner.exBike==='green'||planner.exWalk==='green'));}
 // One-time migration: when "Chronological Bible"/"Daily Prayer" were retired in favor of
 // "Bible & Worship"/"AI Prayer", the code was repointed to the new field names, but already-
 // saved daily records still had their checked days under the OLD field names (spChronBible/
@@ -4161,7 +4167,7 @@ function renderStreaks(){
 function getDM(d,dateKey){
   var actMiles=0,actTime=0,actWatts=0,actWattsN=0,actPace=0,actPaceN=0;
   if(dateKey){
-    getActivities().filter(function(a){return a.date===dateKey;}).forEach(function(a){
+    uniqueRunActivities(dateKey,dateKey).forEach(function(a){
       actMiles+=parseFloat(a.distance)||0;
       actTime+=parseTimedMins(a.duration);
       if(parseFloat(a.power)){actWatts+=parseFloat(a.power);actWattsN++;}
@@ -5073,11 +5079,7 @@ function aiWeeklyRunWrapUp(btn){
   end.setDate(start.getDate()+6);
   function isoDay(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   var startIso=isoDay(start),endIso=isoDay(end);
-  var runs=getActivities().filter(function(a){
-    var day=parseActivityDate(String(a.date||''));
-    var type=String(a.type||'Run').toLowerCase();
-    return day>=startIso&&day<=endIso&&type.indexOf('run')!==-1;
-  });
+  var runs=uniqueRunActivities(startIso,endIso);
   if(!runs.length){
     alert('No running activities were found for '+wrnLabel(wrnOff)+'.');
     return;
@@ -5265,7 +5267,7 @@ function aiReviewAnalysis(){
 }
 function changeDashOff(n){dashOff2+=n;renderDashboard();renderBPChart();}
 let revOff2=0;
-function renderReview(){const ws=wkStart(revOff2),we=new Date(ws);we.setDate(ws.getDate()+6);document.getElementById('revLabel').textContent=ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' - '+we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const r=localStorage.getItem('review_'+dk(ws)),rv=r?JSON.parse(r):{};['revAnalysis','revWins','revImprove','revFocus','revLessons'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=rv[id]||'';});let logged=0,bible=0,prayer=0,ex=0,steps=0;for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);const dateKey=dk(d);if(hasActivityOnDate(dateKey))ex++;const r2=localStorage.getItem('planner_'+dateKey);if(!r2)continue;logged++;const dd=JSON.parse(r2);if(dd.spBibleAudio==='green')bible++;if(dd.spAIPrayer==='green')prayer++;steps+=parseFloat(dd.exSteps)||0;}document.getElementById('revStats').innerHTML=[{l:'Days Logged',v:logged+'/7'},{l:'Bible Days',v:bible+'/7'},{l:'Prayer Days',v:prayer+'/7'},{l:'Exercise Days',v:ex+'/7'},{l:'Total Steps',v:Math.round(steps).toLocaleString()}].map(({l,v})=>'<div class="review-stat"><strong>'+v+'</strong>'+l+'</div>').join('');}
+function renderReview(){const ws=wkStart(revOff2),we=new Date(ws);we.setDate(ws.getDate()+6);document.getElementById('revLabel').textContent=ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' - '+we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const r=localStorage.getItem('review_'+dk(ws)),rv=r?JSON.parse(r):{};['revAnalysis','revWins','revImprove','revFocus','revLessons'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=rv[id]||'';});let logged=0,bible=0,prayer=0,steps=0;for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(ws.getDate()+i);const dateKey=dk(d),r2=localStorage.getItem('planner_'+dateKey);if(!r2)continue;logged++;const dd=JSON.parse(r2);if(dd.spBibleAudio==='green')bible++;if(dd.spAIPrayer==='green')prayer++;steps+=parseFloat(dd.exSteps)||0;}const runs=uniqueRunActivities(ws,we).length;document.getElementById('revStats').innerHTML=[{l:'Days Logged',v:logged+'/7'},{l:'Bible Days',v:bible+'/7'},{l:'Prayer Days',v:prayer+'/7'},{l:'Runs',v:runs},{l:'Total Steps',v:Math.round(steps).toLocaleString()}].map(({l,v})=>'<div class="review-stat"><strong>'+v+'</strong>'+l+'</div>').join('');}
 function saveReview(){const ws=wkStart(revOff2),d={};['revAnalysis','revWins','revImprove','revFocus','revLessons'].forEach(id=>{const e=document.getElementById(id);if(e)d[id]=e.value;});localStorage.setItem('review_'+dk(ws),JSON.stringify(d));const btn=document.querySelector('[onclick="saveReview()"]');if(btn){btn.textContent='Saved!';btn.style.background='#27ae60';setTimeout(()=>{btn.textContent='Save Review';btn.style.background='#667eea';},2000);}}
 function changeRevOff(n){revOff2+=n;renderReview();}
 function getReviewWeekJournalText(){
@@ -12258,15 +12260,13 @@ function toggleGoalsSettings(){
 }
 function renderGoals(){
   const g=JSON.parse(localStorage.getItem('weekly_goals')||'{}');
-  const ws=wkStart(weekOff2);
-  let miles=0,audioMin=0,bibleD=0,prayerD=0,exD=0;
+  const ws=wkStart(weekOff2),we=new Date(ws);we.setDate(ws.getDate()+6);const weekRuns=uniqueRunActivities(ws,we);
+  let miles=weekRuns.reduce(function(total,run){return total+(parseFloat(run.distance)||0);},0),audioMin=0,bibleD=0,prayerD=0,exD=0;
   for(let i=0;i<7;i++){
     const d=new Date(ws);d.setDate(ws.getDate()+i);
-    if(hasActivityOnDate(dk(d)))exD++;
-    const r=localStorage.getItem('planner_'+dk(d));if(!r)continue;
-    const dd=JSON.parse(r);
-    miles+=parseFloat(dd.exMiles)||0;
-    audioMin+=parseMins(dd.gaAudiobookTime);
+    const dateKey=dk(d),r=localStorage.getItem('planner_'+dateKey),dd=r?JSON.parse(r):{};
+    if(hasExerciseOnDate(dateKey,dd))exD++;
+    audioMin+=parseTimedMins(dd.gaAudiobookTime);
     if(dd.spBibleAudio==='green')bibleD++;
     if(dd.spAIPrayer==='green')prayerD++;
   }
@@ -12293,19 +12293,16 @@ function renderGoals(){
 function autoFillWins(){
   const ws=wkStart(revOff2);
   const we=new Date(ws);we.setDate(ws.getDate()+6);
-  let miles=0,runTime=0,bibleD=0,prayerD=0,exD=0,audioMin=0,steps=0,logged=0;
+  const runs=uniqueRunActivities(ws,we);let miles=runs.reduce(function(total,run){return total+(parseFloat(run.distance)||0);},0),runTime=runs.reduce(function(total,run){return total+parseTimedMins(run.duration);},0),bibleD=0,prayerD=0,audioMin=0,steps=0,logged=0;
   let bpReadings=[];
   for(let i=0;i<7;i++){
     const d=new Date(ws);d.setDate(ws.getDate()+i);
     const r=localStorage.getItem('planner_'+dk(d));if(!r)continue;
     logged++;const dd=JSON.parse(r);
-    miles+=parseFloat(dd.exMiles)||0;
-    runTime+=parseMins(dd.exTotalTime);
     steps+=parseFloat(dd.exSteps)||0;
-    audioMin+=parseMins(dd.gaAudiobookTime);
+    audioMin+=parseTimedMins(dd.gaAudiobookTime);
     if(dd.spBibleAudio==='green')bibleD++;
     if(dd.spAIPrayer==='green')prayerD++;
-    if(dd.exRun==='green'||dd.exStrength==='green'||dd.exBike==='green'||dd.exWalk==='green'||hasActivityOnDate(dk(d)))exD++;
     const bp=parseBP(dd.wBPVal);if(bp.sys)bpReadings.push(bp);
   }
   const fmtMins=m=>m>=60?Math.floor(m/60)+'h '+(m%60?m%60+'m':''):m+'m';
@@ -12316,7 +12313,7 @@ function autoFillWins(){
   lines.push('🏃 FITNESS');
   if(miles>0)lines.push('  • '+miles.toFixed(1)+' miles'+(runTime>0?' in '+fmtMins(runTime):''));
   if(steps>0)lines.push('  • '+Math.round(steps).toLocaleString()+' total steps');
-  lines.push('  • Exercise days: '+exD+'/7');
+  lines.push('  • Runs: '+runs.length);
   lines.push('');
   lines.push('📖 SPIRITUALITY');
   lines.push('  • Bible: '+bibleD+'/7 days');
@@ -12513,6 +12510,8 @@ var _journalScheduleDragged='',_journalScheduleSuppressClick=0;
 var _journalScheduleItemsById={};
 var _journalGrowthPointer=null;
 function journalScheduleOrderKey(dateKey){return'journal_schedule_order_'+dateKey;}
+function journalScheduleHiddenKey(dateKey){return'journal_schedule_hidden_'+dateKey;}
+function journalDeleteScheduleItem(event,id){event.preventDefault();event.stopPropagation();if(!confirm('Delete this item from My Schedule for this day?'))return;var dateKey=dk(today),hidden=[];try{hidden=JSON.parse(localStorage.getItem(journalScheduleHiddenKey(dateKey))||'[]');}catch(ignore){}if(!Array.isArray(hidden))hidden=[];if(hidden.indexOf(id)===-1)hidden.push(id);localStorage.setItem(journalScheduleHiddenKey(dateKey),JSON.stringify(hidden));renderJournalSchedule();v26Toast('Schedule item deleted for this day');}
 function journalScheduleGrowthKey(kind,dateKey){return kind==='financial'?'journal_schedule_financial_'+dateKey:'journal_schedule_growth_'+kind+'_'+dateKey;}
 function journalScheduleGrowthId(kind){return{financial:'schedule-financial-videos',udemy:'schedule-udemy',gun:'schedule-gun-range',language:'schedule-language-practice',reading:'schedule-reading-audiobook'}[kind]||'';}
 var _journalGrowthLogKind='';
@@ -12669,6 +12668,7 @@ function renderJournalSchedule(){
   if(localStorage.getItem(journalScheduleGrowthKey('reading',dateKey))==='1')items.push({time:'12:30 PM',mins:750,label:'Reading / Audiobook',detail:readingMinutes?fmtMinsSeconds(readingMinutes)+' logged in Library':'Log reading or listening in Library',done:d.gaAudiobook==='green'||readingMinutes>0,tab:'library',growthKind:'reading'});
   journalManualScheduleItems().filter(function(entry){return entry.date===dateKey;}).forEach(function(entry){items.push({id:'schedule-'+entry.id,time:entry.time,mins:Number(entry.mins),label:entry.title,detail:entry.note||'Manual schedule item',done:localStorage.getItem('schedule_manualSchedule_'+entry.id+'_'+dateKey)==='1',tab:'daily',manual:'manualSchedule_'+entry.id,manualCreated:true,manualItemId:entry.id});});
   items.forEach(function(item,index){if(!item.id)item.id='schedule-'+String(item.label||index).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');});
+  var hiddenSchedule=[];try{hiddenSchedule=JSON.parse(localStorage.getItem(journalScheduleHiddenKey(dateKey))||'[]');}catch(ignoreHidden){}if(Array.isArray(hiddenSchedule)&&hiddenSchedule.length)items=items.filter(function(item){return hiddenSchedule.indexOf(item.id)===-1;});
   var scheduleMoves=journalScheduleMoves();
   items=items.filter(function(item){return !scheduleMoves.some(function(move){return move.sourceDate===dateKey&&move.originalId===item.id;});});
   scheduleMoves.filter(function(move){return move.targetDate===dateKey;}).forEach(function(move){var moved=Object.assign({},move.item||{});moved.id=move.id;moved._moveId=move.id;moved.time=move.time;moved.mins=move.mins;moved.done=false;items.push(moved);});
@@ -12704,6 +12704,7 @@ function renderJournalSchedule(){
   if(summary)summary.textContent=complete+'/'+trackable.length+' complete';
   var nextText=next>=0?'Next: '+items[next].time+' — '+items[next].label:(complete===trackable.length?'Schedule complete':'Review remaining items');
   body.innerHTML='<div class="journal-schedule-status"><strong>'+escHtml(nextText)+'</strong><span>Drag to reorder • Edit time or day • '+complete+' complete • '+(trackable.length-complete)+' remaining</span><button type="button" onclick="event.preventDefault();event.stopPropagation();journalOpenManualScheduleItem()" style="border:1px solid #4f46e5;background:#4f46e5;color:#fff;border-radius:6px;padding:5px 9px;font-size:.68rem;font-weight:800;cursor:pointer;">+ Schedule Item</button></div><div class="journal-schedule-list">'+items.map(function(item,index){var inlineGrowth=['language','udemy','gun'].indexOf(item.growthKind)!==-1,action=item.fixed?'':inlineGrowth?'journalOpenGrowthLog(\''+item.growthKind+'\')':item.detailKind?'journalToggleScheduleDetail(\''+item.detailKind+'\')':item.sleepRoutineChecklist?'journalToggleSleepRoutinePanel()':(item.manual?'journalToggleScheduleManual(\''+item.manual+'\')':'switchTab(\''+item.tab+'\',null)');var safeAction=JSON.stringify(action).replace(/"/g,'&quot;'),removeAction=item.manualCreated?'<span class="journal-schedule-remove" role="button" tabindex="0" onclick="journalDeleteManualScheduleItem(event,\''+item.manualItemId+'\',\''+(item._moveId||'')+'\')">Remove</span>':item.growthKind?'<span class="journal-schedule-remove" role="button" tabindex="0" onclick="journalScheduleRemoveGrowth(event,\''+item.growthKind+'\',\''+escHtml(item.id)+'\')">Remove</span>':'',linkedKey=item.growthKind==='reading'?'gaAudiobook':item.growthKind==='financial'?'gaFinancialVideos':item.growthKind==='udemy'?'gaUdemy':item.growthKind==='gun'?'gaGunRange':item.growthKind==='language'?'gaLanguage':'',checkClick=linkedKey?' onclick="journalScheduleToggleLinkedCheck(event,\''+linkedKey+'\')" title="Toggle completion"':'';return '<button type="button" draggable="true" data-schedule-id="'+escHtml(item.id)+'" class="journal-schedule-item '+(item.fixed?'fixed ':(item.done?'done ':''))+(index===next?'next':'')+'" onclick="journalScheduleCardClick('+safeAction+')" ondragstart="journalScheduleDragStart(event,\''+escHtml(item.id)+'\')" ondragover="journalScheduleDragOver(event)" ondrop="journalScheduleDrop(event,\''+escHtml(item.id)+'\')" ondragend="journalScheduleDragEnd()"><span class="journal-schedule-grip" title="Drag to reschedule" aria-hidden="true">&#x22EE;&#x22EE;</span><span class="journal-schedule-time">'+item.time+'</span><span class="journal-schedule-check"'+checkClick+'>'+(item.fixed?'&#x1F4BC;':(item.done?'&#x2713;':''))+'</span><span class="journal-schedule-name">'+escHtml(item.label)+'<span class="journal-schedule-detail">'+escHtml(item.detail)+'</span></span><span class="journal-schedule-actions"><span class="journal-schedule-edit" role="button" tabindex="0" onclick="journalScheduleEdit(event,\''+escHtml(item.id)+'\')">Edit</span>'+removeAction+'</span></button>'+(item.detailKind?journalScheduleDetailHtml(item.detailKind,d):'')+(item.sleepRoutineChecklist?journalSleepRoutineChecklistHtml(dateKey):'');}).join('')+'</div>'+journalEndSummaryHtml();
+  body.querySelectorAll('.journal-schedule-item').forEach(function(card){var item=_journalScheduleItemsById[card.dataset.scheduleId];if(!item||item.manualCreated||item.growthKind)return;var actions=card.querySelector('.journal-schedule-actions');if(actions)actions.insertAdjacentHTML('beforeend','<span class="journal-schedule-remove" role="button" tabindex="0" onclick="journalDeleteScheduleItem(event,\''+escHtml(item.id)+'\')">Delete</span>');});
 }
 function renderJournalHome(){
   var grid=document.getElementById('journalHomeGrid');if(!grid){renderJournalSchedule();return;}
